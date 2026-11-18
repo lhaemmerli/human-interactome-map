@@ -249,6 +249,7 @@ a { color: var(--s1); }
 
   <h2 data-t>Display</h2>
   <div class="row"><label><input type="checkbox" id="onlyMatch"> <span data-t>Hide non-matching proteins</span></label></div>
+  <div class="row"><label><input type="checkbox" id="effEdges" checked> <span data-t>Show activation / inhibition links</span></label></div>
   <div class="row"><label><input type="checkbox" id="allEdges"> <span data-t>Show all interactions (slow)</span></label></div>
   <div class="row"><label><input type="checkbox" id="rings" checked> <span data-t>Connectivity rings</span></label></div>
   <div class="row"><span data-t>Min. partners</span> <input type="range" id="minDeg" min="1" max="100" value="1" style="flex:1"><span id="minDegV">1</span></div>
@@ -464,6 +465,7 @@ const FR = {
   "Of these links: {a} activating, {h} inhibiting, {c} context-dependent, {u} with no known effect (OmniPath).": "Parmi ces liens : {a} activateurs, {h} inhibiteurs, {c} selon le contexte, {u} sans effet connu (OmniPath).",
   "All partners, sorted by confidence. Where it is known, a badge says whether the protein <b>activates</b> or <b>inhibits</b> the partner (or is activated / inhibited by it); on the map these links get arrows (→ activation, ⊣ inhibition). Click a name to jump to that protein. The <b>3D</b> button shows the two proteins together.":
     "Tous les partenaires, triés par confiance. Quand c'est connu, une étiquette indique si la protéine <b>active</b> ou <b>inhibe</b> le partenaire (ou est activée / inhibée par lui) ; sur la carte ces liens ont des flèches (→ activation, ⊣ inhibition). Cliquez sur un nom pour aller à cette protéine. Le bouton <b>3D</b> montre les deux protéines ensemble.",
+  "Show activation / inhibition links": "Afficher les liens d'activation / d'inhibition",
   // tour chrome
   "Step {k} of {n}": "Étape {k} sur {n}", "Skip tour": "Passer", "Back": "Retour", "Finish": "Terminer", "Next": "Suivant", "Start tour": "Commencer",
   // tour steps
@@ -685,6 +687,7 @@ $("clearS").onclick = () => { state.sys = []; recompute(); };
 $("clearD").onclick = () => { state.dis = []; recompute(); };
 $("onlyMatch").onchange = () => refresh();
 $("allEdges").onchange = () => refresh();
+$("effEdges").onchange = () => refresh();
 $("rings").onchange = () => renderer.refresh();
 $("minDeg").oninput = (e) => { state.minDeg = +e.target.value; $("minDegV").textContent = e.target.value; recompute(); };
 
@@ -742,7 +745,7 @@ function buildLegend() {
     else h += `<div>${tr("Colour & position = number of interaction partners")}</div><div class="item">${tr("few")} <span class="ramp"></span> ${tr("many")}</div>`;
     if (state.funcs.length || state.sys.length || state.dis.length || state.pw.length || state.list) h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>${tr("Not matching")}</div>`;
   }
-  if (state.selected != null || state.path || state.list)
+  if (state.selected != null || state.path || state.list || $("effEdges").checked)
     h += `<div class="item" style="margin-top:4px"><span class="effk" style="color:${P.s1}">→</span>${tr("activates")}`
       + `<span class="effk" style="color:${P.s2};margin-left:8px">⊣</span>${tr("inhibits")}`
       + `<span class="effk" style="color:${P["ink-2"]};margin-left:8px">—</span>${tr("binds (effect unknown)")}</div>`;
@@ -769,6 +772,12 @@ function annotatedEdges() {
     for (let k = 1; k < pth.length; k++) { const e = effBetween(pth[k - 1], pth[k]); if (e) out.push([pth[k - 1], pth[k], e]); }
   } else if (state.list && state.list.idx.size <= 200) {
     state.list.idx.forEach((u) => D.adj[u].forEach(([j, , e]) => { if (e && j > u && state.list.idx.has(j) && match[u] && match[j]) out.push([u, j, e]); }));
+  } else if (!state.list && $("effEdges").checked && renderer.getCamera().ratio < 0.4) {
+    // overview, zoomed in: mark signed links whose ends are on screen
+    const W = $("graph").clientWidth, H = $("graph").clientHeight, on = (i) => {
+      const d = renderer.getNodeDisplayData(String(i)); if (!d) return false;
+      const v = renderer.framedGraphToViewport(d); return v.x > -20 && v.y > -20 && v.x < W + 20 && v.y < H + 20; };
+    for (const [a, b, , m] of D.edges) { if (m && match[a] && match[b] && on(a) && on(b)) { out.push([a, b, m]); if (out.length >= 600) break; } }
   }
   return out.slice(0, 800);
 }
@@ -782,9 +791,22 @@ function drawEffects(ctx) {
     if (b) drawHead(ctx, pv, pu, renderer.scaleSize(du.size), b);   // v acts on u: mark at u
   }
 }
+function clipToView(from, to) {
+  // if "to" is outside the visible map, move it to where the segment leaves the view (12 px inside the border)
+  const W = $("graph").clientWidth, H = $("graph").clientHeight, m = 12;
+  if (to.x >= m && to.y >= m && to.x <= W - m && to.y <= H - m) return null;
+  let t = 1;
+  const dx = to.x - from.x, dy = to.y - from.y;
+  if (dx > 0) t = Math.min(t, (W - m - from.x) / dx); if (dx < 0) t = Math.min(t, (m - from.x) / dx);
+  if (dy > 0) t = Math.min(t, (H - m - from.y) / dy); if (dy < 0) t = Math.min(t, (m - from.y) / dy);
+  return t > 0 && t < 1 ? { x: from.x + dx * t, y: from.y + dy * t } : null;
+}
 function drawHead(ctx, from, to, rTo, kind) {
+  const clip = clipToView(from, to);
+  if (clip) { to = clip; rTo = 0; }
   const dx = to.x - from.x, dy = to.y - from.y, L = Math.hypot(dx, dy);
   if (L < rTo + 14) return;
+  ctx.globalAlpha = 1;
   const ux = dx / L, uy = dy / L, tx = to.x - ux * (rTo + 2), ty = to.y - uy * (rTo + 2);
   ctx.fillStyle = ctx.strokeStyle = effColor(kind); ctx.lineWidth = 2.5; ctx.lineCap = "round";
   if (kind === 1 || kind === 3) {   // arrowhead = activation
@@ -883,6 +905,9 @@ function edgeReducer(id, a) {
     return { ...a, hidden: true };
   }
   if (state.list && match[s] && match[t]) { const ek = effKind(a.m || 0); return { ...a, color: ek ? effColor(ek) : P.edge, size: ek ? 1.4 : 0.9, zIndex: ek ? 2 : 1 }; }
+  if ($("effEdges").checked && a.m && match[s] && match[t]) {
+    const k = effKind(a.m); return { ...a, color: mix(effColor(k), P.surface, 0.35), size: 0.8, zIndex: 2 };
+  }
   if (!$("allEdges").checked) return { ...a, hidden: true };
   if (!match[s] || !match[t]) return { ...a, hidden: true };
   return { ...a, color: P["edge-all"], size: 0.3 };
