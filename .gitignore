@@ -1,0 +1,4 @@
+# Raw downloads are large; recreate them with pipeline/download_data.sh
+data/raw/
+__pycache__/
+.DS_Store

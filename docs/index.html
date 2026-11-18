@@ -1,0 +1,1043 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Human Interactome Map</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --panel: #ffffff;
+  --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --faded: #e7e6e0; --edge: rgba(82,81,78,0.35); --edge-all: rgba(82,81,78,0.05);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
+  --ramp-lo: #86b6ef; --ramp-hi: #104281;
+  --accent-wash: rgba(42,120,214,0.10);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --panel: #141413;
+    --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --faded: #2a2a28; --edge: rgba(195,194,183,0.35); --edge-all: rgba(195,194,183,0.05);
+    --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+    --ramp-lo: #184f95; --ramp-hi: #9ec5f4;
+    --accent-wash: rgba(57,135,229,0.16);
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --panel: #141413;
+  --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --faded: #2a2a28; --edge: rgba(195,194,183,0.35); --edge-all: rgba(195,194,183,0.05);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  --ramp-lo: #184f95; --ramp-hi: #9ec5f4;
+  --accent-wash: rgba(57,135,229,0.16);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; }
+body {
+  background: var(--page); color: var(--ink);
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  display: grid; grid-template-columns: 300px 1fr 340px; overflow: hidden;
+}
+body.no-detail { grid-template-columns: 300px 1fr 0; }
+aside { background: var(--panel); overflow-y: auto; padding: 16px; }
+#left { border-right: 1px solid var(--border); }
+#right { border-left: 1px solid var(--border); position: relative; }
+body.no-detail #right { display: none; }
+h1 { font-size: 16px; margin: 0 0 2px; }
+h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 18px 0 6px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+h2 button { text-transform: none; letter-spacing: 0; }
+.sub { color: var(--ink-2); margin: 0 0 12px; }
+input[type=search] {
+  width: 100%; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--axis);
+  background: var(--surface); color: var(--ink); font: inherit;
+}
+.btn, h2 button { background: none; border: 1px solid var(--border); color: var(--ink-2); border-radius: 5px; padding: 2px 8px; font: inherit; font-size: 12px; cursor: pointer; }
+.btn:hover, h2 button:hover { background: var(--accent-wash); color: var(--ink); }
+.checklist { display: flex; flex-direction: column; gap: 1px; }
+.checklist label {
+  display: grid; grid-template-columns: 16px 12px 1fr auto; gap: 6px; align-items: center;
+  padding: 3px 4px; border-radius: 4px; cursor: pointer; color: var(--ink-2);
+}
+.checklist label:hover { background: var(--accent-wash); }
+.checklist label.on { color: var(--ink); font-weight: 500; }
+.checklist input { margin: 0; }
+.checklist .count { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+.sw { width: 10px; height: 10px; border-radius: 50%; }
+.row { display: flex; gap: 8px; align-items: center; margin: 6px 0; color: var(--ink-2); }
+.row label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+select { font: inherit; background: var(--surface); color: var(--ink); border: 1px solid var(--axis); border-radius: 5px; padding: 2px 4px; }
+#matches { margin-top: 4px; max-height: 260px; overflow-y: auto; border: 1px solid var(--border); border-radius: 6px; }
+#matches table { width: 100%; border-collapse: collapse; }
+#matches td { padding: 3px 8px; border-bottom: 1px solid var(--grid); cursor: pointer; }
+#matches tr:hover td { background: var(--accent-wash); }
+#matches td.n { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.search-wrap { position: relative; }
+#suggest { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20; margin: 0; padding: 4px; list-style: none;
+  background: var(--panel); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.14); max-height: 360px; overflow-y: auto; }
+#suggest:empty { display: none; }
+#suggest li { padding: 5px 8px; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 0 8px; }
+#suggest li.act, #suggest li:hover { background: var(--accent-wash); }
+#suggest .g { font-weight: 600; color: var(--ink); }
+#suggest .p { grid-column: 1; color: var(--ink-2); font-size: 12px; }
+#suggest .a { grid-column: 1; color: var(--muted); font-size: 12px; }
+#suggest .c { grid-row: 1; grid-column: 2; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+#suggest mark { background: none; color: var(--s1); font-weight: 600; }
+#suggest .none { color: var(--muted); cursor: default; }
+#structBox { margin-top: 12px; }
+.domt { width: 100%; border-collapse: collapse; margin-top: 4px; }
+.domt th { text-align: left; font-weight: 500; color: var(--muted); font-size: 11px; padding: 2px 4px; border-bottom: 1px solid var(--axis); }
+.domt td { padding: 4px; border-bottom: 1px solid var(--grid); vertical-align: top; cursor: pointer; }
+.domt td.n, .domt th.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.domt tr:hover td { background: var(--accent-wash); }
+.domt tr.on td { background: var(--accent-wash); font-weight: 600; }
+.domt .bar { height: 4px; border-radius: 2px; background: var(--s1); margin-top: 3px; }
+.domt .id { color: var(--muted); font-size: 11px; }
+a.chip { text-decoration: none; }
+.cxbtn { margin-left: 6px; padding: 0 6px; font-size: 11px; border-radius: 4px; border: 1px solid var(--border); background: none; color: var(--s1); cursor: pointer; font: inherit; font-size: 11px; }
+.cxbtn:hover { background: var(--accent-wash); }
+.swatch { display: inline-block; width: 9px; height: 9px; border-radius: 2px; vertical-align: baseline; margin: 0 2px; }
+#domFilter { margin: 6px 0; padding: 4px 8px; border-radius: 5px; background: var(--accent-wash); color: var(--ink); display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+.tabs { display: flex; gap: 4px; margin-bottom: 6px; }
+.tabs button { flex: 1; background: none; border: 1px solid var(--border); color: var(--ink-2); border-radius: 5px; padding: 4px 6px; font: inherit; font-size: 12px; cursor: pointer; }
+.tabs button.on { background: var(--accent-wash); color: var(--ink); border-color: var(--s1); font-weight: 600; }
+.tabs button:disabled { opacity: .45; cursor: default; }
+#mol { position: relative; width: 100%; height: 280px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; background: var(--surface); }
+#structMsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; text-align: center; padding: 16px; color: var(--muted); pointer-events: none; z-index: 2; }
+#structHover { position: absolute; left: 8px; top: 6px; font-size: 12px; color: var(--ink-2); background: var(--surface); padding: 1px 6px; border-radius: 4px; pointer-events: none; z-index: 2; }
+#structHover:empty { display: none; }
+[hidden] { display: none !important; }
+#plddtLegend { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 6px; font-size: 12px; color: var(--ink-2); }
+#plddtLegend span { display: inline-flex; align-items: center; gap: 4px; }
+#plddtLegend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+#structInfo { margin-top: 4px; }
+#stage { position: relative; background: var(--surface); min-width: 0; }
+#graph, #overlay { position: absolute; inset: 0; }
+#overlay { pointer-events: none; }
+#status { position: absolute; left: 12px; top: 10px; color: var(--ink-2); background: var(--surface); padding: 4px 8px; border-radius: 6px; border: 1px solid var(--border); font-size: 12px; }
+#legend { position: absolute; left: 12px; bottom: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 12px; color: var(--ink-2); max-width: 320px; }
+#legend .item { display: flex; gap: 6px; align-items: center; margin: 2px 0; }
+#legend .ramp { width: 120px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--ramp-lo), var(--ramp-hi)); }
+#zoom { position: absolute; right: 12px; bottom: 12px; display: flex; flex-direction: column; gap: 4px; }
+#zoom button { width: 30px; height: 30px; font-size: 16px; background: var(--surface); }
+#tip { position: fixed; pointer-events: none; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 6px 9px; box-shadow: 0 4px 14px rgba(0,0,0,.12); max-width: 280px; display: none; z-index: 10; }
+#tip b { font-size: 13px; }
+#tip .d { color: var(--ink-2); }
+#tip .m { color: var(--muted); font-size: 12px; }
+#close { position: absolute; right: 12px; top: 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.chip { border: 1px solid var(--border); border-radius: 10px; padding: 1px 8px; font-size: 12px; color: var(--ink-2); cursor: pointer; background: none; font: inherit; font-size: 12px; }
+.chip:hover { background: var(--accent-wash); color: var(--ink); }
+.big { font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; color: var(--ink-2); }
+.kv span:nth-child(odd) { color: var(--muted); }
+#partners td { padding: 2px 6px 2px 0; cursor: pointer; }
+#partners td.n { color: var(--muted); text-align: right; font-variant-numeric: tabular-nums; }
+#partners tr:hover td { color: var(--s1); }
+a { color: var(--s1); }
+.about { color: var(--ink-2); }
+.note { color: var(--muted); font-size: 12px; }
+#themeBtn, #tourBtn { float: right; margin-left: 4px; }
+#tourBtn { font-weight: 700; font-family: Georgia, serif; font-style: italic; width: 26px; }
+#tourBlock { position: fixed; inset: 0; z-index: 50; }
+#tourSpot { position: fixed; z-index: 51; border-radius: 8px; pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,.5); outline: 2px solid var(--s1); outline-offset: 2px;
+  transition: left .3s, top .3s, width .3s, height .3s; }
+#tourSpot.none { outline: none; }
+#tourCard { position: fixed; z-index: 52; width: 330px; max-width: calc(100vw - 24px); background: var(--panel); color: var(--ink);
+  border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.3); padding: 14px 16px 12px;
+  transition: left .3s, top .3s; }
+#tourCard h3 { margin: 0 0 6px; font-size: 15px; }
+#tourCard p { margin: 0 0 8px; color: var(--ink-2); }
+#tourCard .step { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+#tourCard .nav { display: flex; gap: 6px; justify-content: flex-end; align-items: center; margin-top: 10px; }
+#tourCard .nav .skip { margin-right: auto; border: none; color: var(--muted); }
+#tourCard .nav .primary { background: var(--s1); color: #fff; border-color: var(--s1); }
+#tourCard .dots { display: flex; gap: 4px; margin-top: 8px; }
+#tourCard .dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--grid); }
+#tourCard .dots i.on { background: var(--s1); }
+@media (max-width: 900px) {
+  body, body.no-detail { grid-template-columns: 1fr; grid-template-rows: 45vh 1fr; overflow: auto; }
+  #stage { grid-row: 1; } #left { grid-row: 2; }
+  #right { position: fixed; inset: auto 0 0 0; max-height: 55vh; z-index: 5; border-top: 1px solid var(--border); }
+}
+</style>
+</head>
+<body class="no-detail">
+<aside id="left">
+  <button class="btn" id="themeBtn" title="Toggle light/dark">◐</button>
+  <button class="btn" id="tourBtn" title="How to use this map (guided tour)">i</button>
+  <h1>Human Interactome Map</h1>
+  <p class="sub" id="meta">Loading…</p>
+  <div class="search-wrap">
+    <input type="search" id="search" placeholder="Gene or protein name (e.g. ACTB, insulin, p53)…" autocomplete="off"
+      role="combobox" aria-controls="suggest" aria-expanded="false">
+    <ul id="suggest" role="listbox"></ul>
+  </div>
+
+  <h2>Display</h2>
+  <div class="row"><label><input type="checkbox" id="onlyMatch"> Hide non-matching proteins</label></div>
+  <div class="row"><label><input type="checkbox" id="allEdges"> Show all interactions (slow)</label></div>
+  <div class="row"><label><input type="checkbox" id="rings" checked> Connectivity rings</label></div>
+  <div class="row">Min. partners <input type="range" id="minDeg" min="1" max="100" value="1" style="flex:1"><span id="minDegV">1</span></div>
+
+  <h2>Function <button id="clearF">clear</button></h2>
+  <div class="checklist" id="funcList"></div>
+
+  <h2>Body system <button id="clearS">clear</button></h2>
+  <div class="checklist" id="sysList"></div>
+  <p class="note">Body system = tissues where the gene is enriched (Human Protein Atlas).</p>
+
+  <h2>Disease <button id="clearD">clear</button></h2>
+  <div class="checklist" id="disList"></div>
+  <p class="note">Genes with disease-causing variants or cancer involvement (UniProt / Human Protein Atlas). Within a group any ticked item matches; across groups (function, system, disease) all must match.</p>
+
+  <h2><span id="matchTitle">Most connected proteins</span></h2>
+  <div id="matches"></div>
+  <p class="note">Data: STRING v12 physical interactions (confidence ≥ <span id="minScore"></span>), UniProt keywords, Human Protein Atlas.</p>
+</aside>
+
+<main id="stage">
+  <div id="graph"></div>
+  <canvas id="overlay"></canvas>
+  <div id="status"></div>
+  <div id="legend"></div>
+  <div id="zoom"><button class="btn" id="zin">+</button><button class="btn" id="zout">−</button><button class="btn" id="zreset" title="Reset view">⟲</button></div>
+</main>
+
+<aside id="right">
+  <button class="btn" id="close">✕</button>
+  <div id="detail"></div>
+  <section id="structBox" hidden>
+    <div class="tabs"><button data-src="af">AlphaFold</button><button data-src="pdb">Experimental (PDB)</button><button data-src="cx">Complex</button></div>
+    <div id="mol"><div id="structMsg"></div><div id="structHover"></div></div>
+    <div id="plddtLegend" hidden></div>
+    <div id="structInfo" class="note"></div>
+  </section>
+</aside>
+<div id="tip"></div>
+<div id="tourBlock" hidden></div><div id="tourSpot" hidden></div>
+<div id="tourCard" hidden role="dialog" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/graphology@0.25.4/dist/graphology.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sigma@3.0.2/dist/sigma.min.js"></script>
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+let D, graph, renderer, P = {};         // data, graphology graph, sigma, palette
+const state = { funcs: [], sys: [], dis: [], last: null, hi: null, selected: null, hovered: null, minDeg: 1 };
+const GROUPS = [["funcs", "f", "funcList", "functions"], ["sys", "s", "sysList", "systems"], ["dis", "d", "disList", "diseases"]];
+let match = null;                        // Uint8Array: node matches filters
+
+// ---------- theme
+function readPalette() {
+  P = {};
+  for (const k of ["ink", "ink-2", "muted", "faded", "edge", "edge-all", "s1", "s2", "s3", "ramp-lo", "ramp-hi", "axis", "grid", "surface"]) P[k] = css("--" + k);
+}
+function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+function mix(a, b, t) { const A = hexToRgb(a), B = hexToRgb(b); return "#" + A.map((x, i) => Math.round(x + (B[i] - x) * t).toString(16).padStart(2, "0")).join(""); }
+$("themeBtn").onclick = () => {
+  const dark = document.documentElement.dataset.theme
+    ? document.documentElement.dataset.theme === "dark"
+    : matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.dataset.theme = dark ? "light" : "dark";
+  try { localStorage.setItem("theme", document.documentElement.dataset.theme); } catch (e) {}
+  applyTheme();
+};
+try { const t = localStorage.getItem("theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => applyTheme());
+function applyTheme() {
+  readPalette();
+  if (!graph) return;
+  graph.forEachNode((id, a) => graph.setNodeAttribute(id, "baseColor", mix(P["ramp-lo"], P["ramp-hi"], a.pct)));
+  renderer.setSetting("labelColor", { color: P.ink });
+  if (molViewer) { molViewer.setBackgroundColor(P.surface); if (structState.src === "pdb") styleModel("pdb"); molViewer.render(); }
+  refresh();
+}
+
+// ---------- load
+fetch("data.json").then((r) => r.json()).then(init).catch((e) => {
+  console.error(e);
+  $("meta").textContent = "Error: " + e.message + " (if data.json failed to load, serve this folder over HTTP — see README)";
+  $("meta").style.color = "#d03b3b";
+});
+
+function init(data) {
+  D = data;
+  readPalette();
+  const F = Object.fromEntries(D.fields.map((f, i) => [f, i]));
+  D.N = D.nodes.map((r) => ({ name: r[F.name], desc: r[F.desc], acc: r[F.acc], deg: r[F.degree], x: r[F.x], y: r[F.y],
+    module: r[F.module], f: r[F.functions], s: r[F.systems], t: r[F.tissues], about: r[F.about], ensp: r[F.ensp], alias: r[F.aliases] || [], d: r[F.diseases] || [], dz: r[F.disease_terms] || [], pf: r[F.domains] || [] }));
+  const n = D.N.length;
+  $("meta").textContent = `${D.meta.proteins.toLocaleString()} proteins · ${D.meta.interactions.toLocaleString()} interactions. Most connected proteins sit at the centre.`;
+  $("minScore").textContent = D.meta.min_score;
+  $("minDeg").max = Math.min(200, D.N[0].deg);
+
+  graph = new graphology.Graph({ type: "undirected", multi: false });
+  D.N.forEach((p, i) => {
+    const pct = 1 - i / (n - 1);  // nodes are sorted by degree, descending
+    graph.addNode(i, { x: p.x, y: p.y, size: 1 + 0.5 * Math.sqrt(p.deg), label: p.name, pct,
+      baseColor: mix(P["ramp-lo"], P["ramp-hi"], pct), zIndex: Math.round(pct * 100) });
+  });
+  D.adj = D.N.map(() => []);
+  for (const [a, b, w] of D.edges) {
+    graph.addEdge(a, b, { w });
+    D.adj[a].push([b, w]); D.adj[b].push([a, w]);
+  }
+  D.adj.forEach((l) => l.sort((p, q) => q[1] - p[1] || D.N[q[0]].deg - D.N[p[0]].deg));
+
+  // degree -> ring radius (layout uses r = R * sqrt(rank / N))
+  D.ringFor = (d) => { let k = 0; while (k < n && D.N[k].deg >= d) k++; return 1000 * Math.sqrt(k / n); };
+
+  match = new Uint8Array(n).fill(1);   // reducers run during construction
+  renderer = new Sigma(graph, $("graph"), {
+    zIndex: true,
+    labelColor: { color: P.ink },
+    labelSize: 12, labelWeight: "500", labelFont: "system-ui, -apple-system, Segoe UI, sans-serif",
+    labelRenderedSizeThreshold: 9, labelDensity: 0.5,
+    defaultEdgeColor: P.edge, minCameraRatio: 0.01, maxCameraRatio: 2,
+    nodeReducer, edgeReducer,
+    defaultDrawNodeHover: drawHover,
+  });
+  renderer.on("enterNode", ({ node }) => { state.hovered = +node; showTip(+node); refresh(true); });
+  renderer.on("leaveNode", () => { state.hovered = null; $("tip").style.display = "none"; refresh(true); });
+  renderer.on("clickNode", ({ node }) => select(+node));
+  renderer.on("clickStage", () => select(null));
+  renderer.on("afterRender", drawOverlay);
+  renderer.getMouseCaptor().on("mousemovebody", (e) => moveTip(e.original));
+
+  renderer.getCamera().setState({ ratio: 1.15 });
+  buildLists();
+  D.idx = D.N.map((p) => ({ g: p.name.toLowerCase(), d: p.desc.toLowerCase(), a: p.alias.map((x) => x.toLowerCase()) }));
+  recompute();
+  let seen = false; try { seen = !!localStorage.getItem("tourSeen"); } catch (e) {}
+  if (!seen) setTimeout(startTour, 700);   // first visit: show the guided tour
+}
+
+// ---------- filters
+function buildLists() {
+  const mk = (el, names, field, key) => {
+    const counts = names.map(() => 0);
+    D.N.forEach((p) => p[field].forEach((i) => counts[i]++));
+    const sorted = names.map((nm, i) => ({ nm, i, c: counts[i] }));
+    if (key !== "dis") sorted.sort((a, b) => b.c - a.c);   // diseases keep their curated order
+    el.innerHTML = sorted
+      .map(({ nm, i, c }) => `<label data-i="${i}"><input type="checkbox" value="${i}"><span class="sw"></span><span>${esc(nm)}</span><span class="count">${c.toLocaleString()}</span></label>`).join("");
+    el.addEventListener("change", (e) => {
+      const i = +e.target.value, arr = state[key];
+      if (e.target.checked) arr.push(i); else arr.splice(arr.indexOf(i), 1);
+      state.last = key;
+      recompute();
+    });
+  };
+  for (const [key, field, el, names] of GROUPS) mk($(el), D[names], field, key);
+}
+$("clearF").onclick = () => { state.funcs = []; recompute(); };
+$("clearS").onclick = () => { state.sys = []; recompute(); };
+$("clearD").onclick = () => { state.dis = []; recompute(); };
+$("onlyMatch").onchange = () => refresh();
+$("allEdges").onchange = () => refresh();
+$("rings").onchange = () => renderer.refresh();
+$("minDeg").oninput = (e) => { state.minDeg = +e.target.value; $("minDegV").textContent = e.target.value; recompute(); };
+
+// Colour rules: default = blue ramp by connectivity. When one filter group has
+// 1–3 ticked categories, each gets its own categorical colour (fixed by tick order).
+function colorKey() {
+  const active = GROUPS.filter(([k]) => state[k].length);
+  if (!active.length) return null;
+  // colour by the group last touched, otherwise the first active one
+  const g = active.find(([k]) => k === state.last) || active[0];
+  return state[g[0]].length <= 3 ? { list: state[g[0]], field: g[1], names: D[g[3]] } : null;
+}
+function recompute() {
+  const n = D.N.length;
+  match = new Uint8Array(n);
+  const F = new Set(state.funcs), S = new Set(state.sys), Z = new Set(state.dis);
+  let count = 0;
+  for (let i = 0; i < n; i++) {
+    const p = D.N[i];
+    const ok = p.deg >= state.minDeg && (!F.size || p.f.some((x) => F.has(x))) && (!S.size || p.s.some((x) => S.has(x))) && (!Z.size || p.d.some((x) => Z.has(x)));
+    match[i] = ok; count += ok;
+  }
+  D.ck = colorKey();
+  const slot = (list, i) => [P.s1, P.s2, P.s3][list.indexOf(i)];
+  for (const [key, , elId] of GROUPS) { const el = $(elId);
+    el.querySelectorAll("label").forEach((lb) => {
+      const i = +lb.dataset.i, on = state[key].includes(i);
+      lb.classList.toggle("on", on); lb.querySelector("input").checked = on;
+      const ck = D.ck && D.ck.list === state[key] ? slot(state[key], i) : null;
+      lb.querySelector(".sw").style.background = ck || "transparent";
+    });
+  }
+  const filtered = state.funcs.length || state.sys.length || state.dis.length || state.minDeg > 1;
+  $("matchTitle").textContent = filtered ? `${count.toLocaleString()} matching proteins` : "Most connected proteins";
+  const rows = [];
+  for (let i = 0; i < n && rows.length < 300; i++) if (match[i]) rows.push(i);
+  $("matches").innerHTML = `<table>${rows.map((i) => `<tr data-i="${i}"><td>${esc(D.N[i].name)}</td><td class="n">${D.N[i].deg}</td></tr>`).join("")}</table>`
+    + (count > 300 ? `<p class="note" style="padding:4px 8px">Top 300 by partners shown.</p>` : "");
+  $("status").textContent = filtered ? `${count.toLocaleString()} of ${n.toLocaleString()} proteins match` : `${n.toLocaleString()} proteins`;
+  buildLegend();
+  refresh();
+}
+$("matches").onclick = (e) => { const tr = e.target.closest("tr"); if (tr) select(+tr.dataset.i, true); };
+
+function buildLegend() {
+  let h = "";
+  if (D.ck) {
+    const names = D.ck.names;
+    h += D.ck.list.map((i, k) => `<div class="item"><span class="sw" style="background:${[P.s1, P.s2, P.s3][k]}"></span>${esc(names[i])}</div>`).join("");
+    h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>Not matching</div>`;
+  } else {
+    h += `<div>Colour & position = number of interaction partners</div><div class="item">few <span class="ramp"></span> many</div>`;
+    if (state.funcs.length || state.sys.length || state.dis.length) h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>Not matching</div>`;
+  }
+  $("legend").innerHTML = h;
+}
+
+// ---------- rendering
+function nodeColor(i, a) {
+  if (!match[i]) return P.faded;
+  if (D.ck) {
+    const own = D.N[i][D.ck.field];
+    const k = D.ck.list.findIndex((c) => own.includes(c));
+    return [P.s1, P.s2, P.s3][k] || a.baseColor;
+  }
+  return a.baseColor;
+}
+function focusSet() {
+  const f = state.hovered ?? state.selected;
+  if (f == null) return null;
+  const s = new Set([f]); D.adj[f].forEach(([j]) => s.add(j)); return s;
+}
+let FOCUS = null;
+function refresh() { FOCUS = focusSet(); renderer && renderer.refresh(); }
+
+function nodeReducer(id, a) {
+  const i = +id, r = { ...a, color: nodeColor(i, a) };
+  const hide = $("onlyMatch").checked && !match[i];
+  if (FOCUS) {
+    if (!FOCUS.has(i)) { r.color = P.faded; r.label = ""; r.zIndex = 0; if (hide) r.hidden = true; }
+    else if (state.hi && state.hovered == null && i !== state.selected && !state.hi.set.has(i)) {
+      r.color = P.faded; r.label = ""; r.zIndex = 0;   // partner outside the highlighted subset
+    }
+    else { r.zIndex = 200; r.forceLabel = FOCUS.size < 60 || i === state.selected || i === state.hovered || !!state.hi; }
+    if (i === state.selected || i === state.hovered) { r.highlighted = true; r.zIndex = 300; }
+  } else if (hide) r.hidden = true;
+  else if (!match[i]) { r.label = ""; r.zIndex = 0; }
+  return r;
+}
+function edgeReducer(id, a) {
+  const [s, t] = graph.extremities(id).map(Number);
+  const f = state.hovered ?? state.selected;
+  if (f != null) {
+    if (s === f || t === f) return { ...a, color: P.edge, size: 0.6 + (a.w - 700) / 300, zIndex: 1 };
+    return { ...a, hidden: true };
+  }
+  if (!$("allEdges").checked) return { ...a, hidden: true };
+  if (!match[s] || !match[t]) return { ...a, hidden: true };
+  return { ...a, color: P["edge-all"], size: 0.3 };
+}
+function drawHover(ctx, data, settings) {
+  // label pill for hovered node, theme-aware
+  const size = settings.labelSize, font = `600 ${size}px ${settings.labelFont}`;
+  ctx.font = font;
+  const w = ctx.measureText(data.label).width + 10, h = size + 8;
+  const x = data.x + data.size + 3, y = data.y - h / 2;
+  ctx.fillStyle = P.surface; ctx.strokeStyle = P.axis; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.roundRect(x, y, w, h, 4); ctx.fill(); ctx.stroke();
+  ctx.beginPath(); ctx.arc(data.x, data.y, data.size + 2, 0, Math.PI * 2); ctx.strokeStyle = P.ink; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = P.ink; ctx.fillText(data.label, x + 5, data.y + size / 3);
+}
+
+// connectivity rings + module labels on a 2D overlay synced with the camera
+function drawOverlay() {
+  const cv = $("overlay"), box = $("stage").getBoundingClientRect(), dpr = devicePixelRatio || 1;
+  if (cv.width !== box.width * dpr || cv.height !== box.height * dpr) {
+    cv.width = box.width * dpr; cv.height = box.height * dpr; cv.style.width = box.width + "px"; cv.style.height = box.height + "px";
+  }
+  const ctx = cv.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, box.width, box.height);
+  if (!$("rings").checked) return;
+  const c = renderer.graphToViewport({ x: 0, y: 0 });
+  const px = (r) => Math.hypot(...(({ x, y }) => [x - c.x, y - c.y])(renderer.graphToViewport({ x: r, y: 0 })));
+  ctx.font = `11px system-ui, -apple-system, sans-serif`;
+  for (const d of [200, 100, 50, 20, 10, 5, 2]) {
+    if (d > D.N[0].deg) continue;
+    const rr = px(D.ringFor(d));
+    if (rr < 14) continue;
+    ctx.beginPath(); ctx.arc(c.x, c.y, rr, 0, Math.PI * 2);
+    ctx.strokeStyle = P.grid; ctx.setLineDash([3, 4]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = P.muted; ctx.fillText(`≥ ${d} partners`, c.x + 4, c.y - rr - 4);
+  }
+  // module labels around the outside
+  ctx.fillStyle = P["ink-2"]; ctx.font = `500 11px system-ui, -apple-system, sans-serif`;
+  D.modules.forEach((m) => {
+    if (m.size < 250) return;
+    const a = m.a0 + m.span / 2;
+    const v = renderer.graphToViewport({ x: 1060 * Math.cos(a), y: 1060 * Math.sin(a) });
+    const dx = v.x - c.x;
+    ctx.textAlign = dx > 20 ? "left" : dx < -20 ? "right" : "center";
+    ctx.fillText(`${m.label} (${m.hub})`, v.x, v.y + 4);
+  });
+  ctx.textAlign = "left";
+}
+
+// ---------- tooltip
+function showTip(i) {
+  const p = D.N[i];
+  $("tip").innerHTML = `<b>${esc(p.name)}</b> <span class="m">· ${p.deg} partners</span><div class="d">${esc(p.desc)}</div>`
+    + (p.f.length ? `<div class="m">${p.f.slice(0, 3).map((x) => esc(D.functions[x])).join(" · ")}</div>` : "")
+    + (p.d.length ? `<div class="m">Disease: ${p.d.filter((x) => D.diseases[x] !== "Any inherited disease").slice(0, 3).map((x) => esc(D.diseases[x])).join(" · ") || "inherited disease"}</div>` : "");
+  $("tip").style.display = "block";
+}
+function moveTip(e) {
+  const t = $("tip"); if (t.style.display === "none") return;
+  t.style.left = Math.min(innerWidth - t.offsetWidth - 8, e.clientX + 14) + "px";
+  t.style.top = Math.min(innerHeight - t.offsetHeight - 8, e.clientY + 14) + "px";
+}
+
+// ---------- selection / detail panel
+function select(i, fly) {
+  if (i !== state.selected) state.hi = null;
+  state.selected = i;
+  document.body.classList.toggle("no-detail", i == null);
+  setTimeout(() => renderer.resize(), 0);
+  if (i == null) { refresh(); return; }
+  const p = D.N[i];
+  const rank = i + 1;
+  const partners = D.adj[i];
+  const fCount = {}; partners.forEach(([j]) => D.N[j].f.forEach((x) => (fCount[x] = (fCount[x] || 0) + 1)));
+  $("right").appendChild($("structBox"));   // keep the viewer alive while the panel is rebuilt
+  const topF = Object.entries(fCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  $("detail").innerHTML = `
+    <div class="big">${esc(p.name)}</div>
+    <div>${esc(p.desc)}</div>
+    <h2>3D structure</h2>
+    <div id="structSlot"></div>
+    <h2>Connectivity</h2>
+    <div class="kv"><span>Partners</span><span><b>${p.deg}</b></span><span>Rank</span><span>#${rank.toLocaleString()} of ${D.N.length.toLocaleString()} (top ${Math.max(0.1, (100 * rank / D.N.length)).toFixed(1)}%)</span>
+    <span>Module</span><span>${esc(D.modules[p.module].label)} · hub ${esc(D.modules[p.module].hub)}</span></div>
+    <h2>Function</h2>
+    <div class="chips">${p.f.map((x) => `<button class="chip" data-f="${x}">${esc(D.functions[x])}</button>`).join("") || '<span class="note">No category assigned</span>'}</div>
+    <h2>Body system</h2>
+    <div class="chips">${p.s.map((x) => `<button class="chip" data-s="${x}">${esc(D.systems[x])}</button>`).join("") || '<span class="note">No tissue data</span>'}</div>
+    ${p.t.length ? `<div class="note" style="margin-top:4px">Enriched in: ${p.t.map(esc).join(", ")}</div>` : ""}
+    <h2>Disease involvement</h2>
+    <div class="chips">${p.d.map((x) => `<button class="chip" data-d="${x}">${esc(D.diseases[x])}</button>`).join("") || '<span class="note">No known disease association</span>'}</div>
+    ${p.dz.length ? `<div class="note" style="margin-top:4px">Specific: ${p.dz.map(esc).join(", ")}</div>` : ""}
+    <h2>About</h2>
+    <div class="about">${esc(p.about)}</div>
+    <div style="margin-top:6px">${p.acc ? `<a href="https://www.uniprot.org/uniprotkb/${esc(p.acc)}" target="_blank" rel="noopener">UniProt</a> · ` : ""}<a href="https://string-db.org/network/9606.${esc(p.ensp)}" target="_blank" rel="noopener">STRING</a> · <a href="https://www.proteinatlas.org/search/${esc(p.name)}" target="_blank" rel="noopener">Protein Atlas</a></div>
+    <h2>Protein domains (Pfam)</h2>
+    <div class="chips">${[...new Set(p.pf)].map((x) => `<a class="chip" href="https://www.ebi.ac.uk/interpro/entry/pfam/${esc(D.domains[x][0])}/" target="_blank" rel="noopener" title="${esc(D.domains[x][0])} · ${esc(D.domains[x][1])}">${esc(D.domains[x][2])}</a>`).join("") || '<span class="note">No Pfam domain annotated</span>'}</div>
+    <h2>Binding interfaces <span class="note">domain–domain contacts</span></h2>
+    <div id="ifSection"></div>
+    <h2>Partners' common domains</h2>
+    <div id="domSection"></div>
+    ${topF.length ? `<h2>Partners' functions</h2><div class="kv">${topF.map(([f, c]) => `<span>${c}</span><span>${esc(D.functions[f])}</span>`).join("")}</div>` : ""}
+    <h2>Interaction partners (${partners.length}) <span class="note">confidence</span></h2>
+    <div id="partnersBox"></div>`;
+  renderInterfaces(i); renderDomains(i); renderPartners(i);
+  $("structSlot").appendChild($("structBox"));
+  $("structBox").hidden = false;
+  if (structState.acc !== p.acc || !p.acc) loadStructure(p); else if (molViewer) { molViewer.resize(); molViewer.render(); }
+  $("detail").querySelectorAll(".chip[data-f], .chip[data-s], .chip[data-d]").forEach((b) => b.onclick = () => {
+    if (b.dataset.f) { state.funcs = [+b.dataset.f]; state.last = "funcs"; }
+    else if (b.dataset.s) { state.sys = [+b.dataset.s]; state.last = "sys"; }
+    else { state.dis = [+b.dataset.d]; state.last = "dis"; }
+    recompute();
+  });
+  $("right").scrollTop = 0;
+  refresh();
+  if (fly) setTimeout(() => {
+    const d = renderer.getNodeDisplayData(String(i));
+    if (d) renderer.getCamera().animate({ x: d.x, y: d.y, ratio: Math.min(renderer.getCamera().ratio, 0.35) }, { duration: 500 });
+  }, 30);
+}
+$("close").onclick = () => select(null);
+// ---------- partner domain enrichment (hypergeometric test + Benjamini–Hochberg)
+let LF = null;
+function logFact(n) {
+  if (!LF) { LF = new Float64Array(D.N.length + 2); for (let i = 1; i < LF.length; i++) LF[i] = LF[i - 1] + Math.log(i); }
+  return LF[n];
+}
+const lchoose = (n, k) => logFact(n) - logFact(k) - logFact(n - k);
+function hyperTail(k, n, K, M) {   // P(X >= k): n draws from M proteins, K of which carry the domain
+  const lden = lchoose(M, n); let p = 0;
+  for (let x = k; x <= Math.min(n, K); x++) p += Math.exp(lchoose(K, x) + lchoose(M - K, n - x) - lden);
+  return Math.min(1, p);
+}
+function domainEnrichment(i) {
+  if (!D.domBg) {
+    D.domBg = new Uint32Array(D.domains.length); D.domAnnot = 0;
+    D.N.forEach((p) => { if (p.pf.length) D.domAnnot++; new Set(p.pf).forEach((x) => D.domBg[x]++); });
+  }
+  const partners = D.adj[i].map(([j]) => j).filter((j) => D.N[j].pf.length);
+  const n = partners.length, M = D.domAnnot, cnt = new Map();
+  partners.forEach((j) => new Set(D.N[j].pf).forEach((x) => cnt.set(x, (cnt.get(x) || 0) + 1)));
+  const rows = [...cnt].map(([x, k]) => ({ x, k, fold: (k / n) / (D.domBg[x] / M), p: hyperTail(k, n, D.domBg[x], M) }));
+  rows.sort((a, b) => a.p - b.p || b.k - a.k);
+  rows.forEach((r, idx) => (r.q = Math.min(1, (r.p * rows.length) / (idx + 1))));
+  for (let idx = rows.length - 2; idx >= 0; idx--) rows[idx].q = Math.min(rows[idx].q, rows[idx + 1].q);
+  return { n, rows };
+}
+
+function renderDomains(i) {
+  const { n, rows } = domainEnrichment(i);
+  let sig = rows.filter((r) => r.k >= 2 && r.q < 0.05).slice(0, 10), head = "";
+  if (!n) { $("domSection").innerHTML = '<span class="note">No partner has an annotated domain.</span>'; return; }
+  if (sig.length) head = `<p class="note">Pfam domains found more often among the ${n} annotated partners than among all proteins (hypergeometric test, FDR &lt; 5%). Click a row to highlight those partners.</p>`;
+  else { sig = [...rows].sort((a, b) => b.k - a.k).slice(0, 5); head = `<p class="note">No domain is significantly over-represented among the ${n} annotated partners; most frequent shown. Click to highlight.</p>`; }
+  const maxPct = Math.max(...sig.map((r) => r.k / n));
+  $("domSection").innerHTML = head + `<table class="domt"><thead><tr><th>Domain</th><th class="n">Partners</th><th class="n">× vs all</th></tr></thead><tbody>`
+    + sig.map((r) => { const d = D.domains[r.x];
+      return `<tr data-x="${r.x}" class="${state.hi && state.hi.key === "pd" + r.x ? "on" : ""}" title="${esc(d[0])} · ${esc(d[1])} · q = ${r.q.toExponential(1)}"><td>${esc(d[2])} <span class="id">${esc(d[1])}</span><div class="bar" style="width:${(100 * (r.k / n) / maxPct).toFixed(0)}%"></div></td>`
+        + `<td class="n">${r.k} <span class="id">(${Math.round(100 * r.k / n)}%)</span></td><td class="n">${r.fold >= 10 ? r.fold.toFixed(0) : r.fold.toFixed(1)}×</td></tr>`; }).join("")
+    + "</tbody></table>";
+  $("domSection").querySelector("tbody").onclick = (e) => {
+    const tr = e.target.closest("tr"); if (!tr) return;
+    const x = +tr.dataset.x;
+    setHi(i, { key: "pd" + x, label: `partners with <b>${esc(D.domains[x][2])}</b>`,
+      set: new Set(D.adj[i].filter(([j]) => D.N[j].pf.includes(x)).map(([j]) => j)) });
+  };
+}
+function setHi(i, hi) {
+  state.hi = hi && state.hi && state.hi.key === hi.key ? null : hi;
+  renderInterfaces(i); renderDomains(i); renderPartners(i); refresh();
+}
+// Domain-domain contacts: a partner is "explained" when one of our Pfam domains and one of its
+// domains are seen touching in a PDB structure (3did). Inferred interface, not proof for this pair.
+function interfaces(i) {
+  if (D.ifCache && D.ifCache.i === i) return D.ifCache.res;
+  const K = D.domains.length;
+  if (!D.ddiMap) { D.ddiMap = new Map(); for (const [a, b, n, pdb, ra, rb] of D.ddi) D.ddiMap.set(a * K + b, { n, pdb, ra, rb }); }
+  const own = [...new Set(D.N[i].pf)];
+  const perPartner = new Map();
+  for (const [j] of D.adj[i]) {
+    const pairs = [];
+    for (const x of own) for (const y of new Set(D.N[j].pf)) {
+      const inf = D.ddiMap.get(Math.min(x, y) * K + Math.max(x, y));
+      if (inf) pairs.push([x, y, inf]);
+    }
+    if (pairs.length) perPartner.set(j, pairs.sort((a, b) => b[2].n - a[2].n));
+  }
+  const perOwn = new Map();
+  for (const [j, pairs] of perPartner) for (const [x, y] of pairs) {
+    let o = perOwn.get(x);
+    if (!o) perOwn.set(x, (o = { x, partners: new Set(), targets: new Map() }));
+    o.partners.add(j); o.targets.set(y, (o.targets.get(y) || 0) + 1);
+  }
+  const res = { perPartner, own: [...perOwn.values()].sort((a, b) => b.partners.size - a.partners.size) };
+  D.ifCache = { i, res };
+  return res;
+}
+function renderInterfaces(i) {
+  const { perPartner, own } = interfaces(i), deg = D.adj[i].length;
+  if (!D.N[i].pf.length) { $("ifSection").innerHTML = '<span class="note">No Pfam domain annotated for this protein.</span>'; return; }
+  if (!perPartner.size) { $("ifSection").innerHTML = `<span class="note">None of the ${deg} interactions matches a domain pair seen in contact in a solved structure. They may use short linear motifs, disordered regions, or interfaces not yet solved.</span>`; return; }
+  const max = own[0].partners.size;
+  $("ifSection").innerHTML = `<p class="note">${perPartner.size} of ${deg} interactions (${Math.round(100 * perPartner.size / deg)}%) can be explained by a domain pair seen in contact in a PDB structure (3did). Inferred: the two domains are known to bind, not necessarily in this exact protein pair. Click a row to highlight those partners.</p>`
+    + `<table class="domt"><thead><tr><th>Own domain</th><th>Binds partner domains</th><th class="n">Partners</th></tr></thead><tbody>`
+    + own.map((o) => { const d = D.domains[o.x];
+      const tg = [...o.targets].sort((a, b) => b[1] - a[1]);
+      return `<tr data-x="${o.x}" class="${state.hi && state.hi.key === "if" + o.x ? "on" : ""}" title="${esc(d[0])} · ${esc(d[2])}"><td><b>${esc(d[1])}</b><div class="id">${esc(d[2])}</div><div class="bar" style="width:${(100 * o.partners.size / max).toFixed(0)}%"></div></td>`
+        + `<td>${tg.slice(0, 3).map(([y, c]) => `${esc(D.domains[y][1])} <span class="id">(${c})</span>`).join(", ")}${tg.length > 3 ? ` <span class="id">+${tg.length - 3} more</span>` : ""}</td>`
+        + `<td class="n">${o.partners.size}</td></tr>`; }).join("")
+    + "</tbody></table>";
+  $("ifSection").querySelector("tbody").onclick = (e) => {
+    const tr = e.target.closest("tr"); if (!tr) return;
+    const o = own.find((r) => r.x === +tr.dataset.x);
+    setHi(i, { key: "if" + o.x, label: `partners contacted via <b>${esc(D.domains[o.x][1])}</b>`, set: o.partners });
+  };
+}
+function renderPartners(i) {
+  const { perPartner } = interfaces(i);
+  const list = D.adj[i].filter(([j]) => !state.hi || state.hi.set.has(j));
+  const iface = (j) => { const pr = perPartner.get(j); if (!pr) return "";
+    const [x, y, inf] = pr[0];
+    return `<div class="id">${esc(D.domains[x][1])} ↔ ${esc(D.domains[y][1])} <span title="${inf.n} PDB structures show this domain contact">(${inf.n} structures)</span>${pr.length > 1 ? ` · +${pr.length - 1} pair${pr.length > 2 ? "s" : ""}` : ""}</div>`; };
+  $("partnersBox").innerHTML = (state.hi
+      ? `<div id="domFilter"><span>${list.length} ${state.hi.label}</span><button class="btn" id="domClear">show all</button></div>` : "")
+    + `<table id="partners">${list.map(([j, w]) => `<tr data-i="${j}"><td><b>${esc(D.N[j].name)}</b><button class="cxbtn" data-cx="${j}" title="Show a 3D structure of ${esc(D.N[i].name)} with ${esc(D.N[j].name)}">3D</button></td><td>${esc(D.N[j].desc).slice(0, 38)}${iface(j)}</td><td class="n">${(w / 1000).toFixed(2)}</td></tr>`).join("")}</table>`;
+  $("partners").onclick = (e) => {
+    if (e.target.closest("a")) return;
+    const cx = e.target.closest("[data-cx]"); if (cx) { showComplex(i, +cx.dataset.cx); return; }
+    const tr = e.target.closest("tr"); if (tr) select(+tr.dataset.i, true);
+  };
+  if ($("domClear")) $("domClear").onclick = () => setHi(i, null);
+}
+
+// ---------- 3D structure (AlphaFold DB prediction / best experimental PDB chain via PDBe)
+let molViewer = null, molLib = null, structToken = 0, structState = {};
+const pdbCache = new Map();   // UniProt accession -> PDBe best_structures list
+const PLDDT = [[90, "#0053d6", "Very high (>90)"], [70, "#65cbf3", "Confident (70–90)"], [50, "#ffdb13", "Low (50–70)"], [-1, "#ff7d45", "Very low (<50)"]];
+const plddtColor = (b) => PLDDT.find(([t]) => b > t)[1];
+$("plddtLegend").innerHTML = "pLDDT: " + PLDDT.map(([, c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join("");
+function load3Dmol() {
+  if (!molLib) molLib = new Promise((res, rej) => {
+    const sc = document.createElement("script");
+    sc.src = "https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.0/3Dmol-min.js";
+    sc.onload = () => res(window.$3Dmol);
+    sc.onerror = () => { molLib = null; rej(new Error("Could not load the 3D viewer library.")); };
+    document.head.appendChild(sc);
+  });
+  return molLib;
+}
+const setStructMsg = (m) => { $("structMsg").textContent = m || ""; $("structMsg").style.display = m ? "flex" : "none"; };
+const getJSON = (u) => fetch(u).then((r) => (r.ok ? r.json() : null)).catch(() => null);
+function renderStructTabs() {
+  $("structBox").querySelectorAll(".tabs button").forEach((b) => {
+    const has = !!structState[b.dataset.src];
+    b.disabled = !has; b.classList.toggle("on", b.dataset.src === structState.src);
+    if (b.dataset.src === "pdb") b.textContent = has ? `PDB · ${structState.pdb.pdb_id.toUpperCase()}` : "PDB (none)";
+    if (b.dataset.src === "cx") { b.textContent = has ? `Complex · ${structState.cx.label}` : "Complex"; b.title = has ? "" : "Use the “3D” button next to a partner"; }
+  });
+}
+$("structBox").querySelector(".tabs").onclick = (e) => {
+  const b = e.target.closest("button"); if (!b || b.disabled || b.dataset.src === structState.src) return;
+  if (b.dataset.src === "cx") { structState.src = "cx"; renderStructTabs(); renderComplex(structToken); } else showStructure(b.dataset.src);
+};
+async function loadStructure(p) {
+  const tok = ++structToken;
+  structState = { acc: p.acc, af: null, pdb: null, src: null };
+  renderStructTabs(); $("structInfo").textContent = ""; $("plddtLegend").hidden = true;
+  if (molViewer) { molViewer.clear(); molViewer.render(); }
+  if (!p.acc) { setStructMsg("No UniProt entry for this protein, so no structure is available."); return; }
+  setStructMsg("Looking up structures…");
+  const [af, best] = await Promise.all([
+    getJSON(`https://alphafold.ebi.ac.uk/api/prediction/${encodeURIComponent(p.acc)}`),
+    getJSON(`https://www.ebi.ac.uk/pdbe/api/mappings/best_structures/${encodeURIComponent(p.acc)}`)]);
+  if (tok !== structToken) return;
+  structState.af = Array.isArray(af) && af.length ? (af.find((e) => e.uniprotAccession === p.acc) || af[0]) : null;
+  pdbCache.set(p.acc, (best && best[p.acc]) || []);
+  structState.pdb = pdbCache.get(p.acc)[0] || null;
+  structState.src = structState.af ? "af" : structState.pdb ? "pdb" : null;
+  renderStructTabs();
+  if (!structState.src) { setStructMsg("No AlphaFold model or experimental structure found."); return; }
+  showStructure(structState.src, tok);
+}
+function styleModel(src) {
+  molViewer.setStyle({}, { cartoon: src === "af" ? { colorfunc: (a) => plddtColor(a.b) } : { color: P.s1 } });
+  if (src === "pdb") molViewer.setStyle({ hetflag: true, not: { resn: ["HOH", "WAT", "DOD"] } }, { stick: { radius: 0.18 } });
+}
+async function showStructure(src, tok = structToken) {
+  structState.src = src; renderStructTabs();
+  setStructMsg("Loading structure…"); $("structHover").textContent = "";
+  let $3D;
+  try { $3D = await load3Dmol(); } catch (e) { setStructMsg(e.message); return; }
+  if (tok !== structToken || structState.src !== src) return;
+  const acc = structState.acc;
+  let text, fmt, info;
+  try {
+    if (src === "af") {
+      const a = structState.af;
+      text = await (await fetch(a.pdbUrl)).text(); fmt = "pdb";
+      info = `AlphaFold prediction, residues ${a.uniprotStart}–${a.uniprotEnd}. Colour = per-residue confidence (pLDDT); low-confidence parts are often disordered regions. `
+        + `<a href="https://alphafold.ebi.ac.uk/entry/${esc(acc)}" target="_blank" rel="noopener">AlphaFold DB</a>`;
+    } else {
+      const b = structState.pdb, id = b.pdb_id;
+      text = await fetchChain(id, b.chain_id);
+      fmt = "cif";
+      info = `PDB ${id.toUpperCase()} chain ${esc(b.chain_id)} · ${esc(b.experimental_method)}${b.resolution ? `, ${b.resolution} Å` : ""} · covers residues ${b.unp_start}–${b.unp_end} (${Math.round(b.coverage * 100)}% of the protein). `
+        + `<a href="https://www.rcsb.org/structure/${esc(id)}" target="_blank" rel="noopener">RCSB PDB</a>`;
+    }
+  } catch (e) { if (tok === structToken) setStructMsg("Could not download the structure."); return; }
+  if (tok !== structToken || structState.src !== src) return;
+  if (!molViewer) {
+    molViewer = $3D.createViewer($("mol"), { backgroundColor: P.surface, antialias: true });
+    molViewer.setHoverDuration(60);
+  }
+  molViewer.clear();
+  const model = molViewer.addModel(text, fmt);
+  if (!model || !model.selectedAtoms({}).length) { setStructMsg("This structure file could not be displayed."); return; }
+  styleModel(src);
+  molViewer.setHoverable({}, true,
+    (a) => { $("structHover").textContent = `${a.resn} ${a.resi}` + (src === "af" ? ` · pLDDT ${a.b.toFixed(0)}` : ""); },
+    () => { $("structHover").textContent = ""; });
+  molViewer.zoomTo(); molViewer.render();
+  setStructMsg("");
+  $("structInfo").innerHTML = info;
+  $("plddtLegend").hidden = src !== "af";
+}
+
+async function fetchChain(id, chain) {
+  const url = (k) => `https://models.rcsb.org/v1/${id}/atoms?${k}=${encodeURIComponent(chain)}&encoding=cif`;
+  let text = await (await fetch(url("auth_asym_id"))).text();
+  if (!/\nATOM/.test(text)) text = await (await fetch(url("label_asym_id"))).text();
+  if (!/\nATOM/.test(text)) throw new Error(`chain ${chain} not found in ${id}`);
+  return text;
+}
+async function pdbList(acc) {
+  if (!pdbCache.has(acc)) {
+    const best = await getJSON(`https://www.ebi.ac.uk/pdbe/api/mappings/best_structures/${encodeURIComponent(acc)}`);
+    pdbCache.set(acc, (best && best[acc]) || []);
+  }
+  return pdbCache.get(acc);
+}
+const parseRange = (s) => { const m = /^([^:]+):(-?\d+)[A-Za-z]?-(-?\d+)[A-Za-z]?$/.exec(s || "");
+  return m ? { ch: m[1], from: +m[2], to: +m[3] } : s ? { ch: s.split(":")[0] } : null; };
+
+// Show the selected protein (i) with a partner (j): a solved complex of both proteins if the PDB has one,
+// otherwise the 3did example structure in which the same two domain types touch.
+async function showComplex(i, j) {
+  const p = D.N[i], q = D.N[j], tok = ++structToken;
+  $("structBox").scrollIntoView({ behavior: "smooth", block: "start" });
+  structState.cx = { label: `${p.name}–${q.name}`, parts: null };
+  structState.src = "cx"; renderStructTabs();
+  $("structInfo").textContent = ""; $("plddtLegend").hidden = true; $("structHover").textContent = "";
+  setStructMsg(`Looking for a structure of ${p.name} with ${q.name}…`);
+  const cx = structState.cx;
+  if (p.acc && q.acc) {
+    const [la, lb] = await Promise.all([pdbList(p.acc), pdbList(q.acc)]);
+    if (tok !== structToken) return;
+    const inB = new Map(); lb.forEach((r) => { if (!inB.has(r.pdb_id)) inB.set(r.pdb_id, r); });
+    const hit = la.find((r) => inB.has(r.pdb_id) && inB.get(r.pdb_id).chain_id !== r.chain_id);
+    if (hit) {
+      const h2 = inB.get(hit.pdb_id);
+      cx.kind = "real"; cx.pdb = hit.pdb_id;
+      cx.meta = `${hit.experimental_method}${hit.resolution ? `, ${hit.resolution} Å` : ""}`;
+      cx.parts = [{ ch: hit.chain_id, name: p.name }, { ch: h2.chain_id, name: q.name }];
+    }
+  }
+  if (!cx.parts) {
+    const pr = interfaces(i).perPartner.get(j);
+    if (pr) {
+      const [x, y, inf] = pr[0];
+      const [rx, ry] = x <= y ? [inf.ra, inf.rb] : [inf.rb, inf.ra];   // ddi rows are stored in (lower, higher) index order
+      cx.kind = "example"; cx.pdb = inf.pdb; cx.n = inf.n;
+      cx.parts = [{ ...parseRange(rx), name: D.domains[x][1] + " domain" }, { ...parseRange(ry), name: D.domains[y][1] + " domain" }];
+      cx.pair = [p.name, q.name];
+    }
+  }
+  if (!cx.parts) { setStructMsg(`No solved structure of ${p.name} with ${q.name}, and no known contact between their domain types.`); return; }
+  renderComplex(tok);
+}
+async function renderComplex(tok) {
+  const cx = structState.cx;
+  if (!cx || !cx.parts) return;
+  setStructMsg("Loading complex…");
+  let $3D;
+  try { $3D = await load3Dmol(); } catch (e) { setStructMsg(e.message); return; }
+  try { if (!cx.texts) cx.texts = await Promise.all(cx.parts.map((pt) => fetchChain(cx.pdb, pt.ch))); }
+  catch (e) { if (tok === structToken) setStructMsg("Could not download the complex (" + e.message + ")."); return; }
+  if (tok !== structToken || structState.src !== "cx") return;
+  if (!molViewer) { molViewer = $3D.createViewer($("mol"), { backgroundColor: P.surface, antialias: true }); molViewer.setHoverDuration(60); }
+  molViewer.clear();
+  const cols = [P.s1, P.s2];
+  const models = cx.texts.map((t) => molViewer.addModel(t, "cif"));
+  const inRange = (pt, a) => pt.from == null || (a.resi >= Math.min(pt.from, pt.to) && a.resi <= Math.max(pt.from, pt.to));
+  // interface = residues with a heavy atom within 4.5 Å of the other chain (grid hash)
+  const atoms = models.map((m) => m.selectedAtoms({}).filter((a) => a.elem !== "H"));
+  const iface = [new Set(), new Set()], C = 4.5, key = (a) => `${Math.floor(a.x / C)},${Math.floor(a.y / C)},${Math.floor(a.z / C)}`;
+  const grid = new Map(); atoms[1].forEach((a) => { const k = key(a); (grid.get(k) || grid.set(k, []).get(k)).push(a); });
+  for (const a of atoms[0]) {
+    const gx = Math.floor(a.x / C), gy = Math.floor(a.y / C), gz = Math.floor(a.z / C);
+    for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) for (let dz = -1; dz <= 1; dz++) {
+      for (const b of grid.get(`${gx + dx},${gy + dy},${gz + dz}`) || []) {
+        if ((a.x - b.x) ** 2 + (a.y - b.y) ** 2 + (a.z - b.z) ** 2 <= C * C) { iface[0].add(a.resi); iface[1].add(b.resi); }
+      }
+    }
+  }
+  models.forEach((m, k) => {
+    const pt = cx.parts[k];
+    if (cx.kind === "example" && pt.from != null) {
+      m.setStyle({}, { cartoon: { color: P.axis, opacity: 0.7 } });
+      m.setStyle({ predicate: (a) => inRange(pt, a) }, { cartoon: { color: cols[k] } });
+    } else m.setStyle({}, { cartoon: { color: cols[k] } });
+    if (iface[k].size) m.setStyle({ resi: [...iface[k]], predicate: (a) => a.elem !== "H" }, { stick: { color: cols[k], radius: 0.16 } }, true);  // true = add to cartoon
+  });
+  molViewer.setHoverable({}, true,
+    (a) => { const k = models.findIndex((m) => m === a.model || m.getID?.() === a.model); $("structHover").textContent = `${cx.parts[Math.max(0, k)].name} · ${a.resn} ${a.resi}${iface[Math.max(0, k)].has(a.resi) ? " · interface" : ""}`; },
+    () => { $("structHover").textContent = ""; });
+  molViewer.zoomTo(); molViewer.render();
+  setStructMsg("");
+  const sw = (k) => `<span class="swatch" style="background:${cols[k]}"></span>`;
+  const link = `<a href="https://www.rcsb.org/structure/${esc(cx.pdb)}" target="_blank" rel="noopener">PDB ${esc(cx.pdb.toUpperCase())}</a>`;
+  $("structInfo").innerHTML = cx.kind === "real"
+    ? `<b>Solved complex</b> ${link} (${esc(cx.meta)}): ${sw(0)}${esc(cx.parts[0].name)} chain ${esc(cx.parts[0].ch)}, ${sw(1)}${esc(cx.parts[1].name)} chain ${esc(cx.parts[1].ch)}. Sticks = interface residues (within 4.5 Å of the other protein). <span id="cxTitle"></span>`
+    : `<b>No solved structure of ${esc(cx.pair[0])} with ${esc(cx.pair[1])}.</b> Shown instead: an example ${link} in which the same domain types touch (${cx.n} such structures): ${sw(0)}${esc(cx.parts[0].name)} (type found in ${esc(cx.pair[0])}), ${sw(1)}${esc(cx.parts[1].name)} (type found in ${esc(cx.pair[1])}). The proteins in it may differ (other family members or species). Grey = rest of those chains; sticks = contact residues. <span id="cxTitle"></span>`;
+  getJSON(`https://data.rcsb.org/rest/v1/core/entry/${encodeURIComponent(cx.pdb)}`).then((e) => {
+    if (e && e.struct && $("cxTitle") && structState.cx === cx) $("cxTitle").textContent = `Entry: “${e.struct.title}”`;
+  });
+}
+
+// ---------- search: gene symbol, protein name, or synonym
+const wordStart = (text, q) => { const k = text.indexOf(q); if (k < 0) return -1; if (k === 0) return 0;
+  const re = new RegExp("(^|[^a-z0-9])" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")); return re.test(text) ? 1 : 2; };
+function searchProteins(query, limit = 12) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const hits = [];
+  D.idx.forEach((x, i) => {
+    let score = 99, via = null;
+    if (x.g === q) score = 0;
+    else if (x.g.startsWith(q)) score = 1;
+    else if (x.d === q) score = 1.5;
+    else {
+      const ws = wordStart(x.d, q);
+      if (ws >= 0) score = ws === 2 ? 5 : 2 + ws;   // 2: starts name, 3: starts a word, 5: inside a word
+      for (let k = 0; k < x.a.length; k++) {
+        const a = x.a[k];
+        const s = a === q ? 1.5 : (wordStart(a, q) === 0 ? 3.5 : wordStart(a, q) === 1 ? 4 : wordStart(a, q) === 2 ? 6 : 99);
+        if (s < score) { score = s; via = D.N[i].alias[k]; }
+      }
+      if (score === 99 && x.g.includes(q)) score = 6;
+    }
+    if (score < 99) hits.push({ i, score, via });
+  });
+  hits.sort((a, b) => a.score - b.score || a.i - b.i);  // index order = most connected first
+  return hits.slice(0, limit);
+}
+const hl = (text, q) => { const k = text.toLowerCase().indexOf(q); return k < 0 ? esc(text)
+  : esc(text.slice(0, k)) + "<mark>" + esc(text.slice(k, k + q.length)) + "</mark>" + esc(text.slice(k + q.length)); };
+let sugg = [], act = -1;
+function renderSuggest() {
+  const q = $("search").value.trim().toLowerCase();
+  const ul = $("suggest");
+  $("search").setAttribute("aria-expanded", sugg.length ? "true" : "false");
+  if (!q) { ul.innerHTML = ""; return; }
+  ul.innerHTML = sugg.length ? sugg.map((h, k) => { const p = D.N[h.i];
+    return `<li role="option" data-i="${h.i}" class="${k === act ? "act" : ""}"><span class="g">${hl(p.name, q)}</span><span class="c">${p.deg} partners</span>`
+      + `<span class="p">${hl(p.desc, q)}</span>${h.via ? `<span class="a">also: ${hl(h.via, q)}</span>` : ""}</li>`; }).join("")
+    : `<li class="none">No protein matches “${esc(q)}”</li>`;
+  const a = ul.querySelector(".act"); if (a) a.scrollIntoView({ block: "nearest" });
+}
+function pick(i) { $("search").value = D.N[i].name; sugg = []; act = -1; renderSuggest(); $("suggest").innerHTML = ""; select(i, true); }
+$("search").addEventListener("input", (e) => { if (!D) return; sugg = searchProteins(e.target.value); act = sugg.length ? 0 : -1; renderSuggest(); });
+$("search").addEventListener("keydown", (e) => {
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    if (!sugg.length) return; e.preventDefault();
+    act = (act + (e.key === "ArrowDown" ? 1 : -1) + sugg.length) % sugg.length; renderSuggest();
+  } else if (e.key === "Enter") { if (sugg[act]) pick(sugg[act].i); }
+  else if (e.key === "Escape") { sugg = []; $("suggest").innerHTML = ""; e.stopPropagation(); }
+});
+$("search").addEventListener("focus", (e) => { if (D && e.target.value) { sugg = searchProteins(e.target.value); act = 0; renderSuggest(); } });
+$("search").addEventListener("blur", () => setTimeout(() => { $("suggest").innerHTML = ""; }, 150));
+$("suggest").addEventListener("mousedown", (e) => { const li = e.target.closest("li[data-i]"); if (li) { e.preventDefault(); pick(+li.dataset.i); } });
+$("zin").onclick = () => renderer.getCamera().animatedZoom({ duration: 300 });
+$("zout").onclick = () => renderer.getCamera().animatedUnzoom({ duration: 300 });
+const resetView = () => renderer.getCamera().animate({ x: 0.5, y: 0.5, ratio: 1.15, angle: 0 }, { duration: 300 });
+$("zreset").onclick = resetView;
+
+// ---------- guided tour ("i" button; opens automatically on the first visit)
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const idxOf = (name) => D.N.findIndex((p) => p.name === name);
+async function demoProtein() {
+  const i = idxOf("TP53");
+  if (state.selected !== i) { select(i, true); await wait(700); }
+  return i;
+}
+function resetFilters() {
+  state.funcs = []; state.sys = []; state.dis = []; state.minDeg = 1; state.hi = null;
+  $("minDeg").value = 1; $("minDegV").textContent = "1"; recompute();
+}
+const TOUR = [
+  { title: "Welcome to the Human Interactome Map",
+    text: "This map shows <b>10,746 human proteins</b> and the <b>86,519 physical interactions</b> known between them (STRING database, high confidence). This short tour shows you around. It takes about a minute.",
+    before: async () => { select(null); resetFilters(); resetView(); } },
+  { el: () => $("stage"), title: "Reading the map",
+    text: "Each dot is a protein. <b>The more partners a protein has, the closer to the centre it sits</b>; the dashed rings mark 2, 5, 10 … 200 partners. Slices group proteins that interact closely and are labelled with their main function and hub protein.<br><br>Scroll to zoom, drag to move, hover a dot for its name." },
+  { el: () => document.querySelector(".search-wrap"), title: "Search by gene or protein name",
+    text: "Type a gene symbol (<i>INS</i>), a protein name (<i>insulin</i>) or a synonym (<i>p53</i>, <i>beta-actin</i>). Use ↑/↓ and Enter, or click a suggestion.",
+    before: async () => { select(null); const s = $("search"); s.value = "insulin"; s.dispatchEvent(new Event("input")); await wait(150); },
+    after: () => { $("search").value = ""; $("suggest").innerHTML = ""; } },
+  { el: () => $("right"), title: "The protein panel",
+    text: "Clicking a protein opens this panel, here for <b>TP53</b> (p53). On the map, its partners are highlighted and everything else fades. The panel lists its functions, the body systems where it is active, its disease links and a short description.",
+    before: demoProtein },
+  { el: () => $("structBox"), title: "3D structure",
+    text: "The <b>AlphaFold</b> predicted model is coloured by confidence (blue = reliable, orange = low confidence, often floppy regions). The <b>PDB</b> tab shows the best experimental structure. Drag to rotate, scroll to zoom.",
+    before: async () => { await demoProtein(); $("structBox").scrollIntoView({ block: "center" }); } },
+  { el: () => $("ifSection"), title: "How it binds its partners",
+    text: "<b>Binding interfaces</b> lists which of the protein's domains contacts which domain types on its partners, based on contacts seen in solved 3D structures. Click a row to highlight those partners.",
+    before: async () => { await demoProtein(); $("ifSection").scrollIntoView({ block: "center" }); } },
+  { el: () => $("domSection"), title: "What its partners have in common",
+    text: "Domains that occur <b>more often among the partners than among all proteins</b>, with how many partners carry them and how many times more common they are than usual. Click a row to see those partners.",
+    before: async () => { await demoProtein(); $("domSection").scrollIntoView({ block: "center" }); } },
+  { el: () => $("partnersBox"), title: "Interaction partners",
+    text: "All partners, sorted by confidence. Click a name to jump to that protein. The <b>3D</b> button shows the two proteins together.",
+    before: async () => { await demoProtein(); $("partnersBox").scrollIntoView({ block: "start" }); } },
+  { el: () => $("structBox"), title: "Two proteins together",
+    text: "Here is p53 (<b>blue</b>) bound to MDM2 (<b>orange</b>) in a solved structure (PDB 1YCR). The sticks are the residues where the two proteins touch. When no such structure exists, an example with the same domain types is shown and clearly labelled.",
+    before: async () => { const i = await demoProtein(); showComplex(i, idxOf("MDM2")); await wait(500); $("structBox").scrollIntoView({ block: "center" }); } },
+  { el: () => $("funcList"), title: "Filter by function",
+    text: "Tick one or more functions to highlight those proteins; all others fade. With up to 3 ticks, each gets its own colour (see the legend at the bottom of the map). Here: <b>Kinase</b>.",
+    before: async () => { select(null); resetFilters(); resetView(); state.funcs = [D.functions.indexOf("Kinase")]; state.last = "funcs"; recompute(); $("funcList").scrollIntoView({ block: "start" }); } },
+  { el: () => $("disList"), title: "Body systems and diseases",
+    text: "The <b>Body system</b> and <b>Disease</b> lists work the same way. Combining lists narrows the selection: here, proteins linked to <b>Cancer</b> that are also active in the <b>Immune & blood</b> system.",
+    before: async () => { select(null); resetFilters(); state.dis = [D.diseases.indexOf("Cancer")]; state.sys = [D.systems.indexOf("Immune & blood")]; state.last = "dis"; recompute(); $("disList").scrollIntoView({ block: "center" }); } },
+  { el: () => $("matches"), title: "The matching proteins",
+    text: "The matching proteins are listed here, most connected first. Click one to open it. Each list has a <b>clear</b> button, and the display options above let you hide non-matching proteins or set a minimum number of partners.",
+    before: async () => { $("matches").scrollIntoView({ block: "center" }); } },
+  { el: () => $("tourBtn"), title: "That's it!",
+    text: "Replay this tour anytime with the <b>i</b> button. Have fun exploring!",
+    before: async () => { resetFilters(); $("left").scrollTop = 0; } },
+];
+let tourI = -1;
+function startTour() { if (!D) return; tourI = -1; ["tourBlock", "tourSpot", "tourCard"].forEach((id) => ($(id).hidden = false)); goTour(0); }
+function endTour() {
+  if (TOUR[tourI] && TOUR[tourI].after) TOUR[tourI].after();
+  tourI = -1; ["tourBlock", "tourSpot", "tourCard"].forEach((id) => ($(id).hidden = true));
+  try { localStorage.setItem("tourSeen", "1"); } catch (e) {}
+  resetFilters(); select(null); $("left").scrollTop = 0; resetView();
+}
+async function goTour(k) {
+  if (k < 0 || k >= TOUR.length) return endTour();
+  if (TOUR[tourI] && TOUR[tourI].after) TOUR[tourI].after();
+  tourI = k;
+  const st = TOUR[k];
+  $("tourCard").innerHTML = `<div class="step">Step ${k + 1} of ${TOUR.length}</div><h3>${st.title}</h3><p>${st.text}</p>`
+    + `<div class="nav"><button class="btn skip" data-t="skip">Skip tour</button>${k ? '<button class="btn" data-t="back">Back</button>' : ""}`
+    + `<button class="btn primary" data-t="next">${k === TOUR.length - 1 ? "Finish" : k ? "Next" : "Start tour"}</button></div>`
+    + `<div class="dots">${TOUR.map((_, j) => `<i class="${j === k ? "on" : ""}"></i>`).join("")}</div>`;
+  if (st.before) await st.before();
+  if (tourI !== k) return;
+  await wait(350);   // let panels open and scrolling settle before measuring
+  placeTour();
+  $("tourCard").querySelector(".primary").focus();
+}
+function placeTour() {
+  if (tourI < 0) return;
+  const st = TOUR[tourI], el = st.el && st.el(), spot = $("tourSpot"), card = $("tourCard");
+  const W = innerWidth, H = innerHeight, cw = card.offsetWidth, ch = card.offsetHeight, gap = 14;
+  if (!el || !el.getClientRects().length) {
+    spot.className = "none"; Object.assign(spot.style, { left: W / 2 + "px", top: H / 2 + "px", width: "0px", height: "0px" });
+    Object.assign(card.style, { left: (W - cw) / 2 + "px", top: (H - ch) / 2 + "px" });
+    return;
+  }
+  const r = el.getBoundingClientRect(), pad = 6;
+  const t = Math.max(4, r.top - pad), l = Math.max(4, r.left - pad);
+  const b = Math.min(H - 4, r.bottom + pad), rr = Math.min(W - 4, r.right + pad);
+  spot.className = ""; Object.assign(spot.style, { left: l + "px", top: t + "px", width: rr - l + "px", height: b - t + "px" });
+  const clampY = (y) => Math.min(H - ch - 12, Math.max(12, y)), clampX = (x) => Math.min(W - cw - 12, Math.max(12, x));
+  let x, y;
+  if (rr + gap + cw < W) { x = rr + gap; y = clampY(t); }
+  else if (l - gap - cw > 0) { x = l - gap - cw; y = clampY(t); }
+  else if (b + gap + ch < H) { x = clampX(l); y = b + gap; }
+  else if (t - gap - ch > 0) { x = clampX(l); y = t - gap - ch; }
+  else { x = clampX(l + 16); y = clampY(b - ch - 16); }   // big target: card inside it
+  Object.assign(card.style, { left: x + "px", top: y + "px" });
+}
+$("tourCard").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-t]"); if (!b) return;
+  if (b.dataset.t === "next") goTour(tourI + 1); else if (b.dataset.t === "back") goTour(tourI - 1); else endTour();
+});
+$("tourBtn").onclick = startTour;
+addEventListener("resize", () => placeTour());
+addEventListener("keydown", (e) => {
+  if (tourI < 0) return;
+  if (e.key === "Escape") { e.stopImmediatePropagation(); endTour(); }
+  else if (e.key === "ArrowRight") goTour(tourI + 1);
+  else if (e.key === "ArrowLeft" && tourI > 0) goTour(tourI - 1);
+}, true);
+addEventListener("keydown", (e) => { if (e.key === "Escape") select(null); });
+</script>
+</body>
+</html>
