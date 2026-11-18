@@ -15,4 +15,6 @@ for f in UniProt2Reactome_All_Levels.txt ReactomePathways.txt ReactomePathwaysRe
   curl -fSL -o "reactome/$f" "https://reactome.org/download/current/$f"
 done
 curl -fSL -o uniprot_variants/humsavar.txt https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/variants/humsavar.txt
+mkdir -p omnipath
+curl -fSL -o omnipath/interactions.tsv "https://omnipathdb.org/interactions?genesymbols=yes&fields=sources,references&license=academic"
 echo "Done. Now run: python3 pipeline/build_data.py"

@@ -63,6 +63,9 @@ human proteome, Human Protein Atlas `proteinatlas.tsv`).
   `#tour`); CSV downloads and PNG snapshot of the map.
 - **Pathways**: Reactome pathway filter (search box), pathway list per protein, pathway enrichment for gene
   lists, and a path finder that can stay inside the selected pathway(s).
+- **Activation / inhibition**: OmniPath directed, signed interactions (4,716 of 86,519) drawn as arrows
+  (→ activation, ⊣ inhibition) on the map, as badges and filters in the partner list, with the net effect of
+  paths and effect counts for gene lists.
 - **Drugs**: approved drugs and clinical candidates per protein, loaded live from Open Targets.
 - **Disease mutations**: UniProt curated pathogenic missense variants (`docs/variants.json`, loaded on demand)
   shown on the AlphaFold structure.
@@ -83,6 +86,7 @@ Contact: leo.hammerli@epfl.ch
 - [Pfam / InterPro](https://www.ebi.ac.uk/interpro/) — CC0
 - [3did](https://3did.irbbarcelona.org) — domain–domain interactions from PDB structures
 - [Reactome](https://reactome.org) v98 — CC BY 4.0
+- [OmniPath](https://omnipathdb.org) (Türei et al., Mol Syst Biol 2021) — academic-licence set, mixed licences
 - [Open Targets Platform](https://platform.opentargets.org) 26.09 (live) — CC0
 - [AlphaMissense](https://alphamissense.hegelab.org) (Cheng et al., Science 2023), via AlphaFold DB — CC BY 4.0
 - Structures are loaded live from [AlphaFold DB](https://alphafold.ebi.ac.uk) (CC BY 4.0),

@@ -438,7 +438,34 @@ def main():
                           n["f"], n["s"], n["t"], n["about"], sid.split(".")[1], n["alias"], n["d"], n["dz"],
                           [pf_index[x] for x in n["pf"]], n["ensg"], sorted(node_pw.get(sid, [])),
                           node_pw_specific.get(sid, [])[:12], len(variants.get(n["acc"], []))])
-    edges = [[ids[a], ids[b], d["w"]] for a, b, d in G.edges(data=True)]
+    # --- signed, directed effects from OmniPath (curated signalling: activation / inhibition)
+    # per edge [a, b]: bit0 a activates b, bit1 a inhibits b, bit2 b activates a, bit3 b inhibits a
+    sid_of_acc = {nodes[sid]["acc"]: sid for sid in order if nodes[sid]["acc"]}
+    effect = defaultdict(int)
+    with open(RAW / "omnipath" / "interactions.tsv", encoding="utf-8") as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            sa, sb = sid_of_acc.get(r["source"]), sid_of_acc.get(r["target"])
+            if not sa or not sb or sa == sb or not G.has_edge(sa, sb) or r["is_directed"] not in ("True", "1"):
+                continue
+            # consensus sign when the sources agree; when they disagree both bits are set (context-dependent)
+            T = ("True", "1")
+            if r["consensus_stimulation"] in T or r["consensus_inhibition"] in T:
+                act, inh = r["consensus_stimulation"] in T, r["consensus_inhibition"] in T
+            else:
+                act, inh = r["is_stimulation"] in T, r["is_inhibition"] in T
+            if not (act or inh):
+                continue
+            ia, ib = ids[sa], ids[sb]
+            key, fwd = (min(ia, ib), max(ia, ib)), ia < ib
+            effect[key] |= (act * 1 + inh * 2) << (0 if fwd else 2)
+    edges = []
+    for a, b, d in G.edges(data=True):
+        ia, ib = ids[a], ids[b]
+        if ia > ib:
+            ia, ib = ib, ia
+        m = effect.get((ia, ib), 0)
+        edges.append([ia, ib, d["w"], m] if m else [ia, ib, d["w"]])
+    print(f"OmniPath: {len(effect)} interactions with a documented activation/inhibition")
 
     data = {
         "meta": {"source": "STRING v12.0 physical interactions; UniProt; Human Protein Atlas",

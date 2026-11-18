@@ -116,6 +116,16 @@ textarea { width: 100%; min-height: 64px; resize: vertical; padding: 7px 10px; b
 .amramp { display: inline-block; width: 120px; height: 8px; border-radius: 4px; vertical-align: middle;
   background: linear-gradient(90deg, #3987e5, #9a9a95, #e34948); margin: 0 6px; }
 #afColor { margin-top: 6px; }
+.eff { display: inline-block; font-size: 10.5px; line-height: 15px; border-radius: 8px; padding: 0 6px; border: 1px solid; margin: 1px 3px 1px 0; white-space: nowrap; }
+.eff.e1 { color: var(--s1); border-color: var(--s1); }
+.eff.e2 { color: var(--s2); border-color: var(--s2); }
+.eff.e3 { color: var(--ink-2); border-color: var(--axis); }
+.effbar { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 8px; }
+.effbar button { font: inherit; font-size: 11.5px; border-radius: 10px; padding: 1px 8px; cursor: pointer; background: none; border: 1px solid var(--border); color: var(--ink-2); }
+.effbar button.on { background: var(--accent-wash); color: var(--ink); border-color: var(--s1); }
+.effk { display: inline-block; width: 16px; text-align: center; font-weight: 700; }
+.arr.e1 { color: var(--s1); font-weight: 700; } .arr.e2 { color: var(--s2); font-weight: 700; } .arr.e3 { color: var(--ink-2); font-weight: 700; }
+.neteff { margin: 4px 0; font-size: 12.5px; }
 #varBox { margin-top: 6px; font-size: 12px; color: var(--ink-2); }
 #varBox label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
 #varList { margin-top: 4px; }
@@ -440,6 +450,20 @@ const FR = {
   "Medicines and mutations": "Médicaments et mutations",
   "<b>Drugs</b> lists approved medicines and clinical-trial candidates that act on the protein (Open Targets). On the AlphaFold structure you can also switch on <b>known disease mutations</b>, shown as magenta balls.":
     "<b>Médicaments</b> liste les médicaments approuvés et les candidats en essais cliniques qui agissent sur la protéine (Open Targets). Sur la structure AlphaFold, vous pouvez aussi afficher les <b>mutations connues causant des maladies</b>, en boules magenta.",
+  // activation / inhibition
+  "activates": "active", "inhibits": "inhibe", "activates/inhibits": "active/inhibe", "activated by": "activée par", "inhibited by": "inhibée par",
+  "activated/inhibited by": "activée/inhibée par", "binds (effect unknown)": "se lie (effet inconnu)", "it activates": "qu'elle active",
+  "it inhibits": "qu'elle inhibe", "no known effect": "effet inconnu", "partners: {x}": "partenaires : {x}",
+  "Documented effects (OmniPath):": "Effets documentés (OmniPath) :", "{a} activates {b}": "{a} active {b}", "{a} inhibits {b}": "{a} inhibe {b}",
+  "{a} activates or inhibits {b} (context-dependent)": "{a} active ou inhibe {b} (selon le contexte)",
+  "reverse direction: {a} acts on {b}": "sens inverse : {a} agit sur {b}",
+  "Overall effect unknown: {k} of {n} steps have a documented effect in this direction.": "Effet global inconnu : {k} des {n} étapes ont un effet documenté dans ce sens.",
+  "Overall effect context-dependent: at least one step can both activate and inhibit.": "Effet global selon le contexte : au moins une étape peut à la fois activer et inhiber.",
+  "Net effect: <b>{a} inhibits {b}</b> (every step documented; {k} inhibition(s) along the way).": "Effet net : <b>{a} inhibe {b}</b> (toutes les étapes documentées ; {k} inhibition(s) en chemin).",
+  "Net effect: <b>{a} activates {b}</b> (every step documented; {k} inhibition(s) along the way).": "Effet net : <b>{a} active {b}</b> (toutes les étapes documentées ; {k} inhibition(s) en chemin).",
+  "Of these links: {a} activating, {h} inhibiting, {c} context-dependent, {u} with no known effect (OmniPath).": "Parmi ces liens : {a} activateurs, {h} inhibiteurs, {c} selon le contexte, {u} sans effet connu (OmniPath).",
+  "All partners, sorted by confidence. Where it is known, a badge says whether the protein <b>activates</b> or <b>inhibits</b> the partner (or is activated / inhibited by it); on the map these links get arrows (→ activation, ⊣ inhibition). Click a name to jump to that protein. The <b>3D</b> button shows the two proteins together.":
+    "Tous les partenaires, triés par confiance. Quand c'est connu, une étiquette indique si la protéine <b>active</b> ou <b>inhibe</b> le partenaire (ou est activée / inhibée par lui) ; sur la carte ces liens ont des flèches (→ activation, ⊣ inhibition). Cliquez sur un nom pour aller à cette protéine. Le bouton <b>3D</b> montre les deux protéines ensemble.",
   // tour chrome
   "Step {k} of {n}": "Étape {k} sur {n}", "Skip tour": "Passer", "Back": "Retour", "Finish": "Terminer", "Next": "Suivant", "Start tour": "Commencer",
   // tour steps
@@ -595,9 +619,10 @@ function init(data) {
       baseColor: mix(P["ramp-lo"], P["ramp-hi"], pct), zIndex: Math.round(pct * 100) });
   });
   D.adj = D.N.map(() => []);
-  for (const [a, b, w] of D.edges) {
-    graph.addEdge(a, b, { w });
-    D.adj[a].push([b, w]); D.adj[b].push([a, w]);
+  // effect bits (OmniPath), relative to the first node: 1 activates other, 2 inhibits other, 4 activated by other, 8 inhibited by other
+  for (const [a, b, w, m = 0] of D.edges) {
+    graph.addEdge(a, b, { w, m });
+    D.adj[a].push([b, w, m]); D.adj[b].push([a, w, ((m & 3) << 2) | ((m >> 2) & 3)]);
   }
   D.adj.forEach((l) => l.sort((p, q) => q[1] - p[1] || D.N[q[0]].deg - D.N[p[0]].deg));
 
@@ -717,7 +742,60 @@ function buildLegend() {
     else h += `<div>${tr("Colour & position = number of interaction partners")}</div><div class="item">${tr("few")} <span class="ramp"></span> ${tr("many")}</div>`;
     if (state.funcs.length || state.sys.length || state.dis.length || state.pw.length || state.list) h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>${tr("Not matching")}</div>`;
   }
+  if (state.selected != null || state.path || state.list)
+    h += `<div class="item" style="margin-top:4px"><span class="effk" style="color:${P.s1}">→</span>${tr("activates")}`
+      + `<span class="effk" style="color:${P.s2};margin-left:8px">⊣</span>${tr("inhibits")}`
+      + `<span class="effk" style="color:${P["ink-2"]};margin-left:8px">—</span>${tr("binds (effect unknown)")}</div>`;
   $("legend").innerHTML = h;
+}
+
+// ---------- activation / inhibition helpers
+const effBetween = (u, v) => { const e = D.adj[u].find(([j]) => j === v); return e ? e[2] : 0; };   // relative to u
+const effKind = (m) => { const act = m & 5, inh = m & 10; return act && inh ? 3 : act ? 1 : inh ? 2 : 0; };  // 1 act, 2 inh, 3 both
+const effColor = (k) => (k === 1 ? P.s1 : k === 2 ? P.s2 : P["ink-2"]);
+function effBadges(e) {
+  const out = [], f = e & 3, b = (e >> 2) & 3;
+  if (f) out.push(`<span class="eff e${f}">${tr(f === 1 ? "activates" : f === 2 ? "inhibits" : "activates/inhibits")}</span>`);
+  if (b) out.push(`<span class="eff e${b}">${tr(b === 1 ? "activated by" : b === 2 ? "inhibited by" : "activated/inhibited by")}</span>`);
+  return out.join("");
+}
+// signed edges to annotate with arrowheads / bars on the overlay, as [from, to, bits relative to from]
+function annotatedEdges() {
+  const out = [], f = state.hovered ?? state.selected;
+  if (f != null) {
+    D.adj[f].forEach(([j, , e]) => { if (e && (!state.hi || state.hovered != null || state.hi.set.has(j))) out.push([f, j, e]); });
+  } else if (state.path) {
+    const pth = state.path.nodes;
+    for (let k = 1; k < pth.length; k++) { const e = effBetween(pth[k - 1], pth[k]); if (e) out.push([pth[k - 1], pth[k], e]); }
+  } else if (state.list && state.list.idx.size <= 200) {
+    state.list.idx.forEach((u) => D.adj[u].forEach(([j, , e]) => { if (e && j > u && state.list.idx.has(j) && match[u] && match[j]) out.push([u, j, e]); }));
+  }
+  return out.slice(0, 800);
+}
+function drawEffects(ctx) {
+  for (const [u, v, e] of annotatedEdges()) {
+    const du = renderer.getNodeDisplayData(String(u)), dv = renderer.getNodeDisplayData(String(v));
+    if (!du || !dv || du.hidden || dv.hidden) continue;
+    const pu = renderer.framedGraphToViewport(du), pv = renderer.framedGraphToViewport(dv);
+    const f = e & 3, b = (e >> 2) & 3;
+    if (f) drawHead(ctx, pu, pv, renderer.scaleSize(dv.size), f);   // u acts on v: mark at v
+    if (b) drawHead(ctx, pv, pu, renderer.scaleSize(du.size), b);   // v acts on u: mark at u
+  }
+}
+function drawHead(ctx, from, to, rTo, kind) {
+  const dx = to.x - from.x, dy = to.y - from.y, L = Math.hypot(dx, dy);
+  if (L < rTo + 14) return;
+  const ux = dx / L, uy = dy / L, tx = to.x - ux * (rTo + 2), ty = to.y - uy * (rTo + 2);
+  ctx.fillStyle = ctx.strokeStyle = effColor(kind); ctx.lineWidth = 2.5; ctx.lineCap = "round";
+  if (kind === 1 || kind === 3) {   // arrowhead = activation
+    const s = 8; ctx.beginPath(); ctx.moveTo(tx, ty);
+    ctx.lineTo(tx - ux * s - uy * s * 0.5, ty - uy * s + ux * s * 0.5); ctx.lineTo(tx - ux * s + uy * s * 0.5, ty - uy * s - ux * s * 0.5);
+    ctx.closePath(); ctx.fill();
+  }
+  if (kind === 2 || kind === 3) {   // flat bar = inhibition
+    const s = 6, bx = kind === 3 ? tx - ux * 11 : tx, by = kind === 3 ? ty - uy * 11 : ty;
+    ctx.beginPath(); ctx.moveTo(bx - uy * s, by + ux * s); ctx.lineTo(bx + uy * s, by - ux * s); ctx.stroke();
+  }
 }
 
 // ---------- rendering
@@ -766,7 +844,7 @@ function snapHover(e) {
   }
   setHover(best);
 }
-function refresh(fromHover) { if (!fromHover) computeActive(); FOCUS = focusSet(); renderer && renderer.refresh(); }
+function refresh(fromHover) { if (!fromHover) { computeActive(); if (D && D.N) buildLegend(); } FOCUS = focusSet(); renderer && renderer.refresh(); }
 
 function nodeReducer(id, a) {
   const i = +id, r = { ...a, color: nodeColor(i, a) };
@@ -793,16 +871,18 @@ function edgeReducer(id, a) {
   const [s, t] = graph.extremities(id).map(Number);
   const f = state.hovered ?? state.selected;
   if (f != null) {
-    if (s === f || t === f) return { ...a, color: P.edge, size: 0.6 + (a.w - 700) / 300, zIndex: 1 };
+    if ((s === f || t === f) && state.hi && state.hovered == null && !state.hi.set.has(s === f ? t : s)) return { ...a, hidden: true };
+    if (s === f || t === f) { const k = effKind(a.m || 0);
+      return k ? { ...a, color: effColor(k), size: 1.4 + (a.w - 700) / 300, zIndex: 2 } : { ...a, color: P.edge, size: 0.6 + (a.w - 700) / 300, zIndex: 1 }; }
     return { ...a, hidden: true };
   }
   if (state.path) {
     const k = Math.min(s, t) + "-" + Math.max(s, t);
-    if (state.path.edges.has(k)) return { ...a, color: P.s3, size: 2.5, zIndex: 2 };
+    if (state.path.edges.has(k)) { const ek = effKind(a.m || 0); return { ...a, color: ek ? effColor(ek) : P.s3, size: 2.5, zIndex: 2 }; }
     if (state.path.showAll && state.path.allEdges.has(k)) return { ...a, color: P.edge, size: 0.8, zIndex: 1 };
     return { ...a, hidden: true };
   }
-  if (state.list && match[s] && match[t]) return { ...a, color: P.edge, size: 0.9, zIndex: 1 };
+  if (state.list && match[s] && match[t]) { const ek = effKind(a.m || 0); return { ...a, color: ek ? effColor(ek) : P.edge, size: ek ? 1.4 : 0.9, zIndex: ek ? 2 : 1 }; }
   if (!$("allEdges").checked) return { ...a, hidden: true };
   if (!match[s] || !match[t]) return { ...a, hidden: true };
   return { ...a, color: P["edge-all"], size: 0.3 };
@@ -827,6 +907,7 @@ function drawOverlay() {
   }
   const ctx = cv.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, box.width, box.height);
+  drawEffects(ctx);
   if (!$("rings").checked) return;
   const c = renderer.graphToViewport({ x: 0, y: 0 });
   const px = (r) => Math.hypot(...(({ x, y }) => [x - c.x, y - c.y])(renderer.graphToViewport({ x: r, y: 0 })));
@@ -932,9 +1013,10 @@ function select(i, fly) {
   if ($("backToList")) $("backToList").onclick = () => select(null);
   $("partnerCsv").onclick = () => {
     const { perPartner } = interfaces(i);
-    downloadCSV(`${p.name}_partners.csv`, [["partner", "protein", "uniprot", "confidence", "partner_total_partners", "likely_interface", "functions", "diseases"],
-      ...D.adj[i].map(([j, w]) => { const q = D.N[j], pr = perPartner.get(j);
+    downloadCSV(`${p.name}_partners.csv`, [["partner", "protein", "uniprot", "confidence", "partner_total_partners", "likely_interface", "effect", "functions", "diseases"],
+      ...D.adj[i].map(([j, w, e]) => { const q = D.N[j], pr = perPartner.get(j);
         return [q.name, q.desc, q.acc, (w / 1000).toFixed(3), q.deg, pr ? `${D.domains[pr[0][0]][1]} - ${D.domains[pr[0][1]][1]}` : "",
+          [e & 1 && `${p.name} activates ${q.name}`, e & 2 && `${p.name} inhibits ${q.name}`, e & 4 && `${q.name} activates ${p.name}`, e & 8 && `${q.name} inhibits ${p.name}`].filter(Boolean).join("; "),
           q.f.map((x) => D.functions[x]).join("; "), q.d.map((x) => D.diseases[x]).join("; ")]; })]);
   };
   $("right").scrollTop = 0;
@@ -1041,6 +1123,13 @@ function renderInterfaces(i) {
     setHi(i, { key: "if" + o.x, label: tr("partners contacted via {x}", { x: `<b>${esc(D.domains[o.x][1])}</b>` }), set: o.partners });
   };
 }
+const EFF_CATS = [[1, "it activates"], [2, "it inhibits"], [4, "activated by"], [8, "inhibited by"], [0, "no known effect"]];
+function effSummary(i) {
+  const adj = D.adj[i]; if (!adj.some(([, , e]) => e)) return "";
+  return `<div class="note">${tr("Documented effects (OmniPath):")}</div><div class="effbar">${EFF_CATS.map(([bit, lab]) => {
+    const n = adj.filter(([, , e]) => (bit ? e & bit : !e)).length;
+    return n ? `<button data-eff="${bit}" class="${state.hi && state.hi.key === "eff" + bit ? "on" : ""}">${tr(lab)} <b>${n}</b></button>` : ""; }).join("")}</div>`;
+}
 function renderPartners(i) {
   const { perPartner } = interfaces(i);
   const list = D.adj[i].filter(([j]) => !state.hi || state.hi.set.has(j));
@@ -1049,13 +1138,19 @@ function renderPartners(i) {
     return `<div class="id">${esc(D.domains[x][1])} ↔ ${esc(D.domains[y][1])} <span title="${tr("{n} PDB structures show this domain contact", { n: inf.n })}">${tr("({n} structures)", { n: inf.n })}</span>${pr.length > 1 ? ` · ${tr(pr.length > 2 ? "+{n} pairs" : "+{n} pair", { n: pr.length - 1 })}` : ""}</div>`; };
   $("partnersBox").innerHTML = (state.hi
       ? `<div id="domFilter"><span>${list.length} ${state.hi.label}</span><button class="btn" id="domClear">${tr("show all")}</button></div>` : "")
-    + `<table id="partners">${list.map(([j, w]) => `<tr data-i="${j}"><td><b>${esc(D.N[j].name)}</b><button class="cxbtn" data-cx="${j}" title="${tr("Show a 3D structure of {a} with {b}", { a: esc(D.N[i].name), b: esc(D.N[j].name) })}">3D</button></td><td>${esc(D.N[j].desc).slice(0, 38)}${iface(j)}</td><td class="n">${(w / 1000).toFixed(2)}</td></tr>`).join("")}</table>`;
+    + effSummary(i)
+    + `<table id="partners">${list.map(([j, w, e]) => `<tr data-i="${j}"><td><b>${esc(D.N[j].name)}</b><button class="cxbtn" data-cx="${j}" title="${tr("Show a 3D structure of {a} with {b}", { a: esc(D.N[i].name), b: esc(D.N[j].name) })}">3D</button></td><td>${e ? `<div>${effBadges(e)}</div>` : ""}${esc(D.N[j].desc).slice(0, 38)}${iface(j)}</td><td class="n">${(w / 1000).toFixed(2)}</td></tr>`).join("")}</table>`;
   $("partners").onclick = (e) => {
     if (e.target.closest("a")) return;
     const cx = e.target.closest("[data-cx]"); if (cx) { showComplex(i, +cx.dataset.cx); return; }
     const tr = e.target.closest("tr"); if (tr) select(+tr.dataset.i, true);
   };
   if ($("domClear")) $("domClear").onclick = () => setHi(i, null);
+  $("partnersBox").querySelectorAll("[data-eff]").forEach((btn) => btn.onclick = () => {
+    const bit = +btn.dataset.eff, cat = EFF_CATS.find((c) => c[0] === bit);
+    setHi(i, { key: "eff" + bit, label: tr("partners: {x}", { x: `<b>${tr(cat[1])}</b>` }),
+      set: new Set(D.adj[i].filter(([, , e]) => (bit ? e & bit : !e)).map(([j]) => j)) });
+  });
 }
 
 // ---------- 3D structure (AlphaFold DB prediction / best experimental PDB chain via PDBe)
@@ -1633,6 +1728,9 @@ function showListReport() {
     <h3>${tr("How connected are they?")}</h3>
     <p class="lead">${tr("<b>{k}</b> interactions among your proteins, against <b>{e}</b> expected for random proteins with as many partners", { k: inside, e: expected.toFixed(1) })}${inside ? ` (<b>${ratio >= 10 ? ratio.toFixed(0) : ratio.toFixed(1)}×</b>, p = ${fmtP(poissonTail(inside, expected))})` : ""}${tr(". The largest connected group holds <b>{n}</b> of them.", { n: largest })}
     ${tr(ratio > 2 && inside >= 3 ? "Your proteins work together much more than chance would predict." : inside ? "They are only loosely connected." : "They do not interact directly with each other.")}</p>
+    ${inside ? (() => { let ac = 0, ih = 0, bo = 0;
+      mem.forEach((u) => D.adj[u].forEach(([j, , e]) => { if (j > u && L.idx.has(j)) { const k = effKind(e); if (k === 1) ac++; else if (k === 2) ih++; else if (k === 3) bo++; } }));
+      return `<p class="lead">${tr("Of these links: {a} activating, {h} inhibiting, {c} context-dependent, {u} with no known effect (OmniPath).", { a: ac, h: ih, c: bo, u: inside - ac - ih - bo })}</p>`; })() : ""}
     ${hubs.length && within.get(hubs[0]) ? `<h3>${tr("Most connected inside your list")}</h3><div class="kv">${hubs.filter((i) => within.get(i)).map((i) => `<span>${tr("{n} links", { n: within.get(i) })}</span><span><a href="#" data-sel="${i}">${esc(D.N[i].name)}</a> · ${esc(D.N[i].desc)}</span>`).join("")}</div>` : ""}
     ${sections.map(([t, rows, names]) => `<h3>${tr(t)}</h3>${table(rows, names)}`).join("")}
     <h3>${tr("Over-represented domains")}</h3>${table(domRows, D.domains.map((d) => d[2]))}
@@ -1670,6 +1768,23 @@ function bfs(src, allowed) {
   return d;
 }
 $("pathInPw").onchange = () => { if (state.path || ($("pathFrom").value && $("pathTo").value)) findPath(); };
+function stepArrow(u, v, w) {
+  const e = effBetween(u, v), f = e & 3, b = (e >> 2) & 3, conf = (w / 1000).toFixed(2);
+  if (f) return `<span class="arr e${f}" title="${esc(tr(f === 1 ? "{a} activates {b}" : f === 2 ? "{a} inhibits {b}" : "{a} activates or inhibits {b} (context-dependent)", { a: D.N[u].name, b: D.N[v].name }))} · ${tr("STRING confidence")} ${conf}">${f === 1 ? "→" : f === 2 ? "⊣" : "→⊣"} ${conf}</span>`;
+  if (b) return `<span class="arr" title="${esc(tr("reverse direction: {a} acts on {b}", { a: D.N[v].name, b: D.N[u].name }))} · ${tr("STRING confidence")} ${conf}">${b === 1 ? "←" : b === 2 ? "⊢" : "←⊢"} ${conf}</span>`;
+  return `<span class="arr" title="${tr("binds (effect unknown)")} · ${tr("STRING confidence")} ${conf}">— ${conf}</span>`;
+}
+function netEffect(pth) {
+  const steps = pth.slice(1).map((v, t) => effBetween(pth[t], v) & 3), a = esc(D.N[pth[0]].name), b = esc(D.N[pth[pth.length - 1]].name);
+  const known = steps.filter(Boolean).length;
+  let txt;
+  if (known < steps.length) txt = tr("Overall effect unknown: {k} of {n} steps have a documented effect in this direction.", { k: known, n: steps.length });
+  else if (steps.includes(3)) txt = tr("Overall effect context-dependent: at least one step can both activate and inhibit.");
+  else { const inh = steps.filter((x) => x === 2).length;
+    txt = inh % 2 ? tr("Net effect: <b>{a} inhibits {b}</b> (every step documented; {k} inhibition(s) along the way).", { a, b, k: inh })
+      : tr("Net effect: <b>{a} activates {b}</b> (every step documented; {k} inhibition(s) along the way).", { a, b, k: inh }); }
+  return `<p class="neteff">${txt}</p>`;
+}
 function findPath() {
   const resolve = (id) => $(id).dataset.i != null ? +$(id).dataset.i : nameToIdx($(id).value);
   const a = resolve("pathFrom"), b = resolve("pathTo");
@@ -1696,7 +1811,9 @@ function findPath() {
     if (v === b) { paths.push({ nodes: acc.slice(), score }); return; }
     for (const [j, w] of D.adj[v]) if (da[j] === da[v] + 1 && on(j)) { acc.push(j); walk(j, acc, score + Math.log(w / 1000)); acc.pop(); }
   })(a, [a], 0);
-  paths.sort((x, y) => y.score - x.score);
+  const fwdSigned = (nodes) => nodes.slice(1).filter((v, t) => effBetween(nodes[t], v) & 3).length;
+  paths.forEach((x) => (x.signed = fwdSigned(x.nodes)));
+  paths.sort((x, y) => y.signed - x.signed || y.score - x.score);   // paths with documented effects first, then most confident
   const alts = paths.slice(0, 6);
   const show = (k) => {
     const pth = alts[k].nodes;
@@ -1705,7 +1822,8 @@ function findPath() {
       showAll: $("pathAll") ? $("pathAll").checked : false };
     const w = (u, v) => (D.adj[u].find(([j]) => j === v) || [0, 0])[1];
     $("pathOut").innerHTML = `<p class="lead" style="margin:4px 0"><b>${tr(L > 1 ? "{n} steps" : "{n} step", { n: L })}</b> · ${tr(count[b] > 1 ? "{c} shortest paths (most confident shown)" : "{c} shortest path (most confident shown)", { c: count[b] > 1e6 ? count[b].toExponential(1) : num(count[b]) })}</p>`
-      + `<div class="pathline">${pth.map((v, t) => (t ? `<span class="arr" title="${tr("STRING confidence")}">→ ${(w(pth[t - 1], v) / 1000).toFixed(2)}</span>` : "") + `<button class="chip" data-sel="${v}" title="${esc(D.N[v].desc)}">${esc(D.N[v].name)}</button>`).join("")}</div>`
+      + `<div class="pathline">${pth.map((v, t) => (t ? stepArrow(pth[t - 1], v, w(pth[t - 1], v)) : "") + `<button class="chip" data-sel="${v}" title="${esc(D.N[v].desc)}">${esc(D.N[v].name)}</button>`).join("")}</div>`
+      + netEffect(pth)
       + (alts.length > 1 ? `<div class="note">${tr("Other paths:")}</div>${alts.map((x, j) => `<div class="alt ${j === k ? "on" : ""}" data-alt="${j}">${x.nodes.map((v) => esc(D.N[v].name)).join(" → ")}</div>`).join("")}` : "")
       + `<div class="row"><label><input type="checkbox" id="pathAll" ${state.path.showAll ? "checked" : ""}> ${tr("Show all {n} proteins on shortest paths", { n: all.size })}</label></div>`;
     $("pathOut").querySelectorAll("[data-sel]").forEach((el) => el.onclick = () => select(+el.dataset.sel, true));
@@ -1769,7 +1887,7 @@ const TOUR = [
     text: "Domains that occur <b>more often among the partners than among all proteins</b>, with how many partners carry them and how many times more common they are than usual. Click a row to see those partners.",
     before: async () => { await demoProtein(); $("domSection").scrollIntoView({ block: "center" }); } },
   { el: () => $("partnersBox"), title: "Interaction partners",
-    text: "All partners, sorted by confidence. Click a name to jump to that protein. The <b>3D</b> button shows the two proteins together.",
+    text: "All partners, sorted by confidence. Where it is known, a badge says whether the protein <b>activates</b> or <b>inhibits</b> the partner (or is activated / inhibited by it); on the map these links get arrows (→ activation, ⊣ inhibition). Click a name to jump to that protein. The <b>3D</b> button shows the two proteins together.",
     before: async () => { await demoProtein(); $("partnersBox").scrollIntoView({ block: "start" }); } },
   { el: () => $("drugSection"), title: "Medicines and mutations",
     text: "<b>Drugs</b> lists approved medicines and clinical-trial candidates that act on the protein (Open Targets). On the AlphaFold structure you can also switch on <b>known disease mutations</b>, shown as magenta balls.",
