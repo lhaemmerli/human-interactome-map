@@ -48,6 +48,21 @@ human proteome, Human Protein Atlas `proteinatlas.tsv`).
 - **Guided tour**: opens automatically on the first visit (remembered in the browser's localStorage) and can be
   replayed with the **i** button. Steps are defined in the `TOUR` array in `docs/index.html`.
 
+## Features
+
+- **Map**: radial layout, hubs in the centre, slices = interaction modules. Dark theme by default.
+- **Filters**: function, body system, disease; minimum number of partners.
+- **Search**: gene symbol, protein name or synonym.
+- **Protein panel**: AlphaFold / PDB 3D structure (AlphaFold model colourable by confidence or by
+  AlphaMissense mutation sensitivity), binding interfaces, partners' common domains, partner list with
+  "3D" complex viewer.
+- **Gene list analysis**: paste genes, see their connections (vs. a degree-matched expectation), enriched
+  functions / systems / diseases / domains, and candidate linker proteins.
+- **Path finder**: shortest chain of interactions between two proteins (most confident path first).
+- **Share & export**: the URL keeps the current view (`#p=TP53&d=Cancer`, `#genes=…`, `#path=INS,AKT1`,
+  `#tour`); CSV downloads and PNG snapshot of the map.
+- **Beginner's guide** (`docs/learn.html`): interactive introduction to proteins, interactions and hubs.
+
 ## Data sources and licences
 
 - [STRING](https://string-db.org) v12.0 — CC BY 4.0
@@ -55,6 +70,7 @@ human proteome, Human Protein Atlas `proteinatlas.tsv`).
 - [Human Protein Atlas](https://www.proteinatlas.org) — CC BY-SA 3.0
 - [Pfam / InterPro](https://www.ebi.ac.uk/interpro/) — CC0
 - [3did](https://3did.irbbarcelona.org) — domain–domain interactions from PDB structures
+- [AlphaMissense](https://alphamissense.hegelab.org) (Cheng et al., Science 2023), via AlphaFold DB — CC BY 4.0
 - Structures are loaded live from [AlphaFold DB](https://alphafold.ebi.ac.uk) (CC BY 4.0),
   [PDBe](https://www.ebi.ac.uk/pdbe/) and [RCSB PDB](https://www.rcsb.org)
 

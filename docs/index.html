@@ -83,18 +83,39 @@ select { font: inherit; background: var(--surface); color: var(--ink); border: 1
 #matches tr:hover td { background: var(--accent-wash); }
 #matches td.n { text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
 .search-wrap { position: relative; }
-#suggest { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20; margin: 0; padding: 4px; list-style: none;
+.suggest { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 20; margin: 0; padding: 4px; list-style: none;
   background: var(--panel); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 6px 18px rgba(0,0,0,.14); max-height: 360px; overflow-y: auto; }
-#suggest:empty { display: none; }
-#suggest li { padding: 5px 8px; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 0 8px; }
-#suggest li.act, #suggest li:hover { background: var(--accent-wash); }
-#suggest .g { font-weight: 600; color: var(--ink); }
-#suggest .p { grid-column: 1; color: var(--ink-2); font-size: 12px; }
-#suggest .a { grid-column: 1; color: var(--muted); font-size: 12px; }
-#suggest .c { grid-row: 1; grid-column: 2; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
-#suggest mark { background: none; color: var(--s1); font-weight: 600; }
-#suggest .none { color: var(--muted); cursor: default; }
+.suggest:empty { display: none; }
+.suggest li { padding: 5px 8px; border-radius: 4px; cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 0 8px; }
+.suggest li.act, .suggest li:hover { background: var(--accent-wash); }
+.suggest .g { font-weight: 600; color: var(--ink); }
+.suggest .p { grid-column: 1; color: var(--ink-2); font-size: 12px; }
+.suggest .a { grid-column: 1; color: var(--muted); font-size: 12px; }
+.suggest .c { grid-row: 1; grid-column: 2; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.suggest mark { background: none; color: var(--s1); font-weight: 600; }
+.suggest .none { color: var(--muted); cursor: default; }
 #structBox { margin-top: 12px; }
+textarea { width: 100%; min-height: 64px; resize: vertical; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--axis);
+  background: var(--surface); color: var(--ink); font: inherit; font-size: 12px; }
+.btn.primary { background: var(--s1); color: #fff; border-color: var(--s1); }
+.btn.primary:hover { filter: brightness(1.1); background: var(--s1); color: #fff; }
+.actions { display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap; }
+.mini { font-size: 11px; padding: 1px 6px; }
+.report h3 { font-size: 13px; margin: 14px 0 4px; }
+.report .big { font-size: 20px; }
+.report .lead { color: var(--ink-2); margin: 4px 0; }
+.report .chips { margin-top: 4px; }
+.pathline { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; margin: 6px 0; }
+.pathline .chip { color: var(--ink); font-weight: 600; }
+.pathline .arr { color: var(--muted); font-size: 11px; }
+.alt { cursor: pointer; padding: 3px 4px; border-radius: 4px; color: var(--ink-2); font-size: 12px; }
+.alt:hover, .alt.on { background: var(--accent-wash); color: var(--ink); }
+#toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); background: var(--ink); color: var(--panel);
+  padding: 8px 14px; border-radius: 6px; z-index: 60; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+#toast.on { opacity: 1; }
+.amramp { display: inline-block; width: 120px; height: 8px; border-radius: 4px; vertical-align: middle;
+  background: linear-gradient(90deg, #3987e5, #9a9a95, #e34948); margin: 0 6px; }
+#afColor { margin-top: 6px; }
 .domt { width: 100%; border-collapse: collapse; margin-top: 4px; }
 .domt th { text-align: left; font-weight: 500; color: var(--muted); font-size: 11px; padding: 2px 4px; border-bottom: 1px solid var(--axis); }
 .domt td { padding: 4px; border-bottom: 1px solid var(--grid); vertical-align: top; cursor: pointer; }
@@ -177,13 +198,26 @@ a { color: var(--s1); }
 <aside id="left">
   <button class="btn" id="themeBtn" title="Toggle light/dark">◐</button>
   <button class="btn" id="tourBtn" title="How to use this map (guided tour)">i</button>
+  <button class="btn" id="shareBtn" title="Copy a link to exactly this view" style="float:right;margin-left:4px">Share</button>
   <h1>Human Interactome Map</h1>
   <p class="sub" id="meta">Loading…</p>
+  <p class="sub" style="margin-top:-6px"><a href="learn.html">New to proteins? Start here →</a></p>
   <div class="search-wrap">
     <input type="search" id="search" placeholder="Gene or protein name (e.g. ACTB, insulin, p53)…" autocomplete="off"
       role="combobox" aria-controls="suggest" aria-expanded="false">
-    <ul id="suggest" role="listbox"></ul>
+    <ul class="suggest" id="suggest" role="listbox"></ul>
   </div>
+
+  <h2>Your gene list <button id="geneEx" title="Load an example: the p53 pathway">example</button></h2>
+  <textarea id="geneInput" placeholder="Paste gene or protein names: one per line, or separated by spaces or commas"></textarea>
+  <div class="actions"><button class="btn primary" id="geneGo">Analyse list</button><button class="btn" id="geneClear">clear</button></div>
+  <div id="geneMsg" class="note"></div>
+
+  <h2>Path between two proteins</h2>
+  <div class="search-wrap"><input type="search" id="pathFrom" placeholder="From… (e.g. INS)" autocomplete="off"><ul class="suggest" id="sugFrom"></ul></div>
+  <div class="search-wrap" style="margin-top:6px"><input type="search" id="pathTo" placeholder="To… (e.g. AKT1)" autocomplete="off"><ul class="suggest" id="sugTo"></ul></div>
+  <div class="actions"><button class="btn primary" id="pathGo">Find path</button><button class="btn" id="pathClear">clear</button></div>
+  <div id="pathOut"></div>
 
   <h2>Display</h2>
   <div class="row"><label><input type="checkbox" id="onlyMatch"> Hide non-matching proteins</label></div>
@@ -202,7 +236,7 @@ a { color: var(--s1); }
   <div class="checklist" id="disList"></div>
   <p class="note">Genes with disease-causing variants or cancer involvement (UniProt / Human Protein Atlas). Within a group any ticked item matches; across groups (function, system, disease) all must match.</p>
 
-  <h2><span id="matchTitle">Most connected proteins</span></h2>
+  <h2><span id="matchTitle">Most connected proteins</span> <button id="matchCsv" title="Download all matching proteins as CSV">CSV</button></h2>
   <div id="matches"></div>
   <p class="note">Data: STRING v12 physical interactions (confidence ≥ <span id="minScore"></span>), UniProt keywords, Human Protein Atlas.</p>
 </aside>
@@ -212,7 +246,7 @@ a { color: var(--s1); }
   <canvas id="overlay"></canvas>
   <div id="status"></div>
   <div id="legend"></div>
-  <div id="zoom"><button class="btn" id="zin">+</button><button class="btn" id="zout">−</button><button class="btn" id="zreset" title="Reset view">⟲</button></div>
+  <div id="zoom"><button class="btn" id="zin">+</button><button class="btn" id="zout">−</button><button class="btn" id="zreset" title="Reset view">⟲</button><button class="btn" id="pngBtn" title="Download the map as a PNG image">⤓</button></div>
 </main>
 
 <aside id="right">
@@ -221,11 +255,13 @@ a { color: var(--s1); }
   <section id="structBox" hidden>
     <div class="tabs"><button data-src="af">AlphaFold</button><button data-src="pdb">Experimental (PDB)</button><button data-src="cx">Complex</button></div>
     <div id="mol"><div id="structMsg"></div><div id="structHover"></div></div>
+    <div id="afColor" class="tabs" hidden><button data-c="plddt">Colour: confidence</button><button data-c="am">Colour: mutation sensitivity</button></div>
     <div id="plddtLegend" hidden></div>
     <div id="structInfo" class="note"></div>
   </section>
 </aside>
 <div id="tip"></div>
+<div id="toast" role="status"></div>
 <div id="tourBlock" hidden></div><div id="tourSpot" hidden></div>
 <div id="tourCard" hidden role="dialog" aria-live="polite"></div>
 
@@ -238,7 +274,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 
 let D, graph, renderer, P = {};         // data, graphology graph, sigma, palette
-const state = { funcs: [], sys: [], dis: [], last: null, hi: null, selected: null, hovered: null, minDeg: 1 };
+const state = { funcs: [], sys: [], dis: [], last: null, hi: null, list: null, path: null, selected: null, hovered: null, minDeg: 1 };
 const GROUPS = [["funcs", "f", "funcList", "functions"], ["sys", "s", "sysList", "systems"], ["dis", "d", "disList", "diseases"]];
 let match = null;                        // Uint8Array: node matches filters
 
@@ -322,8 +358,11 @@ function init(data) {
   buildLists();
   D.idx = D.N.map((p) => ({ g: p.name.toLowerCase(), d: p.desc.toLowerCase(), a: p.alias.map((x) => x.toLowerCase()) }));
   recompute();
+  const wantTour = /(^|[#&])tour(=|&|$)/.test(location.hash);
+  const fromLink = readHash();
+  hashLock = false;
   let seen = false; try { seen = !!localStorage.getItem("tourSeen"); } catch (e) {}
-  if (!seen) setTimeout(startTour, 700);   // first visit: show the guided tour
+  if ((!seen && !fromLink) || wantTour) setTimeout(startTour, 700);   // first visit: show the guided tour (not when opening a shared link)
 }
 
 // ---------- filters
@@ -368,7 +407,7 @@ function recompute() {
   let count = 0;
   for (let i = 0; i < n; i++) {
     const p = D.N[i];
-    const ok = p.deg >= state.minDeg && (!F.size || p.f.some((x) => F.has(x))) && (!S.size || p.s.some((x) => S.has(x))) && (!Z.size || p.d.some((x) => Z.has(x)));
+    const ok = p.deg >= state.minDeg && (!F.size || p.f.some((x) => F.has(x))) && (!S.size || p.s.some((x) => S.has(x))) && (!Z.size || p.d.some((x) => Z.has(x))) && (!state.list || state.list.idx.has(i));
     match[i] = ok; count += ok;
   }
   D.ck = colorKey();
@@ -381,7 +420,7 @@ function recompute() {
       lb.querySelector(".sw").style.background = ck || "transparent";
     });
   }
-  const filtered = state.funcs.length || state.sys.length || state.dis.length || state.minDeg > 1;
+  const filtered = state.funcs.length || state.sys.length || state.dis.length || state.minDeg > 1 || !!state.list;
   $("matchTitle").textContent = filtered ? `${count.toLocaleString()} matching proteins` : "Most connected proteins";
   const rows = [];
   for (let i = 0; i < n && rows.length < 300; i++) if (match[i]) rows.push(i);
@@ -390,6 +429,7 @@ function recompute() {
   $("status").textContent = filtered ? `${count.toLocaleString()} of ${n.toLocaleString()} proteins match` : `${n.toLocaleString()} proteins`;
   buildLegend();
   refresh();
+  writeHash();
 }
 $("matches").onclick = (e) => { const tr = e.target.closest("tr"); if (tr) select(+tr.dataset.i, true); };
 
@@ -400,8 +440,9 @@ function buildLegend() {
     h += D.ck.list.map((i, k) => `<div class="item"><span class="sw" style="background:${[P.s1, P.s2, P.s3][k]}"></span>${esc(names[i])}</div>`).join("");
     h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>Not matching</div>`;
   } else {
-    h += `<div>Colour & position = number of interaction partners</div><div class="item">few <span class="ramp"></span> many</div>`;
-    if (state.funcs.length || state.sys.length || state.dis.length) h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>Not matching</div>`;
+    if (state.list) h += `<div class="item"><span class="sw" style="background:${P.s2}"></span>Your gene list (${state.list.idx.size})</div>`;
+    else h += `<div>Colour & position = number of interaction partners</div><div class="item">few <span class="ramp"></span> many</div>`;
+    if (state.funcs.length || state.sys.length || state.dis.length || state.list) h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>Not matching</div>`;
   }
   $("legend").innerHTML = h;
 }
@@ -414,6 +455,7 @@ function nodeColor(i, a) {
     const k = D.ck.list.findIndex((c) => own.includes(c));
     return [P.s1, P.s2, P.s3][k] || a.baseColor;
   }
+  if (state.list) return P.s2;
   return a.baseColor;
 }
 function focusSet() {
@@ -434,8 +476,14 @@ function nodeReducer(id, a) {
     }
     else { r.zIndex = 200; r.forceLabel = FOCUS.size < 60 || i === state.selected || i === state.hovered || !!state.hi; }
     if (i === state.selected || i === state.hovered) { r.highlighted = true; r.zIndex = 300; }
+  } else if (state.path) {
+    if (state.path.nodes.includes(i)) { r.color = P.s3; r.zIndex = 300; r.forceLabel = true; r.size = Math.max(r.size, 6);
+      if (i === state.path.nodes[0] || i === state.path.nodes[state.path.nodes.length - 1]) r.highlighted = true; }
+    else if (state.path.showAll && state.path.all.has(i)) { r.color = P.s3; r.zIndex = 250; }
+    else { r.color = P.faded; r.label = ""; r.zIndex = 0; if (hide) r.hidden = true; }
   } else if (hide) r.hidden = true;
   else if (!match[i]) { r.label = ""; r.zIndex = 0; }
+  else if (state.list && state.list.idx.size <= 80) { r.forceLabel = true; r.zIndex = 250; }
   return r;
 }
 function edgeReducer(id, a) {
@@ -445,6 +493,13 @@ function edgeReducer(id, a) {
     if (s === f || t === f) return { ...a, color: P.edge, size: 0.6 + (a.w - 700) / 300, zIndex: 1 };
     return { ...a, hidden: true };
   }
+  if (state.path) {
+    const k = Math.min(s, t) + "-" + Math.max(s, t);
+    if (state.path.edges.has(k)) return { ...a, color: P.s3, size: 2.5, zIndex: 2 };
+    if (state.path.showAll && state.path.allEdges.has(k)) return { ...a, color: P.edge, size: 0.8, zIndex: 1 };
+    return { ...a, hidden: true };
+  }
+  if (state.list && match[s] && match[t]) return { ...a, color: P.edge, size: 0.9, zIndex: 1 };
   if (!$("allEdges").checked) return { ...a, hidden: true };
   if (!match[s] || !match[t]) return { ...a, hidden: true };
   return { ...a, color: P["edge-all"], size: 0.3 };
@@ -514,7 +569,10 @@ function select(i, fly) {
   state.selected = i;
   document.body.classList.toggle("no-detail", i == null);
   setTimeout(() => renderer.resize(), 0);
-  if (i == null) { refresh(); return; }
+  if (i == null) {
+    if (state.list) showListReport(); else document.body.classList.add("no-detail");
+    refresh(); writeHash(); return;
+  }
   const p = D.N[i];
   const rank = i + 1;
   const partners = D.adj[i];
@@ -522,6 +580,7 @@ function select(i, fly) {
   $("right").appendChild($("structBox"));   // keep the viewer alive while the panel is rebuilt
   const topF = Object.entries(fCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
   $("detail").innerHTML = `
+    ${state.list ? '<button class="btn mini" id="backToList">← gene list report</button>' : ""}
     <div class="big">${esc(p.name)}</div>
     <div>${esc(p.desc)}</div>
     <h2>3D structure</h2>
@@ -547,7 +606,7 @@ function select(i, fly) {
     <h2>Partners' common domains</h2>
     <div id="domSection"></div>
     ${topF.length ? `<h2>Partners' functions</h2><div class="kv">${topF.map(([f, c]) => `<span>${c}</span><span>${esc(D.functions[f])}</span>`).join("")}</div>` : ""}
-    <h2>Interaction partners (${partners.length}) <span class="note">confidence</span></h2>
+    <h2>Interaction partners (${partners.length}) <span><span class="note">confidence</span> <button id="partnerCsv" title="Download partners as CSV">CSV</button></span></h2>
     <div id="partnersBox"></div>`;
   renderInterfaces(i); renderDomains(i); renderPartners(i);
   $("structSlot").appendChild($("structBox"));
@@ -559,8 +618,17 @@ function select(i, fly) {
     else { state.dis = [+b.dataset.d]; state.last = "dis"; }
     recompute();
   });
+  if ($("backToList")) $("backToList").onclick = () => select(null);
+  $("partnerCsv").onclick = () => {
+    const { perPartner } = interfaces(i);
+    downloadCSV(`${p.name}_partners.csv`, [["partner", "protein", "uniprot", "confidence", "partner_total_partners", "likely_interface", "functions", "diseases"],
+      ...D.adj[i].map(([j, w]) => { const q = D.N[j], pr = perPartner.get(j);
+        return [q.name, q.desc, q.acc, (w / 1000).toFixed(3), q.deg, pr ? `${D.domains[pr[0][0]][1]} - ${D.domains[pr[0][1]][1]}` : "",
+          q.f.map((x) => D.functions[x]).join("; "), q.d.map((x) => D.diseases[x]).join("; ")]; })]);
+  };
   $("right").scrollTop = 0;
   refresh();
+  writeHash();
   if (fly) setTimeout(() => {
     const d = renderer.getNodeDisplayData(String(i));
     if (d) renderer.getCamera().animate({ x: d.x, y: d.y, ratio: Math.min(renderer.getCamera().ratio, 0.35) }, { duration: 500 });
@@ -684,7 +752,45 @@ let molViewer = null, molLib = null, structToken = 0, structState = {};
 const pdbCache = new Map();   // UniProt accession -> PDBe best_structures list
 const PLDDT = [[90, "#0053d6", "Very high (>90)"], [70, "#65cbf3", "Confident (70–90)"], [50, "#ffdb13", "Low (50–70)"], [-1, "#ff7d45", "Very low (<50)"]];
 const plddtColor = (b) => PLDDT.find(([t]) => b > t)[1];
-$("plddtLegend").innerHTML = "pLDDT: " + PLDDT.map(([, c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join("");
+let afColorMode = "plddt";   // "plddt" (model confidence) or "am" (AlphaMissense mutation sensitivity)
+const amCache = new Map();   // UniProt accession -> Map(residue -> mean pathogenicity)
+function amColor(v) {        // diverging: tolerated (blue) – uncertain (grey) – damaging (red)
+  if (v == null) return "#55554f";
+  return v < 0.45 ? mix("#9a9a95", "#3987e5", Math.min(1, (0.45 - v) / 0.35)) : mix("#9a9a95", "#e34948", Math.min(1, (v - 0.45) / 0.4));
+}
+const amLabel = (v) => (v < 0.34 ? "likely tolerated" : v > 0.564 ? "likely damaging" : "uncertain");
+function renderAfLegend() {
+  $("plddtLegend").innerHTML = afColorMode === "am"
+    ? `<span>Mutation sensitivity: tolerated<span class="amramp"></span>damaging</span><span class="note">Average AlphaMissense score of the 19 possible amino-acid changes at each position. Red = most changes there are predicted to harm the protein.</span>`
+    : "pLDDT: " + PLDDT.map(([, c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join("");
+}
+renderAfLegend();
+async function loadAM(acc, url) {
+  if (amCache.has(acc)) return amCache.get(acc);
+  const text = await (await fetch(url)).text();
+  const sum = new Map(), cnt = new Map();
+  for (const line of text.split(/\r?\n/).slice(1)) {
+    const [v, score] = line.split(",");
+    const m = /^[A-Z](\d+)[A-Z]$/.exec(v || ""); if (!m) continue;
+    const r = +m[1]; sum.set(r, (sum.get(r) || 0) + +score); cnt.set(r, (cnt.get(r) || 0) + 1);
+  }
+  const mean = new Map([...sum].map(([r, x]) => [r, x / cnt.get(r)]));
+  amCache.set(acc, mean); return mean;
+}
+$("afColor").onclick = async (e) => {
+  const b = e.target.closest("button"); if (!b || b.disabled || b.dataset.c === afColorMode) return;
+  afColorMode = b.dataset.c; renderAfColorTabs();
+  if (structState.src === "af") showStructure("af");
+};
+function renderAfColorTabs() {
+  $("afColor").hidden = structState.src !== "af";
+  const hasAM = !!(structState.af && structState.af.amAnnotationsUrl);
+  $("afColor").querySelectorAll("button").forEach((b) => {
+    b.classList.toggle("on", b.dataset.c === afColorMode);
+    if (b.dataset.c === "am") { b.disabled = !hasAM; b.title = hasAM ? "" : "No AlphaMissense data for this protein"; }
+  });
+  renderAfLegend();
+}
 function load3Dmol() {
   if (!molLib) molLib = new Promise((res, rej) => {
     const sc = document.createElement("script");
@@ -712,7 +818,7 @@ $("structBox").querySelector(".tabs").onclick = (e) => {
 async function loadStructure(p) {
   const tok = ++structToken;
   structState = { acc: p.acc, af: null, pdb: null, src: null };
-  renderStructTabs(); $("structInfo").textContent = ""; $("plddtLegend").hidden = true;
+  renderStructTabs(); $("structInfo").textContent = ""; $("plddtLegend").hidden = true; $("afColor").hidden = true;
   if (molViewer) { molViewer.clear(); molViewer.render(); }
   if (!p.acc) { setStructMsg("No UniProt entry for this protein, so no structure is available."); return; }
   setStructMsg("Looking up structures…");
@@ -729,11 +835,12 @@ async function loadStructure(p) {
   showStructure(structState.src, tok);
 }
 function styleModel(src) {
-  molViewer.setStyle({}, { cartoon: src === "af" ? { colorfunc: (a) => plddtColor(a.b) } : { color: P.s1 } });
+  const am = src === "af" && afColorMode === "am" ? structState.amData : null;
+  molViewer.setStyle({}, { cartoon: src === "af" ? { colorfunc: am ? (a) => amColor(am.get(a.resi)) : (a) => plddtColor(a.b) } : { color: P.s1 } });
   if (src === "pdb") molViewer.setStyle({ hetflag: true, not: { resn: ["HOH", "WAT", "DOD"] } }, { stick: { radius: 0.18 } });
 }
 async function showStructure(src, tok = structToken) {
-  structState.src = src; renderStructTabs();
+  structState.src = src; renderStructTabs(); $("afColor").hidden = src !== "af";
   setStructMsg("Loading structure…"); $("structHover").textContent = "";
   let $3D;
   try { $3D = await load3Dmol(); } catch (e) { setStructMsg(e.message); return; }
@@ -743,8 +850,12 @@ async function showStructure(src, tok = structToken) {
   try {
     if (src === "af") {
       const a = structState.af;
-      text = await (await fetch(a.pdbUrl)).text(); fmt = "pdb";
-      info = `AlphaFold prediction, residues ${a.uniprotStart}–${a.uniprotEnd}. Colour = per-residue confidence (pLDDT); low-confidence parts are often disordered regions. `
+      if (afColorMode === "am" && !a.amAnnotationsUrl) afColorMode = "plddt";
+      const [t, am] = await Promise.all([fetch(a.pdbUrl).then((r) => r.text()),
+        afColorMode === "am" ? loadAM(acc, a.amAnnotationsUrl).catch(() => null) : Promise.resolve(null)]);
+      text = t; fmt = "pdb"; structState.amData = am;
+      if (afColorMode === "am" && !am) afColorMode = "plddt";
+      info = `AlphaFold prediction, residues ${a.uniprotStart}–${a.uniprotEnd}. ` + (afColorMode === "am" ? "" : "Colour = per-residue confidence (pLDDT); low-confidence parts are often disordered regions. ")
         + `<a href="https://alphafold.ebi.ac.uk/entry/${esc(acc)}" target="_blank" rel="noopener">AlphaFold DB</a>`;
     } else {
       const b = structState.pdb, id = b.pdb_id;
@@ -764,12 +875,14 @@ async function showStructure(src, tok = structToken) {
   if (!model || !model.selectedAtoms({}).length) { setStructMsg("This structure file could not be displayed."); return; }
   styleModel(src);
   molViewer.setHoverable({}, true,
-    (a) => { $("structHover").textContent = `${a.resn} ${a.resi}` + (src === "af" ? ` · pLDDT ${a.b.toFixed(0)}` : ""); },
+    (a) => { const am = src === "af" && afColorMode === "am" && structState.amData ? structState.amData.get(a.resi) : null;
+      $("structHover").textContent = `${a.resn} ${a.resi}` + (am != null ? ` · mutation sensitivity ${am.toFixed(2)} (${amLabel(am)})` : src === "af" ? ` · pLDDT ${a.b.toFixed(0)}` : ""); },
     () => { $("structHover").textContent = ""; });
   molViewer.zoomTo(); molViewer.render();
   setStructMsg("");
-  $("structInfo").innerHTML = info;
+  $("structInfo").innerHTML = info + (src === "af" && afColorMode === "am" ? " Mutation colours: AlphaMissense (Cheng et al., 2023)." : "");
   $("plddtLegend").hidden = src !== "af";
+  renderAfColorTabs();
 }
 
 async function fetchChain(id, chain) {
@@ -796,7 +909,7 @@ async function showComplex(i, j) {
   $("structBox").scrollIntoView({ behavior: "smooth", block: "start" });
   structState.cx = { label: `${p.name}–${q.name}`, parts: null };
   structState.src = "cx"; renderStructTabs();
-  $("structInfo").textContent = ""; $("plddtLegend").hidden = true; $("structHover").textContent = "";
+  $("structInfo").textContent = ""; $("plddtLegend").hidden = true; $("afColor").hidden = true; $("structHover").textContent = "";
   setStructMsg(`Looking for a structure of ${p.name} with ${q.name}…`);
   const cx = structState.cx;
   if (p.acc && q.acc) {
@@ -902,30 +1015,271 @@ function searchProteins(query, limit = 12) {
 }
 const hl = (text, q) => { const k = text.toLowerCase().indexOf(q); return k < 0 ? esc(text)
   : esc(text.slice(0, k)) + "<mark>" + esc(text.slice(k, k + q.length)) + "</mark>" + esc(text.slice(k + q.length)); };
-let sugg = [], act = -1;
-function renderSuggest() {
-  const q = $("search").value.trim().toLowerCase();
-  const ul = $("suggest");
-  $("search").setAttribute("aria-expanded", sugg.length ? "true" : "false");
-  if (!q) { ul.innerHTML = ""; return; }
-  ul.innerHTML = sugg.length ? sugg.map((h, k) => { const p = D.N[h.i];
-    return `<li role="option" data-i="${h.i}" class="${k === act ? "act" : ""}"><span class="g">${hl(p.name, q)}</span><span class="c">${p.deg} partners</span>`
-      + `<span class="p">${hl(p.desc, q)}</span>${h.via ? `<span class="a">also: ${hl(h.via, q)}</span>` : ""}</li>`; }).join("")
-    : `<li class="none">No protein matches “${esc(q)}”</li>`;
-  const a = ul.querySelector(".act"); if (a) a.scrollIntoView({ block: "nearest" });
+// Attach a protein suggestion dropdown to an input; onPick(i) receives the chosen protein index.
+function attachSuggest(input, ul, onPick) {
+  let sugg = [], act = -1;
+  const render = () => {
+    const q = input.value.trim().toLowerCase();
+    input.setAttribute("aria-expanded", sugg.length ? "true" : "false");
+    if (!q) { ul.innerHTML = ""; return; }
+    ul.innerHTML = sugg.length ? sugg.map((h, k) => { const p = D.N[h.i];
+      return `<li role="option" data-i="${h.i}" class="${k === act ? "act" : ""}"><span class="g">${hl(p.name, q)}</span><span class="c">${p.deg} partners</span>`
+        + `<span class="p">${hl(p.desc, q)}</span>${h.via ? `<span class="a">also: ${hl(h.via, q)}</span>` : ""}</li>`; }).join("")
+      : `<li class="none">No protein matches “${esc(q)}”</li>`;
+    const el = ul.querySelector(".act"); if (el) el.scrollIntoView({ block: "nearest" });
+  };
+  const pick = (i) => { input.value = D.N[i].name; input.dataset.i = i; sugg = []; act = -1; ul.innerHTML = ""; onPick(i); };
+  input.addEventListener("input", () => { if (!D) return; delete input.dataset.i; sugg = searchProteins(input.value); act = sugg.length ? 0 : -1; render(); });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+      if (!sugg.length) return; e.preventDefault();
+      act = (act + (e.key === "ArrowDown" ? 1 : -1) + sugg.length) % sugg.length; render();
+    } else if (e.key === "Enter") { if (sugg[act]) pick(sugg[act].i); }
+    else if (e.key === "Escape") { sugg = []; ul.innerHTML = ""; e.stopPropagation(); }
+  });
+  input.addEventListener("focus", () => { if (D && input.value && input.dataset.i == null) { sugg = searchProteins(input.value); act = 0; render(); } });
+  input.addEventListener("blur", () => setTimeout(() => { ul.innerHTML = ""; }, 150));
+  ul.addEventListener("mousedown", (e) => { const li = e.target.closest("li[data-i]"); if (li) { e.preventDefault(); pick(+li.dataset.i); } });
 }
-function pick(i) { $("search").value = D.N[i].name; sugg = []; act = -1; renderSuggest(); $("suggest").innerHTML = ""; select(i, true); }
-$("search").addEventListener("input", (e) => { if (!D) return; sugg = searchProteins(e.target.value); act = sugg.length ? 0 : -1; renderSuggest(); });
-$("search").addEventListener("keydown", (e) => {
-  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-    if (!sugg.length) return; e.preventDefault();
-    act = (act + (e.key === "ArrowDown" ? 1 : -1) + sugg.length) % sugg.length; renderSuggest();
-  } else if (e.key === "Enter") { if (sugg[act]) pick(sugg[act].i); }
-  else if (e.key === "Escape") { sugg = []; $("suggest").innerHTML = ""; e.stopPropagation(); }
-});
-$("search").addEventListener("focus", (e) => { if (D && e.target.value) { sugg = searchProteins(e.target.value); act = 0; renderSuggest(); } });
-$("search").addEventListener("blur", () => setTimeout(() => { $("suggest").innerHTML = ""; }, 150));
-$("suggest").addEventListener("mousedown", (e) => { const li = e.target.closest("li[data-i]"); if (li) { e.preventDefault(); pick(+li.dataset.i); } });
+attachSuggest($("search"), $("suggest"), (i) => select(i, true));
+attachSuggest($("pathFrom"), $("sugFrom"), () => { if ($("pathTo").dataset.i != null) findPath(); else $("pathTo").focus(); });
+attachSuggest($("pathTo"), $("sugTo"), () => { if ($("pathFrom").dataset.i != null) findPath(); });
+
+// ---------- helpers: name lookup, downloads, toast
+function nameToIdx(name) {
+  if (!D.nameMap) {
+    D.nameMap = new Map(); D.aliasMap = new Map();
+    D.N.forEach((p, i) => { D.nameMap.set(p.name.toUpperCase(), i); });
+    D.N.forEach((p, i) => { [p.desc, ...p.alias].forEach((a) => { const k = a.toUpperCase(); if (!D.aliasMap.has(k)) D.aliasMap.set(k, i); }); });
+  }
+  const k = String(name).trim().toUpperCase();
+  return D.nameMap.has(k) ? D.nameMap.get(k) : D.aliasMap.has(k) ? D.aliasMap.get(k) : -1;
+}
+function downloadBlob(name, blob) {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function downloadCSV(name, rows) {
+  const cell = (v) => { const t = String(v ?? ""); return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+  downloadBlob(name, new Blob([rows.map((r) => r.map(cell).join(",")).join("\n")], { type: "text/csv" }));
+}
+let toastT;
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("on"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("on"), 2200); }
+
+$("matchCsv").onclick = () => {
+  const rows = [["gene", "protein", "uniprot", "partners", "functions", "body_systems", "diseases"]];
+  D.N.forEach((p, i) => { if (match[i]) rows.push([p.name, p.desc, p.acc, p.deg, p.f.map((x) => D.functions[x]).join("; "),
+    p.s.map((x) => D.systems[x]).join("; "), p.d.map((x) => D.diseases[x]).join("; ")]); });
+  downloadCSV("interactome_selection.csv", rows);
+};
+$("pngBtn").onclick = () => {
+  // WebGL buffers are only readable right after drawing, so render and copy in the same task
+  renderer.refresh();
+  const layers = Object.values(renderer.getCanvases()), W = layers[0].width, H = layers[0].height;
+  const out = document.createElement("canvas"); out.width = W; out.height = H;
+  const ctx = out.getContext("2d");
+  ctx.fillStyle = P.surface; ctx.fillRect(0, 0, W, H);
+  layers.forEach((c) => ctx.drawImage(c, 0, 0, W, H));
+  ctx.drawImage($("overlay"), 0, 0, W, H);
+  const dpr = W / $("graph").clientWidth;
+  ctx.font = `${12 * dpr}px system-ui, sans-serif`; ctx.fillStyle = P.muted;
+  ctx.fillText("Human Interactome Map · STRING v12 physical interactions · lhaemmerli.github.io/human-interactome-map", 12 * dpr, H - 12 * dpr);
+  out.toBlob((b) => downloadBlob("interactome_map.png", b), "image/png");
+};
+
+// ---------- shareable links: the URL hash mirrors the current view
+let hashLock = true;   // stays locked until the data is loaded and any incoming link is applied
+function writeHash() {
+  if (!D || hashLock) return;
+  const h = new URLSearchParams();
+  if (state.selected != null) h.set("p", D.N[state.selected].name);
+  if (state.funcs.length) h.set("f", state.funcs.map((x) => D.functions[x]).join("|"));
+  if (state.sys.length) h.set("s", state.sys.map((x) => D.systems[x]).join("|"));
+  if (state.dis.length) h.set("d", state.dis.map((x) => D.diseases[x]).join("|"));
+  if (state.minDeg > 1) h.set("min", state.minDeg);
+  if (state.list) h.set("genes", state.list.tokens.join(","));
+  if (state.path) h.set("path", `${D.N[state.path.nodes[0]].name},${D.N[state.path.nodes[state.path.nodes.length - 1]].name}`);
+  const str = h.toString().replace(/%7C/g, "|").replace(/%2C/g, ",");
+  history.replaceState(null, "", str ? "#" + str : location.pathname + location.search);
+}
+function readHash() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (![...h.keys()].length) return false;
+  hashLock = true;
+  const pick = (key, names) => (h.get(key) || "").split("|").map((n) => names.indexOf(n)).filter((x) => x >= 0);
+  state.funcs = pick("f", D.functions); state.sys = pick("s", D.systems); state.dis = pick("d", D.diseases);
+  state.minDeg = Math.max(1, +h.get("min") || 1); $("minDeg").value = state.minDeg; $("minDegV").textContent = state.minDeg;
+  state.list = null; state.path = null; state.selected = null;
+  if (h.get("genes")) { $("geneInput").value = h.get("genes").split(",").join("\n"); runGeneList(); }
+  recompute();
+  if (h.get("path")) {
+    const [a, b] = h.get("path").split(",").map(nameToIdx);
+    if (a >= 0 && b >= 0) { $("pathFrom").value = D.N[a].name; $("pathFrom").dataset.i = a; $("pathTo").value = D.N[b].name; $("pathTo").dataset.i = b; findPath(); }
+  }
+  const p = h.get("p") ? nameToIdx(h.get("p")) : -1;
+  if (p >= 0) select(p, true); else if (state.list) select(null);
+  hashLock = false; writeHash();
+  return true;
+}
+addEventListener("hashchange", () => { if (!hashLock && location.hash) readHash(); });
+$("shareBtn").onclick = async () => {
+  writeHash();
+  try { await navigator.clipboard.writeText(location.href); toast("Link copied: it opens exactly this view"); }
+  catch (e) { prompt("Copy this link:", location.href); }
+};
+
+// ---------- gene list analysis
+const EXAMPLE_GENES = "TP53 MDM2 MDM4 CDKN1A BAX BBC3 PMAIP1 GADD45A SESN1 RRM2B TP53I3 FAS ATM CHEK2 CDK2 CCNE1 PERP SFN ZMAT3 TNFRSF10B";
+$("geneEx").onclick = () => { $("geneInput").value = EXAMPLE_GENES.split(" ").join("\n"); runGeneList(); };
+$("geneGo").onclick = () => runGeneList();
+$("geneClear").onclick = () => { $("geneInput").value = ""; $("geneMsg").textContent = ""; state.list = null; recompute(); select(null); };
+function runGeneList() {
+  const tokens = [...new Set($("geneInput").value.split(/[\s,;]+/).map((t) => t.trim()).filter(Boolean))].slice(0, 2000);
+  if (!tokens.length) { $("geneMsg").textContent = "Paste at least one gene name."; return; }
+  const idx = new Set(), notFound = [];
+  tokens.forEach((t) => { const i = nameToIdx(t); if (i >= 0) idx.add(i); else notFound.push(t); });
+  if (!idx.size) { $("geneMsg").textContent = "None of these names is in the network."; return; }
+  state.list = { idx, tokens, notFound };
+  state.path = null; state.funcs = []; state.sys = []; state.dis = []; state.hi = null;
+  $("geneMsg").textContent = `${idx.size} of ${tokens.length} recognised. Report in the right panel.`;
+  recompute(); state.selected = null; select(null); resetView();
+}
+function enrichSet(members, field, names, top = 6) {
+  // hypergeometric over-representation vs. all network proteins, Benjamini–Hochberg corrected
+  const M = D.N.length, n = members.length, bg = new Uint32Array(names.length), cnt = new Map();
+  D.N.forEach((p) => new Set(p[field]).forEach((x) => bg[x]++));
+  members.forEach((i) => new Set(D.N[i][field]).forEach((x) => cnt.set(x, (cnt.get(x) || 0) + 1)));
+  const rows = [...cnt].map(([x, k]) => ({ x, k, fold: (k / n) / (bg[x] / M), p: hyperTail(k, n, bg[x], M) })).sort((a, b) => a.p - b.p);
+  rows.forEach((r, j) => (r.q = Math.min(1, (r.p * rows.length) / (j + 1))));
+  for (let j = rows.length - 2; j >= 0; j--) rows[j].q = Math.min(rows[j].q, rows[j + 1].q);
+  return rows.filter((r) => r.k >= 2 && r.q < 0.05 && r.fold > 1).slice(0, top);
+}
+function poissonTail(k, lam) {   // P(X >= k) for X ~ Poisson(lam), summed upward so tiny values stay accurate
+  if (k <= 0) return 1;
+  let logTerm = -lam + k * Math.log(lam) - logFact(k), p = 0;
+  for (let x = k; x < k + 2000; x++) { const t = Math.exp(logTerm); p += t; if (t < p * 1e-15) break; logTerm += Math.log(lam) - Math.log(x + 1); }
+  return Math.min(1, p);
+}
+const fmtP = (p) => (p < 1e-300 ? "< 1e-300" : p < 0.001 ? p.toExponential(0) : p.toFixed(3));
+function showListReport() {
+  const L = state.list; if (!L) return;
+  $("right").appendChild($("structBox")); $("structBox").hidden = true;
+  document.body.classList.remove("no-detail"); setTimeout(() => renderer.resize(), 0);
+  const mem = [...L.idx].sort((a, b) => a - b), n = mem.length;
+  // interactions inside the list vs. expectation for random proteins with the same numbers of partners
+  let inside = 0; const within = new Map(mem.map((i) => [i, 0]));
+  mem.forEach((i) => D.adj[i].forEach(([j]) => { if (L.idx.has(j)) { within.set(i, within.get(i) + 1); if (i < j) inside++; } }));
+  const m2 = 2 * D.edges.length, S = mem.reduce((t, i) => t + D.N[i].deg, 0), Q = mem.reduce((t, i) => t + D.N[i].deg ** 2, 0);
+  const expected = Math.max(1e-9, (S * S - Q) / (2 * m2));
+  // largest connected group
+  const seen = new Set(); let largest = 0;
+  mem.forEach((i) => { if (seen.has(i)) return; let size = 0; const st = [i]; seen.add(i);
+    while (st.length) { const v = st.pop(); size++; D.adj[v].forEach(([j]) => { if (L.idx.has(j) && !seen.has(j)) { seen.add(j); st.push(j); } }); }
+    largest = Math.max(largest, size); });
+  // linker proteins: outside the list, touching several list members more than chance
+  const touch = new Map();
+  mem.forEach((i) => D.adj[i].forEach(([j]) => { if (!L.idx.has(j)) touch.set(j, (touch.get(j) || 0) + 1); }));
+  const linkers = [...touch].filter(([, k]) => k >= 2)
+    .map(([j, k]) => ({ j, k, p: hyperTail(k, D.N[j].deg, n, D.N.length) })).sort((a, b) => a.p - b.p || b.k - a.k).slice(0, 8);
+  const sections = [["Functions", "f", D.functions], ["Body systems", "s", D.systems], ["Diseases", "d", D.diseases]]
+    .map(([t, f, names]) => [t, enrichSet(mem, f, names), names]);
+  const domRows = enrichSet(mem, "pf", D.domains.map((d) => d[2]));
+  const table = (rows, names) => rows.length
+    ? `<table class="domt"><thead><tr><th></th><th class="n">in list</th><th class="n">× vs all</th></tr></thead><tbody>${rows.map((r) =>
+      `<tr title="FDR q = ${r.q.toExponential(1)}"><td>${esc(names[r.x])}</td><td class="n">${r.k} <span class="id">(${Math.round(100 * r.k / n)}%)</span></td><td class="n">${r.fold >= 10 ? r.fold.toFixed(0) : r.fold.toFixed(1)}×</td></tr>`).join("")}</tbody></table>`
+    : '<p class="note">Nothing significantly over-represented.</p>';
+  const ratio = inside / expected;
+  const hubs = mem.slice().sort((a, b) => within.get(b) - within.get(a) || D.N[b].deg - D.N[a].deg).slice(0, 8);
+  $("detail").innerHTML = `<div class="report">
+    <div class="big">Your gene list</div>
+    <p class="lead"><b>${n}</b> of ${L.tokens.length} names found on the map${L.notFound.length ? `. Not found (no high-confidence interaction, or unknown name): ${L.notFound.map(esc).join(", ")}` : ""}.</p>
+    <div class="actions"><button class="btn mini" id="listCsv">Download report (CSV)</button></div>
+    <h3>How connected are they?</h3>
+    <p class="lead"><b>${inside}</b> interactions among your proteins, against <b>${expected.toFixed(1)}</b> expected for random proteins with as many partners${inside ? ` (<b>${ratio >= 10 ? ratio.toFixed(0) : ratio.toFixed(1)}×</b>, p = ${fmtP(poissonTail(inside, expected))})` : ""}. The largest connected group holds <b>${largest}</b> of them.
+    ${ratio > 2 && inside >= 3 ? "Your proteins work together much more than chance would predict." : inside ? "They are only loosely connected." : "They do not interact directly with each other."}</p>
+    ${hubs.length && within.get(hubs[0]) ? `<h3>Most connected inside your list</h3><div class="kv">${hubs.filter((i) => within.get(i)).map((i) => `<span>${within.get(i)} links</span><span><a href="#" data-sel="${i}">${esc(D.N[i].name)}</a> · ${esc(D.N[i].desc)}</span>`).join("")}</div>` : ""}
+    ${sections.map(([t, rows, names]) => `<h3>Over-represented ${t.toLowerCase()}</h3>${table(rows, names)}`).join("")}
+    <h3>Over-represented domains</h3>${table(domRows, D.domains.map((d) => d[2]))}
+    <h3>Linker proteins</h3>
+    ${linkers.length ? `<p class="note">Not in your list, but interacting with several of your proteins, more than expected for their number of partners. Candidates you may have missed.</p>
+      <table class="domt"><thead><tr><th>Protein</th><th class="n">links to list</th><th class="n"></th></tr></thead><tbody>${linkers.map((x) =>
+        `<tr><td><a href="#" data-sel="${x.j}"><b>${esc(D.N[x.j].name)}</b></a> <span class="id">${esc(D.N[x.j].desc).slice(0, 40)}</span></td><td class="n">${x.k} <span class="id">p ${fmtP(x.p)}</span></td><td class="n"><button class="btn mini" data-add="${x.j}" title="Add to the list">+ add</button></td></tr>`).join("")}</tbody></table>`
+      : '<p class="note">No protein outside the list touches two or more of its members.</p>'}
+    <h3>Your proteins</h3>
+    <div class="chips">${mem.map((i) => `<button class="chip" data-sel="${i}">${esc(D.N[i].name)}</button>`).join("")}</div>
+    <p class="note" style="margin-top:12px">Enrichment: hypergeometric test against all ${D.N.length.toLocaleString()} proteins on the map, false discovery rate &lt; 5%.</p>
+  </div>`;
+  $("detail").querySelectorAll("[data-sel]").forEach((el) => el.onclick = (e) => { e.preventDefault(); select(+el.dataset.sel, true); });
+  $("detail").querySelectorAll("[data-add]").forEach((el) => el.onclick = () => {
+    $("geneInput").value += "\n" + D.N[+el.dataset.add].name; runGeneList();
+  });
+  $("listCsv").onclick = () => {
+    const rows = [["section", "item", "count", "fold_enrichment", "q_value"]];
+    sections.forEach(([t, rs, names]) => rs.forEach((r) => rows.push([t, names[r.x], r.k, r.fold.toFixed(2), r.q.toExponential(2)])));
+    domRows.forEach((r) => rows.push(["Domains", D.domains[r.x][2], r.k, r.fold.toFixed(2), r.q.toExponential(2)]));
+    linkers.forEach((x) => rows.push(["Linker proteins", D.N[x.j].name, x.k, "", x.p.toExponential(2)]));
+    mem.forEach((i) => rows.push(["Your proteins", D.N[i].name, within.get(i), "", ""]));
+    L.notFound.forEach((t) => rows.push(["Not found", t, "", "", ""]));
+    downloadCSV("gene_list_report.csv", rows);
+  };
+  $("right").scrollTop = 0;
+}
+
+// ---------- shortest path between two proteins
+$("pathGo").onclick = () => findPath();
+$("pathClear").onclick = () => { state.path = null; ["pathFrom", "pathTo"].forEach((id) => { $(id).value = ""; delete $(id).dataset.i; }); $("pathOut").innerHTML = ""; refresh(); writeHash(); };
+function bfs(src) {
+  const d = new Int32Array(D.N.length).fill(-1); d[src] = 0; const q = [src];
+  for (let h = 0; h < q.length; h++) { const v = q[h]; for (const [j] of D.adj[v]) if (d[j] < 0) { d[j] = d[v] + 1; q.push(j); } }
+  return d;
+}
+function findPath() {
+  const resolve = (id) => $(id).dataset.i != null ? +$(id).dataset.i : nameToIdx($(id).value);
+  const a = resolve("pathFrom"), b = resolve("pathTo");
+  if (a < 0 || b < 0) { $("pathOut").innerHTML = '<p class="note">Pick both proteins from the suggestions.</p>'; return; }
+  if (a === b) { $("pathOut").innerHTML = '<p class="note">Pick two different proteins.</p>'; return; }
+  const da = bfs(a), db = bfs(b), L = da[b];
+  if (L < 0) { state.path = null; refresh(); $("pathOut").innerHTML = `<p class="note">No path: ${esc(D.N[a].name)} and ${esc(D.N[b].name)} are in separate parts of the network.</p>`; return; }
+  // nodes/edges on any shortest path; count paths and keep the most confident ones (sum of log scores)
+  const on = (v) => da[v] >= 0 && db[v] >= 0 && da[v] + db[v] === L;
+  const all = new Set(), allEdges = new Set();
+  const layers = Array.from({ length: L + 1 }, () => []);
+  D.N.forEach((_, v) => { if (on(v)) { all.add(v); layers[da[v]].push(v); } });
+  const count = new Float64Array(D.N.length); count[a] = 1;
+  for (let k = 1; k <= L; k++) for (const v of layers[k]) for (const [u] of D.adj[v]) if (da[u] === k - 1 && on(u)) {
+    count[v] += count[u]; allEdges.add(Math.min(u, v) + "-" + Math.max(u, v)); }
+  const paths = [];
+  (function walk(v, acc, score) {   // depth-first over the shortest-path DAG, capped
+    if (paths.length >= 400) return;
+    if (v === b) { paths.push({ nodes: acc.slice(), score }); return; }
+    for (const [j, w] of D.adj[v]) if (da[j] === da[v] + 1 && on(j)) { acc.push(j); walk(j, acc, score + Math.log(w / 1000)); acc.pop(); }
+  })(a, [a], 0);
+  paths.sort((x, y) => y.score - x.score);
+  const alts = paths.slice(0, 6);
+  const show = (k) => {
+    const pth = alts[k].nodes;
+    state.selected = null; document.body.classList.toggle("no-detail", !state.list); if (state.list) showListReport();
+    state.path = { nodes: pth, edges: new Set(pth.slice(1).map((v, t) => Math.min(v, pth[t]) + "-" + Math.max(v, pth[t]))), all, allEdges,
+      showAll: $("pathAll") ? $("pathAll").checked : false };
+    const w = (u, v) => (D.adj[u].find(([j]) => j === v) || [0, 0])[1];
+    $("pathOut").innerHTML = `<p class="lead" style="margin:4px 0"><b>${L} step${L > 1 ? "s" : ""}</b> · ${count[b] > 1e6 ? count[b].toExponential(1) : count[b].toLocaleString()} shortest path${count[b] > 1 ? "s" : ""} (most confident shown)</p>`
+      + `<div class="pathline">${pth.map((v, t) => (t ? `<span class="arr" title="STRING confidence">→ ${(w(pth[t - 1], v) / 1000).toFixed(2)}</span>` : "") + `<button class="chip" data-sel="${v}" title="${esc(D.N[v].desc)}">${esc(D.N[v].name)}</button>`).join("")}</div>`
+      + (alts.length > 1 ? `<div class="note">Other paths:</div>${alts.map((x, j) => `<div class="alt ${j === k ? "on" : ""}" data-alt="${j}">${x.nodes.map((v) => esc(D.N[v].name)).join(" → ")}</div>`).join("")}` : "")
+      + `<div class="row"><label><input type="checkbox" id="pathAll" ${state.path.showAll ? "checked" : ""}> Show all ${all.size} proteins on shortest paths</label></div>`;
+    $("pathOut").querySelectorAll("[data-sel]").forEach((el) => el.onclick = () => select(+el.dataset.sel, true));
+    $("pathOut").querySelectorAll("[data-alt]").forEach((el) => el.onclick = () => show(+el.dataset.alt));
+    $("pathAll").onchange = (e) => { state.path.showAll = e.target.checked; refresh(); };
+    refresh(); writeHash();
+    // frame the path
+    const pts = pth.map((v) => renderer.getNodeDisplayData(String(v))).filter(Boolean);
+    const xs = pts.map((d) => d.x), ys = pts.map((d) => d.y);
+    const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+    renderer.getCamera().animate({ x: (Math.max(...xs) + Math.min(...xs)) / 2, y: (Math.max(...ys) + Math.min(...ys)) / 2,
+      ratio: Math.min(1.15, Math.max(0.08, span * 1.5)) }, { duration: 500 });
+  };
+  show(0);
+}
+
 $("zin").onclick = () => renderer.getCamera().animatedZoom({ duration: 300 });
 $("zout").onclick = () => renderer.getCamera().animatedUnzoom({ duration: 300 });
 const resetView = () => renderer.getCamera().animate({ x: 0.5, y: 0.5, ratio: 1.15, angle: 0 }, { duration: 300 });
@@ -940,12 +1294,13 @@ async function demoProtein() {
   return i;
 }
 function resetFilters() {
-  state.funcs = []; state.sys = []; state.dis = []; state.minDeg = 1; state.hi = null;
+  state.funcs = []; state.sys = []; state.dis = []; state.minDeg = 1; state.hi = null; state.list = null; state.path = null;
+  $("geneInput").value = ""; $("geneMsg").textContent = ""; $("pathOut").innerHTML = "";
   $("minDeg").value = 1; $("minDegV").textContent = "1"; recompute();
 }
 const TOUR = [
   { title: "Welcome to the Human Interactome Map",
-    text: "This map shows <b>10,746 human proteins</b> and the <b>86,519 physical interactions</b> known between them (STRING database, high confidence). This short tour shows you around. It takes about a minute.",
+    text: "This map shows <b>10,746 human proteins</b> and the <b>86,519 physical interactions</b> known between them (STRING database, high confidence). This short tour shows you around. It takes about a minute.<br><br>New to proteins? The <a href=\"learn.html\">beginner's guide</a> explains the basics with interactive examples.",
     before: async () => { select(null); resetFilters(); resetView(); } },
   { el: () => $("stage"), title: "Reading the map",
     text: "Each dot is a protein. <b>The more partners a protein has, the closer to the centre it sits</b>; the dashed rings mark 2, 5, 10 … 200 partners. Slices group proteins that interact closely and are labelled with their main function and hub protein.<br><br>Scroll to zoom, drag to move, hover a dot for its name." },
@@ -953,6 +1308,12 @@ const TOUR = [
     text: "Type a gene symbol (<i>INS</i>), a protein name (<i>insulin</i>) or a synonym (<i>p53</i>, <i>beta-actin</i>). Use ↑/↓ and Enter, or click a suggestion.",
     before: async () => { select(null); const s = $("search"); s.value = "insulin"; s.dispatchEvent(new Event("input")); await wait(150); },
     after: () => { $("search").value = ""; $("suggest").innerHTML = ""; } },
+  { el: () => $("geneInput"), title: "Analyse your own gene list",
+    text: "Paste genes from an experiment or a paper (or click <b>example</b>). They light up on the map, and the right panel tells you how connected they are and which functions, diseases and domains they share. It also suggests <b>linker proteins</b> you may have missed.",
+    before: async () => { select(null); $("geneInput").scrollIntoView({ block: "center" }); } },
+  { el: () => $("pathFrom").closest(".search-wrap"), title: "Path between two proteins",
+    text: "Pick two proteins to see the shortest chain of interactions linking them, drawn on the map, with the confidence of each link and alternative routes.",
+    before: async () => { $("pathFrom").scrollIntoView({ block: "center" }); } },
   { el: () => $("right"), title: "The protein panel",
     text: "Clicking a protein opens this panel, here for <b>TP53</b> (p53). On the map, its partners are highlighted and everything else fades. The panel lists its functions, the body systems where it is active, its disease links and a short description.",
     before: demoProtein },
@@ -981,7 +1342,7 @@ const TOUR = [
     text: "The matching proteins are listed here, most connected first. Click one to open it. Each list has a <b>clear</b> button, and the display options above let you hide non-matching proteins or set a minimum number of partners.",
     before: async () => { $("matches").scrollIntoView({ block: "center" }); } },
   { el: () => $("tourBtn"), title: "That's it!",
-    text: "Replay this tour anytime with the <b>i</b> button. Have fun exploring!",
+    text: "Replay this tour anytime with the <b>i</b> button. Use <b>Share</b> to copy a link to exactly what you see, and <b>⤓</b> (bottom right) to save the map as an image. Have fun exploring!",
     before: async () => { resetFilters(); $("left").scrollTop = 0; } },
 ];
 let tourI = -1;
