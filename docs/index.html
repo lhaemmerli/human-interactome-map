@@ -196,49 +196,51 @@ a { color: var(--s1); }
 </head>
 <body class="no-detail">
 <aside id="left">
-  <button class="btn" id="themeBtn" title="Toggle light/dark">◐</button>
-  <button class="btn" id="tourBtn" title="How to use this map (guided tour)">i</button>
-  <button class="btn" id="shareBtn" title="Copy a link to exactly this view" style="float:right;margin-left:4px">Share</button>
-  <h1>Human Interactome Map</h1>
-  <p class="sub" id="meta">Loading…</p>
-  <p class="sub" style="margin-top:-6px"><a href="learn.html">New to proteins? Start here →</a></p>
+  <button class="btn" id="themeBtn" title="Toggle light/dark" data-tt>◐</button>
+  <button class="btn" id="tourBtn" title="How to use this map (guided tour)" data-tt>i</button>
+  <button class="btn" id="shareBtn" title="Copy a link to exactly this view" data-tt data-t style="float:right;margin-left:4px">Share</button>
+  <button class="btn" id="langBtn" title="Français / English" style="float:right;margin-left:4px">FR</button>
+  <h1 data-t>Human Interactome Map</h1>
+  <p class="sub" id="meta" data-t>Loading…</p>
+  <p class="sub" style="margin-top:-6px"><a href="learn.html" data-t>New to proteins? Start here →</a></p>
   <div class="search-wrap">
-    <input type="search" id="search" placeholder="Gene or protein name (e.g. ACTB, insulin, p53)…" autocomplete="off"
+    <input type="search" id="search" placeholder="Gene or protein name (e.g. ACTB, insulin, p53)…" data-tp autocomplete="off"
       role="combobox" aria-controls="suggest" aria-expanded="false">
     <ul class="suggest" id="suggest" role="listbox"></ul>
   </div>
 
-  <h2>Your gene list <button id="geneEx" title="Load an example: the p53 pathway">example</button></h2>
-  <textarea id="geneInput" placeholder="Paste gene or protein names: one per line, or separated by spaces or commas"></textarea>
-  <div class="actions"><button class="btn primary" id="geneGo">Analyse list</button><button class="btn" id="geneClear">clear</button></div>
+  <h2><span data-t>Your gene list</span> <button id="geneEx" title="Load an example: the p53 pathway" data-tt data-t>example</button></h2>
+  <textarea id="geneInput" placeholder="Paste gene or protein names: one per line, or separated by spaces or commas" data-tp></textarea>
+  <div class="actions"><button class="btn primary" id="geneGo" data-t>Analyse list</button><button class="btn" id="geneClear" data-t>clear</button></div>
   <div id="geneMsg" class="note"></div>
 
-  <h2>Path between two proteins</h2>
-  <div class="search-wrap"><input type="search" id="pathFrom" placeholder="From… (e.g. INS)" autocomplete="off"><ul class="suggest" id="sugFrom"></ul></div>
-  <div class="search-wrap" style="margin-top:6px"><input type="search" id="pathTo" placeholder="To… (e.g. AKT1)" autocomplete="off"><ul class="suggest" id="sugTo"></ul></div>
-  <div class="actions"><button class="btn primary" id="pathGo">Find path</button><button class="btn" id="pathClear">clear</button></div>
+  <h2 data-t>Path between two proteins</h2>
+  <div class="search-wrap"><input type="search" id="pathFrom" placeholder="From… (e.g. INS)" data-tp autocomplete="off"><ul class="suggest" id="sugFrom"></ul></div>
+  <div class="search-wrap" style="margin-top:6px"><input type="search" id="pathTo" placeholder="To… (e.g. AKT1)" data-tp autocomplete="off"><ul class="suggest" id="sugTo"></ul></div>
+  <div class="actions"><button class="btn primary" id="pathGo" data-t>Find path</button><button class="btn" id="pathClear" data-t>clear</button></div>
   <div id="pathOut"></div>
 
-  <h2>Display</h2>
-  <div class="row"><label><input type="checkbox" id="onlyMatch"> Hide non-matching proteins</label></div>
-  <div class="row"><label><input type="checkbox" id="allEdges"> Show all interactions (slow)</label></div>
-  <div class="row"><label><input type="checkbox" id="rings" checked> Connectivity rings</label></div>
-  <div class="row">Min. partners <input type="range" id="minDeg" min="1" max="100" value="1" style="flex:1"><span id="minDegV">1</span></div>
+  <h2 data-t>Display</h2>
+  <div class="row"><label><input type="checkbox" id="onlyMatch"> <span data-t>Hide non-matching proteins</span></label></div>
+  <div class="row"><label><input type="checkbox" id="allEdges"> <span data-t>Show all interactions (slow)</span></label></div>
+  <div class="row"><label><input type="checkbox" id="rings" checked> <span data-t>Connectivity rings</span></label></div>
+  <div class="row"><span data-t>Min. partners</span> <input type="range" id="minDeg" min="1" max="100" value="1" style="flex:1"><span id="minDegV">1</span></div>
 
-  <h2>Function <button id="clearF">clear</button></h2>
+  <h2><span data-t>Function</span> <button id="clearF" data-t>clear</button></h2>
   <div class="checklist" id="funcList"></div>
 
-  <h2>Body system <button id="clearS">clear</button></h2>
+  <h2><span data-t>Body system</span> <button id="clearS" data-t>clear</button></h2>
   <div class="checklist" id="sysList"></div>
-  <p class="note">Body system = tissues where the gene is enriched (Human Protein Atlas).</p>
+  <p class="note" data-t>Body system = tissues where the gene is enriched (Human Protein Atlas).</p>
 
-  <h2>Disease <button id="clearD">clear</button></h2>
+  <h2><span data-t>Disease</span> <button id="clearD" data-t>clear</button></h2>
   <div class="checklist" id="disList"></div>
-  <p class="note">Genes with disease-causing variants or cancer involvement (UniProt / Human Protein Atlas). Within a group any ticked item matches; across groups (function, system, disease) all must match.</p>
+  <p class="note" data-t>Genes with disease-causing variants or cancer involvement (UniProt / Human Protein Atlas). Within a group any ticked item matches; across groups (function, system, disease) all must match.</p>
 
-  <h2><span id="matchTitle">Most connected proteins</span> <button id="matchCsv" title="Download all matching proteins as CSV">CSV</button></h2>
+  <h2><span id="matchTitle">Most connected proteins</span> <button id="matchCsv" title="Download all matching proteins as CSV" data-tt>CSV</button></h2>
   <div id="matches"></div>
-  <p class="note">Data: STRING v12 physical interactions (confidence ≥ <span id="minScore"></span>), UniProt keywords, Human Protein Atlas.</p>
+  <p class="note" data-t>Data: STRING v12 physical interactions (confidence ≥ <span id="minScore"></span>), UniProt keywords, Human Protein Atlas.</p>
+  <p class="note contact"><span data-t>Contact:</span> <a id="contactLink" href="#">…</a></p>
 </aside>
 
 <main id="stage">
@@ -246,7 +248,7 @@ a { color: var(--s1); }
   <canvas id="overlay"></canvas>
   <div id="status"></div>
   <div id="legend"></div>
-  <div id="zoom"><button class="btn" id="zin">+</button><button class="btn" id="zout">−</button><button class="btn" id="zreset" title="Reset view">⟲</button><button class="btn" id="pngBtn" title="Download the map as a PNG image">⤓</button></div>
+  <div id="zoom"><button class="btn" id="zin">+</button><button class="btn" id="zout">−</button><button class="btn" id="zreset" title="Reset view" data-tt>⟲</button><button class="btn" id="pngBtn" title="Download the map as a PNG image" data-tt>⤓</button></div>
 </main>
 
 <aside id="right">
@@ -255,7 +257,7 @@ a { color: var(--s1); }
   <section id="structBox" hidden>
     <div class="tabs"><button data-src="af">AlphaFold</button><button data-src="pdb">Experimental (PDB)</button><button data-src="cx">Complex</button></div>
     <div id="mol"><div id="structMsg"></div><div id="structHover"></div></div>
-    <div id="afColor" class="tabs" hidden><button data-c="plddt">Colour: confidence</button><button data-c="am">Colour: mutation sensitivity</button></div>
+    <div id="afColor" class="tabs" hidden><button data-c="plddt" data-t>Colour: confidence</button><button data-c="am" data-t>Colour: mutation sensitivity</button></div>
     <div id="plddtLegend" hidden></div>
     <div id="structInfo" class="note"></div>
   </section>
@@ -272,6 +274,220 @@ a { color: var(--s1); }
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+// ---------- language (English / French). ?lang=fr|en wins, then the saved choice, then the browser language.
+const LANG = (() => {
+  const q = new URLSearchParams(location.search).get("lang");
+  if (q === "fr" || q === "en") { try { localStorage.setItem("lang", q); } catch (e) {} return q; }
+  let saved = null; try { saved = localStorage.getItem("lang"); } catch (e) {}
+  if (saved === "fr" || saved === "en") return saved;
+  return (navigator.language || "").toLowerCase().startsWith("fr") ? "fr" : "en";
+})();
+const FR = {
+  // static interface
+  "Toggle light/dark": "Mode clair / sombre", "How to use this map (guided tour)": "Comment utiliser la carte (visite guidée)",
+  "Copy a link to exactly this view": "Copier un lien vers exactement cette vue", "Share": "Partager",
+  "Human Interactome Map": "Carte de l'interactome humain", "Loading…": "Chargement…",
+  "New to proteins? Start here →": "Débutant ? Commencez ici →",
+  "Gene or protein name (e.g. ACTB, insulin, p53)…": "Nom de gène ou de protéine (ex. ACTB, insulin, p53)…",
+  "Your gene list": "Votre liste de gènes", "Load an example: the p53 pathway": "Charger un exemple : la voie p53", "example": "exemple",
+  "Paste gene or protein names: one per line, or separated by spaces or commas": "Collez des noms de gènes ou de protéines : un par ligne, ou séparés par des espaces ou des virgules",
+  "Analyse list": "Analyser la liste", "clear": "effacer",
+  "Path between two proteins": "Chemin entre deux protéines", "From… (e.g. INS)": "De… (ex. INS)", "To… (e.g. AKT1)": "À… (ex. AKT1)", "Find path": "Trouver le chemin",
+  "Display": "Affichage", "Hide non-matching proteins": "Masquer les protéines non sélectionnées", "Show all interactions (slow)": "Afficher toutes les interactions (lent)",
+  "Connectivity rings": "Anneaux de connectivité", "Min. partners": "Partenaires min.",
+  "Function": "Fonction", "Body system": "Système du corps", "Disease": "Maladie",
+  "Body system = tissues where the gene is enriched (Human Protein Atlas).": "Système du corps = tissus où le gène est particulièrement actif (Human Protein Atlas).",
+  "Genes with disease-causing variants or cancer involvement (UniProt / Human Protein Atlas). Within a group any ticked item matches; across groups (function, system, disease) all must match.":
+    "Gènes dont des variants causent une maladie, ou impliqués dans le cancer (UniProt / Human Protein Atlas). Dans un groupe, n'importe quel élément coché suffit ; entre groupes (fonction, système, maladie), tous doivent correspondre.",
+  "Download all matching proteins as CSV": "Télécharger les protéines sélectionnées (CSV)",
+  "Data: STRING v12 physical interactions (confidence ≥ <span id=\"minScore\"></span>), UniProt keywords, Human Protein Atlas.":
+    "Données : interactions physiques STRING v12 (confiance ≥ <span id=\"minScore\"></span>), mots-clés UniProt, Human Protein Atlas.",
+  "Contact:": "Contact :", "Reset view": "Réinitialiser la vue", "Download the map as a PNG image": "Télécharger la carte en image PNG",
+  "Colour: confidence": "Couleur : confiance", "Colour: mutation sensitivity": "Couleur : sensibilité aux mutations",
+  // map, filters, legend
+  "{p} proteins · {i} interactions. Most connected proteins sit at the centre.": "{p} protéines · {i} interactions. Les protéines les plus connectées sont au centre.",
+  "{n} matching proteins": "{n} protéines sélectionnées", "Most connected proteins": "Protéines les plus connectées",
+  "Top 300 by partners shown.": "Les 300 premières (par nombre de partenaires) sont affichées.",
+  "{n} of {total} proteins match": "{n} protéines sur {total} sélectionnées", "{total} proteins": "{total} protéines",
+  "Not matching": "Non sélectionnées", "Your gene list ({n})": "Votre liste de gènes ({n})",
+  "Colour & position = number of interaction partners": "Couleur & position = nombre de partenaires d'interaction", "few": "peu", "many": "beaucoup",
+  "≥ {d} partners": "≥ {d} partenaires", "{n} partners": "{n} partenaires", "Disease: ": "Maladie : ", "inherited disease": "maladie héréditaire",
+  // protein panel
+  "← gene list report": "← rapport de la liste", "3D structure": "Structure 3D", "Connectivity": "Connectivité", "Partners": "Partenaires",
+  "Rank": "Rang", "#{rank} of {N} (top {pct}%)": "n° {rank} sur {N} (top {pct} %)", "Module": "Module", "hub": "pivot",
+  "No category assigned": "Aucune catégorie", "No tissue data": "Pas de données tissulaires", "Enriched in: ": "Enrichi dans : ",
+  "Disease involvement": "Maladies associées", "No known disease association": "Aucune maladie connue", "Specific: ": "En détail : ",
+  "About": "À propos <span class=\"note\">(texte UniProt, en anglais)</span>",
+  "Protein domains (Pfam)": "Domaines protéiques (Pfam)", "No Pfam domain annotated": "Aucun domaine Pfam annoté",
+  "Binding interfaces": "Interfaces de liaison", "domain–domain contacts": "contacts domaine–domaine",
+  "Partners' common domains": "Domaines communs des partenaires", "Partners' functions": "Fonctions des partenaires",
+  "Interaction partners ({n})": "Partenaires d'interaction ({n})", "confidence": "confiance", "Download partners as CSV": "Télécharger les partenaires (CSV)",
+  "No partner has an annotated domain.": "Aucun partenaire n'a de domaine annoté.",
+  "Pfam domains found more often among the {n} annotated partners than among all proteins (hypergeometric test, FDR &lt; 5%). Click a row to highlight those partners.":
+    "Domaines Pfam plus fréquents parmi les {n} partenaires annotés que parmi l'ensemble des protéines (test hypergéométrique, FDR &lt; 5 %). Cliquez sur une ligne pour mettre ces partenaires en évidence.",
+  "No domain is significantly over-represented among the {n} annotated partners; most frequent shown. Click to highlight.":
+    "Aucun domaine n'est significativement sur-représenté parmi les {n} partenaires annotés ; les plus fréquents sont affichés. Cliquez pour les mettre en évidence.",
+  "Domain": "Domaine", "× vs all": "× vs tous", "partners with {x}": "partenaires avec {x}",
+  "No Pfam domain annotated for this protein.": "Aucun domaine Pfam annoté pour cette protéine.",
+  "None of the {n} interactions matches a domain pair seen in contact in a solved structure. They may use short linear motifs, disordered regions, or interfaces not yet solved.":
+    "Aucune des {n} interactions ne correspond à une paire de domaines vue en contact dans une structure résolue. Elles passent peut-être par de courts motifs, des régions désordonnées ou des interfaces pas encore résolues.",
+  "{k} of {n} interactions ({pct}%) can be explained by a domain pair seen in contact in a PDB structure (3did). Inferred: the two domains are known to bind, not necessarily in this exact protein pair. Click a row to highlight those partners.":
+    "{k} des {n} interactions ({pct} %) s'expliquent par une paire de domaines vue en contact dans une structure PDB (3did). Déduit : ces deux types de domaines se lient, pas forcément dans cette paire précise. Cliquez sur une ligne pour mettre ces partenaires en évidence.",
+  "Own domain": "Domaine propre", "Binds partner domains": "Se lie aux domaines", "+{n} more": "+{n} autres", "partners contacted via {x}": "partenaires contactés via {x}",
+  "{n} PDB structures show this domain contact": "{n} structures PDB montrent ce contact", "({n} structures)": "({n} structures)",
+  "+{n} pair": "+{n} paire", "+{n} pairs": "+{n} paires", "show all": "tout afficher", "Show a 3D structure of {a} with {b}": "Montrer une structure 3D de {a} avec {b}",
+  // structures
+  "Very high (>90)": "Très élevée (>90)", "Confident (70–90)": "Bonne (70–90)", "Low (50–70)": "Faible (50–70)", "Very low (<50)": "Très faible (<50)",
+  "likely tolerated": "probablement tolérée", "likely damaging": "probablement nocive", "uncertain": "incertaine",
+  "Mutation sensitivity: tolerated": "Sensibilité aux mutations : tolérée", "damaging": "nocive",
+  "Average AlphaMissense score of the 19 possible amino-acid changes at each position. Red = most changes there are predicted to harm the protein.":
+    "Score AlphaMissense moyen des 19 changements d'acide aminé possibles à chaque position. Rouge = la plupart des changements à cet endroit sont prédits comme nocifs.",
+  "No AlphaMissense data for this protein": "Pas de données AlphaMissense pour cette protéine",
+  "Could not load the 3D viewer library.": "Impossible de charger la visionneuse 3D.", "PDB (none)": "PDB (aucune)", "Complex": "Complexe",
+  "Complex · {x}": "Complexe · {x}", "Use the “3D” button next to a partner": "Utilisez le bouton « 3D » à côté d'un partenaire", "Experimental (PDB)": "Expérimentale (PDB)",
+  "No UniProt entry for this protein, so no structure is available.": "Pas d'entrée UniProt pour cette protéine : aucune structure disponible.",
+  "Looking up structures…": "Recherche des structures…", "No AlphaFold model or experimental structure found.": "Aucun modèle AlphaFold ni structure expérimentale.",
+  "Loading structure…": "Chargement de la structure…",
+  "AlphaFold prediction, residues {a}–{b}. ": "Prédiction AlphaFold, résidus {a}–{b}. ",
+  "Colour = per-residue confidence (pLDDT); low-confidence parts are often disordered regions. ": "Couleur = confiance par résidu (pLDDT) ; les parties peu fiables sont souvent des régions désordonnées. ",
+  "PDB {id} chain {ch} · {method}{res} · covers residues {a}–{b} ({pct}% of the protein). ": "PDB {id} chaîne {ch} · {method}{res} · couvre les résidus {a}–{b} ({pct} % de la protéine). ",
+  "Could not download the structure.": "Impossible de télécharger la structure.", "This structure file could not be displayed.": "Impossible d'afficher ce fichier de structure.",
+  " · mutation sensitivity {v} ({l})": " · sensibilité aux mutations {v} ({l})", " Mutation colours: AlphaMissense (Cheng et al., 2023).": " Couleurs des mutations : AlphaMissense (Cheng et al., 2023).",
+  "Looking for a structure of {a} with {b}…": "Recherche d'une structure de {a} avec {b}…", "{x} domain": "domaine {x}",
+  "No solved structure of {a} with {b}, and no known contact between their domain types.": "Aucune structure résolue de {a} avec {b}, et aucun contact connu entre leurs types de domaines.",
+  "Loading complex…": "Chargement du complexe…", "Could not download the complex ({e}).": "Impossible de télécharger le complexe ({e}).", " · interface": " · interface",
+  "<b>Solved complex</b> {link} ({meta}): {s0}{a} chain {ca}, {s1}{b} chain {cb}. Sticks = interface residues (within 4.5 Å of the other protein). ":
+    "<b>Complexe résolu</b> {link} ({meta}) : {s0}{a} chaîne {ca}, {s1}{b} chaîne {cb}. Bâtonnets = résidus de l'interface (à moins de 4,5 Å de l'autre protéine). ",
+  "<b>No solved structure of {a} with {b}.</b> Shown instead: an example {link} in which the same domain types touch ({n} such structures): {s0}{da} (type found in {a}), {s1}{db} (type found in {b}). The proteins in it may differ (other family members or species). Grey = rest of those chains; sticks = contact residues. ":
+    "<b>Aucune structure résolue de {a} avec {b}.</b> À la place : un exemple {link} où les mêmes types de domaines se touchent ({n} structures de ce type) : {s0}{da} (type présent dans {a}), {s1}{db} (type présent dans {b}). Les protéines de cet exemple peuvent être différentes (autres membres de la famille ou autres espèces). Gris = reste de ces chaînes ; bâtonnets = résidus en contact. ",
+  "Entry: “{t}”": "Entrée : « {t} »",
+  // search, share
+  "also: ": "aussi : ", "No protein matches “{q}”": "Aucune protéine ne correspond à « {q} »",
+  "Link copied: it opens exactly this view": "Lien copié : il ouvre exactement cette vue", "Copy this link:": "Copiez ce lien :",
+  // gene list
+  "Paste at least one gene name.": "Collez au moins un nom de gène.", "None of these names is in the network.": "Aucun de ces noms n'est dans le réseau.",
+  "{n} of {t} recognised. Report in the right panel.": "{n} sur {t} reconnus. Rapport dans le panneau de droite.",
+  "Over-represented functions": "Fonctions sur-représentées", "Over-represented body systems": "Systèmes du corps sur-représentés",
+  "Over-represented diseases": "Maladies sur-représentées", "Over-represented domains": "Domaines sur-représentés",
+  "in list": "dans la liste", "Nothing significantly over-represented.": "Rien de significativement sur-représenté.",
+  "<b>{n}</b> of {t} names found on the map": "<b>{n}</b> noms sur {t} trouvés sur la carte",
+  ". Not found (no high-confidence interaction, or unknown name): ": ". Introuvables (aucune interaction fiable, ou nom inconnu) : ",
+  "Download report (CSV)": "Télécharger le rapport (CSV)", "How connected are they?": "À quel point sont-elles connectées ?",
+  "<b>{k}</b> interactions among your proteins, against <b>{e}</b> expected for random proteins with as many partners": "<b>{k}</b> interactions entre vos protéines, contre <b>{e}</b> attendues pour des protéines au hasard ayant autant de partenaires",
+  ". The largest connected group holds <b>{n}</b> of them.": ". Le plus grand groupe connecté en contient <b>{n}</b>.",
+  "Your proteins work together much more than chance would predict.": "Vos protéines travaillent ensemble bien plus que le hasard ne le prévoit.",
+  "They are only loosely connected.": "Elles ne sont que faiblement connectées.", "They do not interact directly with each other.": "Elles n'interagissent pas directement entre elles.",
+  "Most connected inside your list": "Les plus connectées au sein de votre liste", "{n} links": "{n} liens",
+  "Linker proteins": "Protéines de liaison",
+  "Not in your list, but interacting with several of your proteins, more than expected for their number of partners. Candidates you may have missed.":
+    "Absentes de votre liste, mais en interaction avec plusieurs de vos protéines, plus qu'attendu pour leur nombre de partenaires. Des candidates que vous avez peut-être manquées.",
+  "Protein": "Protéine", "links to list": "liens vers la liste", "Add to the list": "Ajouter à la liste", "+ add": "+ ajouter",
+  "No protein outside the list touches two or more of its members.": "Aucune protéine hors de la liste ne touche deux de ses membres ou plus.",
+  "Your proteins": "Vos protéines",
+  "Enrichment: hypergeometric test against all {n} proteins on the map, false discovery rate &lt; 5%.": "Enrichissement : test hypergéométrique contre les {n} protéines de la carte, taux de fausses découvertes &lt; 5 %.",
+  // path
+  "Pick both proteins from the suggestions.": "Choisissez les deux protéines dans les suggestions.", "Pick two different proteins.": "Choisissez deux protéines différentes.",
+  "No path: {a} and {b} are in separate parts of the network.": "Aucun chemin : {a} et {b} sont dans des parties séparées du réseau.",
+  "{n} step": "{n} étape", "{n} steps": "{n} étapes", "{c} shortest path (most confident shown)": "{c} plus court chemin (le plus fiable est affiché)",
+  "{c} shortest paths (most confident shown)": "{c} plus courts chemins (le plus fiable est affiché)", "STRING confidence": "Confiance STRING",
+  "Other paths:": "Autres chemins :", "Show all {n} proteins on shortest paths": "Montrer les {n} protéines sur les plus courts chemins",
+  // tour chrome
+  "Step {k} of {n}": "Étape {k} sur {n}", "Skip tour": "Passer", "Back": "Retour", "Finish": "Terminer", "Next": "Suivant", "Start tour": "Commencer",
+  // tour steps
+  "Welcome to the Human Interactome Map": "Bienvenue sur la carte de l'interactome humain",
+  "This map shows <b>10,746 human proteins</b> and the <b>86,519 physical interactions</b> known between them (STRING database, high confidence). This short tour shows you around. It takes about a minute.<br><br>New to proteins? The <a href=\"learn.html\">beginner's guide</a> explains the basics with interactive examples.":
+    "Cette carte montre <b>10 746 protéines humaines</b> et les <b>86 519 interactions physiques</b> connues entre elles (base STRING, haute confiance). Cette courte visite vous fait faire le tour, en une minute environ.<br><br>Débutant ? Le <a href=\"learn.html\">guide pour débutants</a> explique les bases avec des exemples interactifs.",
+  "Reading the map": "Lire la carte",
+  "Each dot is a protein. <b>The more partners a protein has, the closer to the centre it sits</b>; the dashed rings mark 2, 5, 10 … 200 partners. Slices group proteins that interact closely and are labelled with their main function and hub protein.<br><br>Scroll to zoom, drag to move, hover a dot for its name.":
+    "Chaque point est une protéine. <b>Plus une protéine a de partenaires, plus elle est proche du centre</b> ; les anneaux pointillés marquent 2, 5, 10 … 200 partenaires. Les secteurs regroupent les protéines qui interagissent beaucoup, avec leur fonction principale et leur protéine pivot.<br><br>Molette pour zoomer, glisser pour se déplacer, survoler un point pour voir son nom.",
+  "Search by gene or protein name": "Rechercher par nom de gène ou de protéine",
+  "Type a gene symbol (<i>INS</i>), a protein name (<i>insulin</i>) or a synonym (<i>p53</i>, <i>beta-actin</i>). Use ↑/↓ and Enter, or click a suggestion.":
+    "Tapez un symbole de gène (<i>INS</i>), un nom de protéine en anglais (<i>insulin</i>) ou un synonyme (<i>p53</i>, <i>beta-actin</i>). Utilisez ↑/↓ et Entrée, ou cliquez sur une suggestion.",
+  "Analyse your own gene list": "Analyser votre propre liste de gènes",
+  "Paste genes from an experiment or a paper (or click <b>example</b>). They light up on the map, and the right panel tells you how connected they are and which functions, diseases and domains they share. It also suggests <b>linker proteins</b> you may have missed.":
+    "Collez des gènes issus d'une expérience ou d'un article (ou cliquez sur <b>exemple</b>). Ils s'allument sur la carte, et le panneau de droite indique à quel point ils sont connectés et quelles fonctions, maladies et domaines ils partagent. Il suggère aussi des <b>protéines de liaison</b> que vous avez peut-être manquées.",
+  "Pick two proteins to see the shortest chain of interactions linking them, drawn on the map, with the confidence of each link and alternative routes.":
+    "Choisissez deux protéines pour voir la plus courte chaîne d'interactions qui les relie, tracée sur la carte, avec la confiance de chaque lien et d'autres chemins possibles.",
+  "The protein panel": "Le panneau protéine",
+  "Clicking a protein opens this panel, here for <b>TP53</b> (p53). On the map, its partners are highlighted and everything else fades. The panel lists its functions, the body systems where it is active, its disease links and a short description.":
+    "Cliquer sur une protéine ouvre ce panneau, ici pour <b>TP53</b> (p53). Sur la carte, ses partenaires sont mis en évidence et le reste s'estompe. Le panneau indique ses fonctions, les systèmes du corps où elle est active, ses liens avec des maladies et une courte description.",
+  "The <b>AlphaFold</b> predicted model is coloured by confidence (blue = reliable, orange = low confidence, often floppy regions). The <b>PDB</b> tab shows the best experimental structure. Drag to rotate, scroll to zoom.":
+    "Le modèle prédit par <b>AlphaFold</b> est coloré selon la confiance (bleu = fiable, orange = peu fiable, souvent des régions flexibles). L'onglet <b>PDB</b> montre la meilleure structure expérimentale. Glisser pour tourner, molette pour zoomer.",
+  "How it binds its partners": "Comment elle se lie à ses partenaires",
+  "<b>Binding interfaces</b> lists which of the protein's domains contacts which domain types on its partners, based on contacts seen in solved 3D structures. Click a row to highlight those partners.":
+    "<b>Interfaces de liaison</b> indique quel domaine de la protéine touche quels types de domaines chez ses partenaires, d'après des contacts observés dans des structures 3D résolues. Cliquez sur une ligne pour mettre ces partenaires en évidence.",
+  "What its partners have in common": "Ce que ses partenaires ont en commun",
+  "Domains that occur <b>more often among the partners than among all proteins</b>, with how many partners carry them and how many times more common they are than usual. Click a row to see those partners.":
+    "Les domaines <b>plus fréquents chez les partenaires que chez l'ensemble des protéines</b>, avec le nombre de partenaires qui les portent et combien de fois ils sont plus fréquents que d'habitude. Cliquez sur une ligne pour voir ces partenaires.",
+  "Interaction partners": "Partenaires d'interaction",
+  "All partners, sorted by confidence. Click a name to jump to that protein. The <b>3D</b> button shows the two proteins together.":
+    "Tous les partenaires, triés par confiance. Cliquez sur un nom pour aller à cette protéine. Le bouton <b>3D</b> montre les deux protéines ensemble.",
+  "Two proteins together": "Deux protéines ensemble",
+  "Here is p53 (<b>blue</b>) bound to MDM2 (<b>orange</b>) in a solved structure (PDB 1YCR). The sticks are the residues where the two proteins touch. When no such structure exists, an example with the same domain types is shown and clearly labelled.":
+    "Voici p53 (<b>bleu</b>) liée à MDM2 (<b>orange</b>) dans une structure résolue (PDB 1YCR). Les bâtonnets sont les résidus où les deux protéines se touchent. Quand aucune structure de ce type n'existe, un exemple avec les mêmes types de domaines est montré et clairement signalé.",
+  "Filter by function": "Filtrer par fonction",
+  "Tick one or more functions to highlight those proteins; all others fade. With up to 3 ticks, each gets its own colour (see the legend at the bottom of the map). Here: <b>Kinase</b>.":
+    "Cochez une ou plusieurs fonctions pour mettre ces protéines en évidence ; les autres s'estompent. Jusqu'à 3 cases cochées, chacune a sa propre couleur (voir la légende en bas de la carte). Ici : <b>Kinase</b>.",
+  "Body systems and diseases": "Systèmes du corps et maladies",
+  "The <b>Body system</b> and <b>Disease</b> lists work the same way. Combining lists narrows the selection: here, proteins linked to <b>Cancer</b> that are also active in the <b>Immune & blood</b> system.":
+    "Les listes <b>Système du corps</b> et <b>Maladie</b> fonctionnent de la même façon. Combiner les listes affine la sélection : ici, les protéines liées au <b>Cancer</b> et actives dans le système <b>Immunitaire & sang</b>.",
+  "The matching proteins": "Les protéines sélectionnées",
+  "The matching proteins are listed here, most connected first. Click one to open it. Each list has a <b>clear</b> button, and the display options above let you hide non-matching proteins or set a minimum number of partners.":
+    "Les protéines sélectionnées sont listées ici, les plus connectées d'abord. Cliquez sur l'une d'elles pour l'ouvrir. Chaque liste a un bouton <b>effacer</b>, et les options d'affichage plus haut permettent de masquer les autres protéines ou de fixer un nombre minimum de partenaires.",
+  "That's it!": "C'est tout !",
+  "Replay this tour anytime with the <b>i</b> button. Use <b>Share</b> to copy a link to exactly what you see, and <b>⤓</b> (bottom right) to save the map as an image. Have fun exploring!":
+    "Relancez cette visite à tout moment avec le bouton <b>i</b>. Utilisez <b>Partager</b> pour copier un lien vers exactement ce que vous voyez, et <b>⤓</b> (en bas à droite) pour enregistrer la carte en image. Bonne exploration !",
+};
+// category names from the data (functions, body systems, diseases, module labels)
+const FR_CAT = {
+  "Kinase": "Kinase", "Phosphatase": "Phosphatase", "Transcription regulation": "Régulation de la transcription", "Chromatin & epigenetics": "Chromatine & épigénétique",
+  "DNA replication & repair": "Réplication & réparation de l'ADN", "RNA processing & splicing": "Maturation & épissage de l'ARN", "Translation & ribosome": "Traduction & ribosome",
+  "Protein degradation (ubiquitin/protease)": "Dégradation des protéines (ubiquitine/protéases)", "Cell cycle & division": "Cycle & division cellulaire", "Apoptosis": "Apoptose",
+  "Receptor": "Récepteur", "Ion channel": "Canal ionique", "Transporter": "Transporteur", "Metabolic enzyme": "Enzyme du métabolisme",
+  "Signal transduction (GTPases)": "Transduction du signal (GTPases)", "Hormones, cytokines & growth factors": "Hormones, cytokines & facteurs de croissance",
+  "Immune response": "Réponse immunitaire", "Cytoskeleton & motility": "Cytosquelette & motilité", "Cell adhesion & ECM": "Adhésion cellulaire & matrice extracellulaire",
+  "Vesicle trafficking": "Trafic vésiculaire", "Development & differentiation": "Développement & différenciation", "Neurotransmission & synapse": "Neurotransmission & synapse",
+  "Mixed": "Mixte",
+  "Cardiovascular": "Cardiovasculaire", "Digestive": "Digestif", "Endocrine": "Endocrinien", "Immune & blood": "Immunitaire & sang", "Musculoskeletal": "Musculo-squelettique",
+  "Nervous": "Nerveux", "Reproductive": "Reproducteur", "Respiratory": "Respiratoire", "Skin & adipose": "Peau & tissu adipeux", "Urinary": "Urinaire",
+  "Ubiquitous (all tissues)": "Ubiquitaire (tous les tissus)",
+  "Cancer": "Cancer", "Alzheimer disease": "Maladie d'Alzheimer", "Parkinson disease": "Maladie de Parkinson", "Amyotrophic lateral sclerosis (ALS)": "Sclérose latérale amyotrophique (SLA)",
+  "Other neurodegeneration": "Autres neurodégénérescences", "Epilepsy": "Épilepsie", "Intellectual disability": "Déficience intellectuelle", "Autism": "Autisme",
+  "Schizophrenia": "Schizophrénie", "Diabetes": "Diabète", "Obesity & lipid disorders": "Obésité & troubles lipidiques", "Heart & vascular disease": "Maladies du cœur & des vaisseaux",
+  "Blood disorders (anemia, bleeding)": "Maladies du sang (anémie, saignements)", "Immune & autoimmune disease": "Maladies immunitaires & auto-immunes",
+  "Muscle & nerve disease": "Maladies des muscles & des nerfs", "Eye disease & blindness": "Maladies des yeux & cécité", "Deafness": "Surdité",
+  "Mitochondrial disease": "Maladies mitochondriales", "Inborn errors of metabolism": "Erreurs innées du métabolisme", "Kidney disease": "Maladies rénales",
+  "Ciliopathy": "Ciliopathie", "Bone & growth disorders": "Troubles des os & de la croissance", "Skin & hair disease": "Maladies de la peau & des cheveux",
+  "Hormonal disorders": "Troubles hormonaux", "Any inherited disease": "Toute maladie héréditaire", "Target of FDA-approved drugs": "Cible de médicaments approuvés (FDA)",
+};
+// tr("text {x}", { x: 1 }): translate (French when selected) then fill {placeholders}
+function tr(str, vars) {
+  let out = LANG === "fr" && FR[str] != null ? FR[str] : str;
+  if (vars) out = out.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? vars[k] : m));
+  return out;
+}
+const trc = (name) => (LANG === "fr" && FR_CAT[name]) || name;
+const num = (n) => Number(n).toLocaleString(LANG === "fr" ? "fr-CH" : "en-US");
+(function applyStatic() {
+  document.documentElement.lang = LANG;
+  $("langBtn").textContent = LANG === "fr" ? "EN" : "FR";
+  $("langBtn").title = LANG === "fr" ? "Switch to English" : "Passer en français";
+  const em = ["leo.hammerli", "epfl.ch"].join("@");   // assembled at runtime to keep it away from simple scrapers
+  $("contactLink").href = "mailto:" + em; $("contactLink").textContent = em;
+  if (LANG === "en") return;
+  document.querySelectorAll("[data-t]").forEach((el) => {
+    const k = el.innerHTML.trim(); if (FR[k] != null) el.innerHTML = FR[k];
+  });
+  document.querySelectorAll("[data-tp]").forEach((el) => { el.placeholder = tr(el.placeholder); });
+  document.querySelectorAll("[data-tt]").forEach((el) => { el.title = tr(el.title); });
+  document.querySelectorAll("#structBox .tabs button[data-src]").forEach((b) => { b.textContent = tr(b.textContent); });
+})();
+$("langBtn").onclick = () => {
+  const next = LANG === "fr" ? "en" : "fr";
+  try { localStorage.setItem("lang", next); } catch (e) {}
+  const u = new URL(location.href); u.searchParams.set("lang", next); location.href = u.toString();
+};
 
 let D, graph, renderer, P = {};         // data, graphology graph, sigma, palette
 const state = { funcs: [], sys: [], dis: [], last: null, hi: null, list: null, path: null, selected: null, hovered: null, minDeg: 1 };
@@ -317,7 +533,7 @@ function init(data) {
   D.N = D.nodes.map((r) => ({ name: r[F.name], desc: r[F.desc], acc: r[F.acc], deg: r[F.degree], x: r[F.x], y: r[F.y],
     module: r[F.module], f: r[F.functions], s: r[F.systems], t: r[F.tissues], about: r[F.about], ensp: r[F.ensp], alias: r[F.aliases] || [], d: r[F.diseases] || [], dz: r[F.disease_terms] || [], pf: r[F.domains] || [] }));
   const n = D.N.length;
-  $("meta").textContent = `${D.meta.proteins.toLocaleString()} proteins · ${D.meta.interactions.toLocaleString()} interactions. Most connected proteins sit at the centre.`;
+  $("meta").textContent = tr("{p} proteins · {i} interactions. Most connected proteins sit at the centre.", { p: num(D.meta.proteins), i: num(D.meta.interactions) });
   $("minScore").textContent = D.meta.min_score;
   $("minDeg").max = Math.min(200, D.N[0].deg);
 
@@ -347,12 +563,17 @@ function init(data) {
     nodeReducer, edgeReducer,
     defaultDrawNodeHover: drawHover,
   });
-  renderer.on("enterNode", ({ node }) => { state.hovered = +node; showTip(+node); refresh(true); });
-  renderer.on("leaveNode", () => { state.hovered = null; $("tip").style.display = "none"; refresh(true); });
-  renderer.on("clickNode", ({ node }) => select(+node));
-  renderer.on("clickStage", () => select(null));
+  // While something is highlighted, grey proteins are ignored and the pointer snaps to the nearest
+  // highlighted protein (see snapHover), so coloured proteins are easy to hover and click.
+  renderer.on("enterNode", ({ node }) => { if (ACTIVE && !ACTIVE.set.has(+node)) return; setHover(+node); });
+  renderer.on("leaveNode", () => { if (!ACTIVE) setHover(null); });
+  renderer.on("clickNode", ({ node }) => {
+    if (ACTIVE && !ACTIVE.set.has(+node)) { if (state.hovered != null) select(state.hovered); return; }
+    select(+node);
+  });
+  renderer.on("clickStage", () => select(ACTIVE && state.hovered != null ? state.hovered : null));
   renderer.on("afterRender", drawOverlay);
-  renderer.getMouseCaptor().on("mousemovebody", (e) => moveTip(e.original));
+  renderer.getMouseCaptor().on("mousemovebody", (e) => { moveTip(e.original); snapHover(e); });
 
   renderer.getCamera().setState({ ratio: 1.15 });
   buildLists();
@@ -373,7 +594,7 @@ function buildLists() {
     const sorted = names.map((nm, i) => ({ nm, i, c: counts[i] }));
     if (key !== "dis") sorted.sort((a, b) => b.c - a.c);   // diseases keep their curated order
     el.innerHTML = sorted
-      .map(({ nm, i, c }) => `<label data-i="${i}"><input type="checkbox" value="${i}"><span class="sw"></span><span>${esc(nm)}</span><span class="count">${c.toLocaleString()}</span></label>`).join("");
+      .map(({ nm, i, c }) => `<label data-i="${i}"><input type="checkbox" value="${i}"><span class="sw"></span><span>${esc(trc(nm))}</span><span class="count">${num(c)}</span></label>`).join("");
     el.addEventListener("change", (e) => {
       const i = +e.target.value, arr = state[key];
       if (e.target.checked) arr.push(i); else arr.splice(arr.indexOf(i), 1);
@@ -421,12 +642,12 @@ function recompute() {
     });
   }
   const filtered = state.funcs.length || state.sys.length || state.dis.length || state.minDeg > 1 || !!state.list;
-  $("matchTitle").textContent = filtered ? `${count.toLocaleString()} matching proteins` : "Most connected proteins";
+  $("matchTitle").textContent = filtered ? tr("{n} matching proteins", { n: num(count) }) : tr("Most connected proteins");
   const rows = [];
   for (let i = 0; i < n && rows.length < 300; i++) if (match[i]) rows.push(i);
   $("matches").innerHTML = `<table>${rows.map((i) => `<tr data-i="${i}"><td>${esc(D.N[i].name)}</td><td class="n">${D.N[i].deg}</td></tr>`).join("")}</table>`
-    + (count > 300 ? `<p class="note" style="padding:4px 8px">Top 300 by partners shown.</p>` : "");
-  $("status").textContent = filtered ? `${count.toLocaleString()} of ${n.toLocaleString()} proteins match` : `${n.toLocaleString()} proteins`;
+    + (count > 300 ? `<p class="note" style="padding:4px 8px">${tr("Top 300 by partners shown.")}</p>` : "");
+  $("status").textContent = filtered ? tr("{n} of {total} proteins match", { n: num(count), total: num(n) }) : tr("{total} proteins", { total: num(n) });
   buildLegend();
   refresh();
   writeHash();
@@ -437,12 +658,12 @@ function buildLegend() {
   let h = "";
   if (D.ck) {
     const names = D.ck.names;
-    h += D.ck.list.map((i, k) => `<div class="item"><span class="sw" style="background:${[P.s1, P.s2, P.s3][k]}"></span>${esc(names[i])}</div>`).join("");
-    h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>Not matching</div>`;
+    h += D.ck.list.map((i, k) => `<div class="item"><span class="sw" style="background:${[P.s1, P.s2, P.s3][k]}"></span>${esc(trc(names[i]))}</div>`).join("");
+    h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>${tr("Not matching")}</div>`;
   } else {
-    if (state.list) h += `<div class="item"><span class="sw" style="background:${P.s2}"></span>Your gene list (${state.list.idx.size})</div>`;
-    else h += `<div>Colour & position = number of interaction partners</div><div class="item">few <span class="ramp"></span> many</div>`;
-    if (state.funcs.length || state.sys.length || state.dis.length || state.list) h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>Not matching</div>`;
+    if (state.list) h += `<div class="item"><span class="sw" style="background:${P.s2}"></span>${tr("Your gene list ({n})", { n: state.list.idx.size })}</div>`;
+    else h += `<div>${tr("Colour & position = number of interaction partners")}</div><div class="item">${tr("few")} <span class="ramp"></span> ${tr("many")}</div>`;
+    if (state.funcs.length || state.sys.length || state.dis.length || state.list) h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>${tr("Not matching")}</div>`;
   }
   $("legend").innerHTML = h;
 }
@@ -464,7 +685,36 @@ function focusSet() {
   const s = new Set([f]); D.adj[f].forEach(([j]) => s.add(j)); return s;
 }
 let FOCUS = null;
-function refresh() { FOCUS = focusSet(); renderer && renderer.refresh(); }
+// ACTIVE = proteins currently drawn in colour (null when everything is): the only ones that can be hovered/clicked
+let ACTIVE = null;
+function computeActive() {
+  if (!D || !match) return (ACTIVE = null);
+  let list = null;
+  if (state.selected != null) {
+    list = [state.selected, ...D.adj[state.selected].map(([j]) => j)];
+    if (state.hi) list = list.filter((i) => i === state.selected || state.hi.set.has(i));
+  } else if (state.path) list = state.path.showAll ? [...state.path.all] : state.path.nodes.slice();
+  else if (match.includes(0)) { list = []; for (let i = 0; i < match.length; i++) if (match[i]) list.push(i); }
+  ACTIVE = list && { list, set: new Set(list) };
+}
+function setHover(i) {
+  if (i === state.hovered) return;
+  state.hovered = i;
+  if (i != null) showTip(i); else $("tip").style.display = "none";
+  $("graph").style.cursor = i != null ? "pointer" : "";
+  refresh(true);
+}
+function snapHover(e) {
+  if (!ACTIVE || ACTIVE.list.length > 5000) return;
+  let best = null, bd = 18 * 18;   // snap radius in screen pixels
+  for (const i of ACTIVE.list) {
+    const d = renderer.getNodeDisplayData(String(i)); if (!d) continue;
+    const v = renderer.framedGraphToViewport(d), dd = (v.x - e.x) ** 2 + (v.y - e.y) ** 2;
+    if (dd < bd) { bd = dd; best = i; }
+  }
+  setHover(best);
+}
+function refresh(fromHover) { if (!fromHover) computeActive(); FOCUS = focusSet(); renderer && renderer.refresh(); }
 
 function nodeReducer(id, a) {
   const i = +id, r = { ...a, color: nodeColor(i, a) };
@@ -484,6 +734,7 @@ function nodeReducer(id, a) {
   } else if (hide) r.hidden = true;
   else if (!match[i]) { r.label = ""; r.zIndex = 0; }
   else if (state.list && state.list.idx.size <= 80) { r.forceLabel = true; r.zIndex = 250; }
+  if (r.color === P.faded) r.size = Math.max(1, a.size * 0.55);   // shrink greyed-out proteins so they do not cover coloured ones
   return r;
 }
 function edgeReducer(id, a) {
@@ -534,7 +785,7 @@ function drawOverlay() {
     if (rr < 14) continue;
     ctx.beginPath(); ctx.arc(c.x, c.y, rr, 0, Math.PI * 2);
     ctx.strokeStyle = P.grid; ctx.setLineDash([3, 4]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
-    ctx.fillStyle = P.muted; ctx.fillText(`≥ ${d} partners`, c.x + 4, c.y - rr - 4);
+    ctx.fillStyle = P.muted; ctx.fillText(tr("≥ {d} partners", { d }), c.x + 4, c.y - rr - 4);
   }
   // module labels around the outside
   ctx.fillStyle = P["ink-2"]; ctx.font = `500 11px system-ui, -apple-system, sans-serif`;
@@ -544,7 +795,7 @@ function drawOverlay() {
     const v = renderer.graphToViewport({ x: 1060 * Math.cos(a), y: 1060 * Math.sin(a) });
     const dx = v.x - c.x;
     ctx.textAlign = dx > 20 ? "left" : dx < -20 ? "right" : "center";
-    ctx.fillText(`${m.label} (${m.hub})`, v.x, v.y + 4);
+    ctx.fillText(`${trc(m.label)} (${m.hub})`, v.x, v.y + 4);
   });
   ctx.textAlign = "left";
 }
@@ -552,9 +803,9 @@ function drawOverlay() {
 // ---------- tooltip
 function showTip(i) {
   const p = D.N[i];
-  $("tip").innerHTML = `<b>${esc(p.name)}</b> <span class="m">· ${p.deg} partners</span><div class="d">${esc(p.desc)}</div>`
-    + (p.f.length ? `<div class="m">${p.f.slice(0, 3).map((x) => esc(D.functions[x])).join(" · ")}</div>` : "")
-    + (p.d.length ? `<div class="m">Disease: ${p.d.filter((x) => D.diseases[x] !== "Any inherited disease").slice(0, 3).map((x) => esc(D.diseases[x])).join(" · ") || "inherited disease"}</div>` : "");
+  $("tip").innerHTML = `<b>${esc(p.name)}</b> <span class="m">· ${tr("{n} partners", { n: p.deg })}</span><div class="d">${esc(p.desc)}</div>`
+    + (p.f.length ? `<div class="m">${p.f.slice(0, 3).map((x) => esc(trc(D.functions[x]))).join(" · ")}</div>` : "")
+    + (p.d.length ? `<div class="m">${tr("Disease: ")}${p.d.filter((x) => D.diseases[x] !== "Any inherited disease").slice(0, 3).map((x) => esc(trc(D.diseases[x]))).join(" · ") || tr("inherited disease")}</div>` : "");
   $("tip").style.display = "block";
 }
 function moveTip(e) {
@@ -580,33 +831,33 @@ function select(i, fly) {
   $("right").appendChild($("structBox"));   // keep the viewer alive while the panel is rebuilt
   const topF = Object.entries(fCount).sort((a, b) => b[1] - a[1]).slice(0, 5);
   $("detail").innerHTML = `
-    ${state.list ? '<button class="btn mini" id="backToList">← gene list report</button>' : ""}
+    ${state.list ? `<button class="btn mini" id="backToList">${tr("← gene list report")}</button>` : ""}
     <div class="big">${esc(p.name)}</div>
     <div>${esc(p.desc)}</div>
-    <h2>3D structure</h2>
+    <h2>${tr("3D structure")}</h2>
     <div id="structSlot"></div>
-    <h2>Connectivity</h2>
-    <div class="kv"><span>Partners</span><span><b>${p.deg}</b></span><span>Rank</span><span>#${rank.toLocaleString()} of ${D.N.length.toLocaleString()} (top ${Math.max(0.1, (100 * rank / D.N.length)).toFixed(1)}%)</span>
-    <span>Module</span><span>${esc(D.modules[p.module].label)} · hub ${esc(D.modules[p.module].hub)}</span></div>
-    <h2>Function</h2>
-    <div class="chips">${p.f.map((x) => `<button class="chip" data-f="${x}">${esc(D.functions[x])}</button>`).join("") || '<span class="note">No category assigned</span>'}</div>
-    <h2>Body system</h2>
-    <div class="chips">${p.s.map((x) => `<button class="chip" data-s="${x}">${esc(D.systems[x])}</button>`).join("") || '<span class="note">No tissue data</span>'}</div>
-    ${p.t.length ? `<div class="note" style="margin-top:4px">Enriched in: ${p.t.map(esc).join(", ")}</div>` : ""}
-    <h2>Disease involvement</h2>
-    <div class="chips">${p.d.map((x) => `<button class="chip" data-d="${x}">${esc(D.diseases[x])}</button>`).join("") || '<span class="note">No known disease association</span>'}</div>
-    ${p.dz.length ? `<div class="note" style="margin-top:4px">Specific: ${p.dz.map(esc).join(", ")}</div>` : ""}
-    <h2>About</h2>
+    <h2>${tr("Connectivity")}</h2>
+    <div class="kv"><span>${tr("Partners")}</span><span><b>${p.deg}</b></span><span>${tr("Rank")}</span><span>${tr("#{rank} of {N} (top {pct}%)", { rank: num(rank), N: num(D.N.length), pct: Math.max(0.1, (100 * rank / D.N.length)).toFixed(1) })}</span>
+    <span>${tr("Module")}</span><span>${esc(trc(D.modules[p.module].label))} · ${tr("hub")} ${esc(D.modules[p.module].hub)}</span></div>
+    <h2>${tr("Function")}</h2>
+    <div class="chips">${p.f.map((x) => `<button class="chip" data-f="${x}">${esc(trc(D.functions[x]))}</button>`).join("") || `<span class="note">${tr("No category assigned")}</span>`}</div>
+    <h2>${tr("Body system")}</h2>
+    <div class="chips">${p.s.map((x) => `<button class="chip" data-s="${x}">${esc(trc(D.systems[x]))}</button>`).join("") || `<span class="note">${tr("No tissue data")}</span>`}</div>
+    ${p.t.length ? `<div class="note" style="margin-top:4px">${tr("Enriched in: ")}${p.t.map(esc).join(", ")}</div>` : ""}
+    <h2>${tr("Disease involvement")}</h2>
+    <div class="chips">${p.d.map((x) => `<button class="chip" data-d="${x}">${esc(trc(D.diseases[x]))}</button>`).join("") || `<span class="note">${tr("No known disease association")}</span>`}</div>
+    ${p.dz.length ? `<div class="note" style="margin-top:4px">${tr("Specific: ")}${p.dz.map(esc).join(", ")}</div>` : ""}
+    <h2>${tr("About")}</h2>
     <div class="about">${esc(p.about)}</div>
     <div style="margin-top:6px">${p.acc ? `<a href="https://www.uniprot.org/uniprotkb/${esc(p.acc)}" target="_blank" rel="noopener">UniProt</a> · ` : ""}<a href="https://string-db.org/network/9606.${esc(p.ensp)}" target="_blank" rel="noopener">STRING</a> · <a href="https://www.proteinatlas.org/search/${esc(p.name)}" target="_blank" rel="noopener">Protein Atlas</a></div>
-    <h2>Protein domains (Pfam)</h2>
-    <div class="chips">${[...new Set(p.pf)].map((x) => `<a class="chip" href="https://www.ebi.ac.uk/interpro/entry/pfam/${esc(D.domains[x][0])}/" target="_blank" rel="noopener" title="${esc(D.domains[x][0])} · ${esc(D.domains[x][1])}">${esc(D.domains[x][2])}</a>`).join("") || '<span class="note">No Pfam domain annotated</span>'}</div>
-    <h2>Binding interfaces <span class="note">domain–domain contacts</span></h2>
+    <h2>${tr("Protein domains (Pfam)")}</h2>
+    <div class="chips">${[...new Set(p.pf)].map((x) => `<a class="chip" href="https://www.ebi.ac.uk/interpro/entry/pfam/${esc(D.domains[x][0])}/" target="_blank" rel="noopener" title="${esc(D.domains[x][0])} · ${esc(D.domains[x][1])}">${esc(D.domains[x][2])}</a>`).join("") || `<span class="note">${tr("No Pfam domain annotated")}</span>`}</div>
+    <h2>${tr("Binding interfaces")} <span class="note">${tr("domain–domain contacts")}</span></h2>
     <div id="ifSection"></div>
-    <h2>Partners' common domains</h2>
+    <h2>${tr("Partners' common domains")}</h2>
     <div id="domSection"></div>
-    ${topF.length ? `<h2>Partners' functions</h2><div class="kv">${topF.map(([f, c]) => `<span>${c}</span><span>${esc(D.functions[f])}</span>`).join("")}</div>` : ""}
-    <h2>Interaction partners (${partners.length}) <span><span class="note">confidence</span> <button id="partnerCsv" title="Download partners as CSV">CSV</button></span></h2>
+    ${topF.length ? `<h2>${tr("Partners' functions")}</h2><div class="kv">${topF.map(([f, c]) => `<span>${c}</span><span>${esc(trc(D.functions[f]))}</span>`).join("")}</div>` : ""}
+    <h2>${tr("Interaction partners ({n})", { n: partners.length })} <span><span class="note">${tr("confidence")}</span> <button id="partnerCsv" title="${tr("Download partners as CSV")}">CSV</button></span></h2>
     <div id="partnersBox"></div>`;
   renderInterfaces(i); renderDomains(i); renderPartners(i);
   $("structSlot").appendChild($("structBox"));
@@ -665,11 +916,11 @@ function domainEnrichment(i) {
 function renderDomains(i) {
   const { n, rows } = domainEnrichment(i);
   let sig = rows.filter((r) => r.k >= 2 && r.q < 0.05).slice(0, 10), head = "";
-  if (!n) { $("domSection").innerHTML = '<span class="note">No partner has an annotated domain.</span>'; return; }
-  if (sig.length) head = `<p class="note">Pfam domains found more often among the ${n} annotated partners than among all proteins (hypergeometric test, FDR &lt; 5%). Click a row to highlight those partners.</p>`;
-  else { sig = [...rows].sort((a, b) => b.k - a.k).slice(0, 5); head = `<p class="note">No domain is significantly over-represented among the ${n} annotated partners; most frequent shown. Click to highlight.</p>`; }
+  if (!n) { $("domSection").innerHTML = `<span class="note">${tr("No partner has an annotated domain.")}</span>`; return; }
+  if (sig.length) head = `<p class="note">${tr("Pfam domains found more often among the {n} annotated partners than among all proteins (hypergeometric test, FDR &lt; 5%). Click a row to highlight those partners.", { n })}</p>`;
+  else { sig = [...rows].sort((a, b) => b.k - a.k).slice(0, 5); head = `<p class="note">${tr("No domain is significantly over-represented among the {n} annotated partners; most frequent shown. Click to highlight.", { n })}</p>`; }
   const maxPct = Math.max(...sig.map((r) => r.k / n));
-  $("domSection").innerHTML = head + `<table class="domt"><thead><tr><th>Domain</th><th class="n">Partners</th><th class="n">× vs all</th></tr></thead><tbody>`
+  $("domSection").innerHTML = head + `<table class="domt"><thead><tr><th>${tr("Domain")}</th><th class="n">${tr("Partners")}</th><th class="n">${tr("× vs all")}</th></tr></thead><tbody>`
     + sig.map((r) => { const d = D.domains[r.x];
       return `<tr data-x="${r.x}" class="${state.hi && state.hi.key === "pd" + r.x ? "on" : ""}" title="${esc(d[0])} · ${esc(d[1])} · q = ${r.q.toExponential(1)}"><td>${esc(d[2])} <span class="id">${esc(d[1])}</span><div class="bar" style="width:${(100 * (r.k / n) / maxPct).toFixed(0)}%"></div></td>`
         + `<td class="n">${r.k} <span class="id">(${Math.round(100 * r.k / n)}%)</span></td><td class="n">${r.fold >= 10 ? r.fold.toFixed(0) : r.fold.toFixed(1)}×</td></tr>`; }).join("")
@@ -677,7 +928,7 @@ function renderDomains(i) {
   $("domSection").querySelector("tbody").onclick = (e) => {
     const tr = e.target.closest("tr"); if (!tr) return;
     const x = +tr.dataset.x;
-    setHi(i, { key: "pd" + x, label: `partners with <b>${esc(D.domains[x][2])}</b>`,
+    setHi(i, { key: "pd" + x, label: tr("partners with {x}", { x: `<b>${esc(D.domains[x][2])}</b>` }),
       set: new Set(D.adj[i].filter(([j]) => D.N[j].pf.includes(x)).map(([j]) => j)) });
   };
 }
@@ -713,21 +964,21 @@ function interfaces(i) {
 }
 function renderInterfaces(i) {
   const { perPartner, own } = interfaces(i), deg = D.adj[i].length;
-  if (!D.N[i].pf.length) { $("ifSection").innerHTML = '<span class="note">No Pfam domain annotated for this protein.</span>'; return; }
-  if (!perPartner.size) { $("ifSection").innerHTML = `<span class="note">None of the ${deg} interactions matches a domain pair seen in contact in a solved structure. They may use short linear motifs, disordered regions, or interfaces not yet solved.</span>`; return; }
+  if (!D.N[i].pf.length) { $("ifSection").innerHTML = `<span class="note">${tr("No Pfam domain annotated for this protein.")}</span>`; return; }
+  if (!perPartner.size) { $("ifSection").innerHTML = `<span class="note">${tr("None of the {n} interactions matches a domain pair seen in contact in a solved structure. They may use short linear motifs, disordered regions, or interfaces not yet solved.", { n: deg })}</span>`; return; }
   const max = own[0].partners.size;
-  $("ifSection").innerHTML = `<p class="note">${perPartner.size} of ${deg} interactions (${Math.round(100 * perPartner.size / deg)}%) can be explained by a domain pair seen in contact in a PDB structure (3did). Inferred: the two domains are known to bind, not necessarily in this exact protein pair. Click a row to highlight those partners.</p>`
-    + `<table class="domt"><thead><tr><th>Own domain</th><th>Binds partner domains</th><th class="n">Partners</th></tr></thead><tbody>`
+  $("ifSection").innerHTML = `<p class="note">${tr("{k} of {n} interactions ({pct}%) can be explained by a domain pair seen in contact in a PDB structure (3did). Inferred: the two domains are known to bind, not necessarily in this exact protein pair. Click a row to highlight those partners.", { k: perPartner.size, n: deg, pct: Math.round(100 * perPartner.size / deg) })}</p>`
+    + `<table class="domt"><thead><tr><th>${tr("Own domain")}</th><th>${tr("Binds partner domains")}</th><th class="n">${tr("Partners")}</th></tr></thead><tbody>`
     + own.map((o) => { const d = D.domains[o.x];
       const tg = [...o.targets].sort((a, b) => b[1] - a[1]);
       return `<tr data-x="${o.x}" class="${state.hi && state.hi.key === "if" + o.x ? "on" : ""}" title="${esc(d[0])} · ${esc(d[2])}"><td><b>${esc(d[1])}</b><div class="id">${esc(d[2])}</div><div class="bar" style="width:${(100 * o.partners.size / max).toFixed(0)}%"></div></td>`
-        + `<td>${tg.slice(0, 3).map(([y, c]) => `${esc(D.domains[y][1])} <span class="id">(${c})</span>`).join(", ")}${tg.length > 3 ? ` <span class="id">+${tg.length - 3} more</span>` : ""}</td>`
+        + `<td>${tg.slice(0, 3).map(([y, c]) => `${esc(D.domains[y][1])} <span class="id">(${c})</span>`).join(", ")}${tg.length > 3 ? ` <span class="id">${tr("+{n} more", { n: tg.length - 3 })}</span>` : ""}</td>`
         + `<td class="n">${o.partners.size}</td></tr>`; }).join("")
     + "</tbody></table>";
   $("ifSection").querySelector("tbody").onclick = (e) => {
     const tr = e.target.closest("tr"); if (!tr) return;
     const o = own.find((r) => r.x === +tr.dataset.x);
-    setHi(i, { key: "if" + o.x, label: `partners contacted via <b>${esc(D.domains[o.x][1])}</b>`, set: o.partners });
+    setHi(i, { key: "if" + o.x, label: tr("partners contacted via {x}", { x: `<b>${esc(D.domains[o.x][1])}</b>` }), set: o.partners });
   };
 }
 function renderPartners(i) {
@@ -735,10 +986,10 @@ function renderPartners(i) {
   const list = D.adj[i].filter(([j]) => !state.hi || state.hi.set.has(j));
   const iface = (j) => { const pr = perPartner.get(j); if (!pr) return "";
     const [x, y, inf] = pr[0];
-    return `<div class="id">${esc(D.domains[x][1])} ↔ ${esc(D.domains[y][1])} <span title="${inf.n} PDB structures show this domain contact">(${inf.n} structures)</span>${pr.length > 1 ? ` · +${pr.length - 1} pair${pr.length > 2 ? "s" : ""}` : ""}</div>`; };
+    return `<div class="id">${esc(D.domains[x][1])} ↔ ${esc(D.domains[y][1])} <span title="${tr("{n} PDB structures show this domain contact", { n: inf.n })}">${tr("({n} structures)", { n: inf.n })}</span>${pr.length > 1 ? ` · ${tr(pr.length > 2 ? "+{n} pairs" : "+{n} pair", { n: pr.length - 1 })}` : ""}</div>`; };
   $("partnersBox").innerHTML = (state.hi
-      ? `<div id="domFilter"><span>${list.length} ${state.hi.label}</span><button class="btn" id="domClear">show all</button></div>` : "")
-    + `<table id="partners">${list.map(([j, w]) => `<tr data-i="${j}"><td><b>${esc(D.N[j].name)}</b><button class="cxbtn" data-cx="${j}" title="Show a 3D structure of ${esc(D.N[i].name)} with ${esc(D.N[j].name)}">3D</button></td><td>${esc(D.N[j].desc).slice(0, 38)}${iface(j)}</td><td class="n">${(w / 1000).toFixed(2)}</td></tr>`).join("")}</table>`;
+      ? `<div id="domFilter"><span>${list.length} ${state.hi.label}</span><button class="btn" id="domClear">${tr("show all")}</button></div>` : "")
+    + `<table id="partners">${list.map(([j, w]) => `<tr data-i="${j}"><td><b>${esc(D.N[j].name)}</b><button class="cxbtn" data-cx="${j}" title="${tr("Show a 3D structure of {a} with {b}", { a: esc(D.N[i].name), b: esc(D.N[j].name) })}">3D</button></td><td>${esc(D.N[j].desc).slice(0, 38)}${iface(j)}</td><td class="n">${(w / 1000).toFixed(2)}</td></tr>`).join("")}</table>`;
   $("partners").onclick = (e) => {
     if (e.target.closest("a")) return;
     const cx = e.target.closest("[data-cx]"); if (cx) { showComplex(i, +cx.dataset.cx); return; }
@@ -758,11 +1009,11 @@ function amColor(v) {        // diverging: tolerated (blue) – uncertain (grey)
   if (v == null) return "#55554f";
   return v < 0.45 ? mix("#9a9a95", "#3987e5", Math.min(1, (0.45 - v) / 0.35)) : mix("#9a9a95", "#e34948", Math.min(1, (v - 0.45) / 0.4));
 }
-const amLabel = (v) => (v < 0.34 ? "likely tolerated" : v > 0.564 ? "likely damaging" : "uncertain");
+const amLabel = (v) => tr(v < 0.34 ? "likely tolerated" : v > 0.564 ? "likely damaging" : "uncertain");
 function renderAfLegend() {
   $("plddtLegend").innerHTML = afColorMode === "am"
-    ? `<span>Mutation sensitivity: tolerated<span class="amramp"></span>damaging</span><span class="note">Average AlphaMissense score of the 19 possible amino-acid changes at each position. Red = most changes there are predicted to harm the protein.</span>`
-    : "pLDDT: " + PLDDT.map(([, c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join("");
+    ? `<span>${tr("Mutation sensitivity: tolerated")}<span class="amramp"></span>${tr("damaging")}</span><span class="note">${tr("Average AlphaMissense score of the 19 possible amino-acid changes at each position. Red = most changes there are predicted to harm the protein.")}</span>`
+    : "pLDDT: " + PLDDT.map(([, c, l]) => `<span><i style="background:${c}"></i>${tr(l)}</span>`).join("");
 }
 renderAfLegend();
 async function loadAM(acc, url) {
@@ -787,7 +1038,7 @@ function renderAfColorTabs() {
   const hasAM = !!(structState.af && structState.af.amAnnotationsUrl);
   $("afColor").querySelectorAll("button").forEach((b) => {
     b.classList.toggle("on", b.dataset.c === afColorMode);
-    if (b.dataset.c === "am") { b.disabled = !hasAM; b.title = hasAM ? "" : "No AlphaMissense data for this protein"; }
+    if (b.dataset.c === "am") { b.disabled = !hasAM; b.title = hasAM ? "" : tr("No AlphaMissense data for this protein"); }
   });
   renderAfLegend();
 }
@@ -796,7 +1047,7 @@ function load3Dmol() {
     const sc = document.createElement("script");
     sc.src = "https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.0/3Dmol-min.js";
     sc.onload = () => res(window.$3Dmol);
-    sc.onerror = () => { molLib = null; rej(new Error("Could not load the 3D viewer library.")); };
+    sc.onerror = () => { molLib = null; rej(new Error(tr("Could not load the 3D viewer library."))); };
     document.head.appendChild(sc);
   });
   return molLib;
@@ -807,8 +1058,8 @@ function renderStructTabs() {
   $("structBox").querySelectorAll(".tabs button").forEach((b) => {
     const has = !!structState[b.dataset.src];
     b.disabled = !has; b.classList.toggle("on", b.dataset.src === structState.src);
-    if (b.dataset.src === "pdb") b.textContent = has ? `PDB · ${structState.pdb.pdb_id.toUpperCase()}` : "PDB (none)";
-    if (b.dataset.src === "cx") { b.textContent = has ? `Complex · ${structState.cx.label}` : "Complex"; b.title = has ? "" : "Use the “3D” button next to a partner"; }
+    if (b.dataset.src === "pdb") b.textContent = has ? `PDB · ${structState.pdb.pdb_id.toUpperCase()}` : tr("PDB (none)");
+    if (b.dataset.src === "cx") { b.textContent = has ? tr("Complex · {x}", { x: structState.cx.label }) : tr("Complex"); b.title = has ? "" : tr("Use the “3D” button next to a partner"); }
   });
 }
 $("structBox").querySelector(".tabs").onclick = (e) => {
@@ -820,8 +1071,8 @@ async function loadStructure(p) {
   structState = { acc: p.acc, af: null, pdb: null, src: null };
   renderStructTabs(); $("structInfo").textContent = ""; $("plddtLegend").hidden = true; $("afColor").hidden = true;
   if (molViewer) { molViewer.clear(); molViewer.render(); }
-  if (!p.acc) { setStructMsg("No UniProt entry for this protein, so no structure is available."); return; }
-  setStructMsg("Looking up structures…");
+  if (!p.acc) { setStructMsg(tr("No UniProt entry for this protein, so no structure is available.")); return; }
+  setStructMsg(tr("Looking up structures…"));
   const [af, best] = await Promise.all([
     getJSON(`https://alphafold.ebi.ac.uk/api/prediction/${encodeURIComponent(p.acc)}`),
     getJSON(`https://www.ebi.ac.uk/pdbe/api/mappings/best_structures/${encodeURIComponent(p.acc)}`)]);
@@ -831,7 +1082,7 @@ async function loadStructure(p) {
   structState.pdb = pdbCache.get(p.acc)[0] || null;
   structState.src = structState.af ? "af" : structState.pdb ? "pdb" : null;
   renderStructTabs();
-  if (!structState.src) { setStructMsg("No AlphaFold model or experimental structure found."); return; }
+  if (!structState.src) { setStructMsg(tr("No AlphaFold model or experimental structure found.")); return; }
   showStructure(structState.src, tok);
 }
 function styleModel(src) {
@@ -841,7 +1092,7 @@ function styleModel(src) {
 }
 async function showStructure(src, tok = structToken) {
   structState.src = src; renderStructTabs(); $("afColor").hidden = src !== "af";
-  setStructMsg("Loading structure…"); $("structHover").textContent = "";
+  setStructMsg(tr("Loading structure…")); $("structHover").textContent = "";
   let $3D;
   try { $3D = await load3Dmol(); } catch (e) { setStructMsg(e.message); return; }
   if (tok !== structToken || structState.src !== src) return;
@@ -855,16 +1106,16 @@ async function showStructure(src, tok = structToken) {
         afColorMode === "am" ? loadAM(acc, a.amAnnotationsUrl).catch(() => null) : Promise.resolve(null)]);
       text = t; fmt = "pdb"; structState.amData = am;
       if (afColorMode === "am" && !am) afColorMode = "plddt";
-      info = `AlphaFold prediction, residues ${a.uniprotStart}–${a.uniprotEnd}. ` + (afColorMode === "am" ? "" : "Colour = per-residue confidence (pLDDT); low-confidence parts are often disordered regions. ")
+      info = tr("AlphaFold prediction, residues {a}–{b}. ", { a: a.uniprotStart, b: a.uniprotEnd }) + (afColorMode === "am" ? "" : tr("Colour = per-residue confidence (pLDDT); low-confidence parts are often disordered regions. "))
         + `<a href="https://alphafold.ebi.ac.uk/entry/${esc(acc)}" target="_blank" rel="noopener">AlphaFold DB</a>`;
     } else {
       const b = structState.pdb, id = b.pdb_id;
       text = await fetchChain(id, b.chain_id);
       fmt = "cif";
-      info = `PDB ${id.toUpperCase()} chain ${esc(b.chain_id)} · ${esc(b.experimental_method)}${b.resolution ? `, ${b.resolution} Å` : ""} · covers residues ${b.unp_start}–${b.unp_end} (${Math.round(b.coverage * 100)}% of the protein). `
+      info = tr("PDB {id} chain {ch} · {method}{res} · covers residues {a}–{b} ({pct}% of the protein). ", { id: id.toUpperCase(), ch: esc(b.chain_id), method: esc(b.experimental_method), res: b.resolution ? `, ${b.resolution} Å` : "", a: b.unp_start, b: b.unp_end, pct: Math.round(b.coverage * 100) })
         + `<a href="https://www.rcsb.org/structure/${esc(id)}" target="_blank" rel="noopener">RCSB PDB</a>`;
     }
-  } catch (e) { if (tok === structToken) setStructMsg("Could not download the structure."); return; }
+  } catch (e) { if (tok === structToken) setStructMsg(tr("Could not download the structure.")); return; }
   if (tok !== structToken || structState.src !== src) return;
   if (!molViewer) {
     molViewer = $3D.createViewer($("mol"), { backgroundColor: P.surface, antialias: true });
@@ -872,15 +1123,15 @@ async function showStructure(src, tok = structToken) {
   }
   molViewer.clear();
   const model = molViewer.addModel(text, fmt);
-  if (!model || !model.selectedAtoms({}).length) { setStructMsg("This structure file could not be displayed."); return; }
+  if (!model || !model.selectedAtoms({}).length) { setStructMsg(tr("This structure file could not be displayed.")); return; }
   styleModel(src);
   molViewer.setHoverable({}, true,
     (a) => { const am = src === "af" && afColorMode === "am" && structState.amData ? structState.amData.get(a.resi) : null;
-      $("structHover").textContent = `${a.resn} ${a.resi}` + (am != null ? ` · mutation sensitivity ${am.toFixed(2)} (${amLabel(am)})` : src === "af" ? ` · pLDDT ${a.b.toFixed(0)}` : ""); },
+      $("structHover").textContent = `${a.resn} ${a.resi}` + (am != null ? tr(" · mutation sensitivity {v} ({l})", { v: am.toFixed(2), l: amLabel(am) }) : src === "af" ? ` · pLDDT ${a.b.toFixed(0)}` : ""); },
     () => { $("structHover").textContent = ""; });
   molViewer.zoomTo(); molViewer.render();
   setStructMsg("");
-  $("structInfo").innerHTML = info + (src === "af" && afColorMode === "am" ? " Mutation colours: AlphaMissense (Cheng et al., 2023)." : "");
+  $("structInfo").innerHTML = info + (src === "af" && afColorMode === "am" ? tr(" Mutation colours: AlphaMissense (Cheng et al., 2023).") : "");
   $("plddtLegend").hidden = src !== "af";
   renderAfColorTabs();
 }
@@ -910,7 +1161,7 @@ async function showComplex(i, j) {
   structState.cx = { label: `${p.name}–${q.name}`, parts: null };
   structState.src = "cx"; renderStructTabs();
   $("structInfo").textContent = ""; $("plddtLegend").hidden = true; $("afColor").hidden = true; $("structHover").textContent = "";
-  setStructMsg(`Looking for a structure of ${p.name} with ${q.name}…`);
+  setStructMsg(tr("Looking for a structure of {a} with {b}…", { a: p.name, b: q.name }));
   const cx = structState.cx;
   if (p.acc && q.acc) {
     const [la, lb] = await Promise.all([pdbList(p.acc), pdbList(q.acc)]);
@@ -930,21 +1181,21 @@ async function showComplex(i, j) {
       const [x, y, inf] = pr[0];
       const [rx, ry] = x <= y ? [inf.ra, inf.rb] : [inf.rb, inf.ra];   // ddi rows are stored in (lower, higher) index order
       cx.kind = "example"; cx.pdb = inf.pdb; cx.n = inf.n;
-      cx.parts = [{ ...parseRange(rx), name: D.domains[x][1] + " domain" }, { ...parseRange(ry), name: D.domains[y][1] + " domain" }];
+      cx.parts = [{ ...parseRange(rx), name: tr("{x} domain", { x: D.domains[x][1] }) }, { ...parseRange(ry), name: tr("{x} domain", { x: D.domains[y][1] }) }];
       cx.pair = [p.name, q.name];
     }
   }
-  if (!cx.parts) { setStructMsg(`No solved structure of ${p.name} with ${q.name}, and no known contact between their domain types.`); return; }
+  if (!cx.parts) { setStructMsg(tr("No solved structure of {a} with {b}, and no known contact between their domain types.", { a: p.name, b: q.name })); return; }
   renderComplex(tok);
 }
 async function renderComplex(tok) {
   const cx = structState.cx;
   if (!cx || !cx.parts) return;
-  setStructMsg("Loading complex…");
+  setStructMsg(tr("Loading complex…"));
   let $3D;
   try { $3D = await load3Dmol(); } catch (e) { setStructMsg(e.message); return; }
   try { if (!cx.texts) cx.texts = await Promise.all(cx.parts.map((pt) => fetchChain(cx.pdb, pt.ch))); }
-  catch (e) { if (tok === structToken) setStructMsg("Could not download the complex (" + e.message + ")."); return; }
+  catch (e) { if (tok === structToken) setStructMsg(tr("Could not download the complex ({e}).", { e: e.message })); return; }
   if (tok !== structToken || structState.src !== "cx") return;
   if (!molViewer) { molViewer = $3D.createViewer($("mol"), { backgroundColor: P.surface, antialias: true }); molViewer.setHoverDuration(60); }
   molViewer.clear();
@@ -972,17 +1223,19 @@ async function renderComplex(tok) {
     if (iface[k].size) m.setStyle({ resi: [...iface[k]], predicate: (a) => a.elem !== "H" }, { stick: { color: cols[k], radius: 0.16 } }, true);  // true = add to cartoon
   });
   molViewer.setHoverable({}, true,
-    (a) => { const k = models.findIndex((m) => m === a.model || m.getID?.() === a.model); $("structHover").textContent = `${cx.parts[Math.max(0, k)].name} · ${a.resn} ${a.resi}${iface[Math.max(0, k)].has(a.resi) ? " · interface" : ""}`; },
+    (a) => { const k = models.findIndex((m) => m === a.model || m.getID?.() === a.model); $("structHover").textContent = `${cx.parts[Math.max(0, k)].name} · ${a.resn} ${a.resi}${iface[Math.max(0, k)].has(a.resi) ? tr(" · interface") : ""}`; },
     () => { $("structHover").textContent = ""; });
   molViewer.zoomTo(); molViewer.render();
   setStructMsg("");
   const sw = (k) => `<span class="swatch" style="background:${cols[k]}"></span>`;
   const link = `<a href="https://www.rcsb.org/structure/${esc(cx.pdb)}" target="_blank" rel="noopener">PDB ${esc(cx.pdb.toUpperCase())}</a>`;
   $("structInfo").innerHTML = cx.kind === "real"
-    ? `<b>Solved complex</b> ${link} (${esc(cx.meta)}): ${sw(0)}${esc(cx.parts[0].name)} chain ${esc(cx.parts[0].ch)}, ${sw(1)}${esc(cx.parts[1].name)} chain ${esc(cx.parts[1].ch)}. Sticks = interface residues (within 4.5 Å of the other protein). <span id="cxTitle"></span>`
-    : `<b>No solved structure of ${esc(cx.pair[0])} with ${esc(cx.pair[1])}.</b> Shown instead: an example ${link} in which the same domain types touch (${cx.n} such structures): ${sw(0)}${esc(cx.parts[0].name)} (type found in ${esc(cx.pair[0])}), ${sw(1)}${esc(cx.parts[1].name)} (type found in ${esc(cx.pair[1])}). The proteins in it may differ (other family members or species). Grey = rest of those chains; sticks = contact residues. <span id="cxTitle"></span>`;
+    ? tr("<b>Solved complex</b> {link} ({meta}): {s0}{a} chain {ca}, {s1}{b} chain {cb}. Sticks = interface residues (within 4.5 Å of the other protein). ",
+        { link, meta: esc(cx.meta), s0: sw(0), s1: sw(1), a: esc(cx.parts[0].name), b: esc(cx.parts[1].name), ca: esc(cx.parts[0].ch), cb: esc(cx.parts[1].ch) }) + `<span id="cxTitle"></span>`
+    : tr("<b>No solved structure of {a} with {b}.</b> Shown instead: an example {link} in which the same domain types touch ({n} such structures): {s0}{da} (type found in {a}), {s1}{db} (type found in {b}). The proteins in it may differ (other family members or species). Grey = rest of those chains; sticks = contact residues. ",
+        { a: esc(cx.pair[0]), b: esc(cx.pair[1]), link, n: cx.n, s0: sw(0), s1: sw(1), da: esc(cx.parts[0].name), db: esc(cx.parts[1].name) }) + `<span id="cxTitle"></span>`;
   getJSON(`https://data.rcsb.org/rest/v1/core/entry/${encodeURIComponent(cx.pdb)}`).then((e) => {
-    if (e && e.struct && $("cxTitle") && structState.cx === cx) $("cxTitle").textContent = `Entry: “${e.struct.title}”`;
+    if (e && e.struct && $("cxTitle") && structState.cx === cx) $("cxTitle").textContent = tr("Entry: “{t}”", { t: e.struct.title });
   });
 }
 
@@ -1023,9 +1276,9 @@ function attachSuggest(input, ul, onPick) {
     input.setAttribute("aria-expanded", sugg.length ? "true" : "false");
     if (!q) { ul.innerHTML = ""; return; }
     ul.innerHTML = sugg.length ? sugg.map((h, k) => { const p = D.N[h.i];
-      return `<li role="option" data-i="${h.i}" class="${k === act ? "act" : ""}"><span class="g">${hl(p.name, q)}</span><span class="c">${p.deg} partners</span>`
-        + `<span class="p">${hl(p.desc, q)}</span>${h.via ? `<span class="a">also: ${hl(h.via, q)}</span>` : ""}</li>`; }).join("")
-      : `<li class="none">No protein matches “${esc(q)}”</li>`;
+      return `<li role="option" data-i="${h.i}" class="${k === act ? "act" : ""}"><span class="g">${hl(p.name, q)}</span><span class="c">${tr("{n} partners", { n: p.deg })}</span>`
+        + `<span class="p">${hl(p.desc, q)}</span>${h.via ? `<span class="a">${tr("also: ")}${hl(h.via, q)}</span>` : ""}</li>`; }).join("")
+      : `<li class="none">${tr("No protein matches “{q}”", { q: esc(q) })}</li>`;
     const el = ul.querySelector(".act"); if (el) el.scrollIntoView({ block: "nearest" });
   };
   const pick = (i) => { input.value = D.N[i].name; input.dataset.i = i; sugg = []; act = -1; ul.innerHTML = ""; onPick(i); };
@@ -1124,8 +1377,8 @@ function readHash() {
 addEventListener("hashchange", () => { if (!hashLock && location.hash) readHash(); });
 $("shareBtn").onclick = async () => {
   writeHash();
-  try { await navigator.clipboard.writeText(location.href); toast("Link copied: it opens exactly this view"); }
-  catch (e) { prompt("Copy this link:", location.href); }
+  try { await navigator.clipboard.writeText(location.href); toast(tr("Link copied: it opens exactly this view")); }
+  catch (e) { prompt(tr("Copy this link:"), location.href); }
 };
 
 // ---------- gene list analysis
@@ -1135,13 +1388,13 @@ $("geneGo").onclick = () => runGeneList();
 $("geneClear").onclick = () => { $("geneInput").value = ""; $("geneMsg").textContent = ""; state.list = null; recompute(); select(null); };
 function runGeneList() {
   const tokens = [...new Set($("geneInput").value.split(/[\s,;]+/).map((t) => t.trim()).filter(Boolean))].slice(0, 2000);
-  if (!tokens.length) { $("geneMsg").textContent = "Paste at least one gene name."; return; }
+  if (!tokens.length) { $("geneMsg").textContent = tr("Paste at least one gene name."); return; }
   const idx = new Set(), notFound = [];
   tokens.forEach((t) => { const i = nameToIdx(t); if (i >= 0) idx.add(i); else notFound.push(t); });
-  if (!idx.size) { $("geneMsg").textContent = "None of these names is in the network."; return; }
+  if (!idx.size) { $("geneMsg").textContent = tr("None of these names is in the network."); return; }
   state.list = { idx, tokens, notFound };
   state.path = null; state.funcs = []; state.sys = []; state.dis = []; state.hi = null;
-  $("geneMsg").textContent = `${idx.size} of ${tokens.length} recognised. Report in the right panel.`;
+  $("geneMsg").textContent = tr("{n} of {t} recognised. Report in the right panel.", { n: idx.size, t: tokens.length });
   recompute(); state.selected = null; select(null); resetView();
 }
 function enrichSet(members, field, names, top = 6) {
@@ -1181,33 +1434,33 @@ function showListReport() {
   mem.forEach((i) => D.adj[i].forEach(([j]) => { if (!L.idx.has(j)) touch.set(j, (touch.get(j) || 0) + 1); }));
   const linkers = [...touch].filter(([, k]) => k >= 2)
     .map(([j, k]) => ({ j, k, p: hyperTail(k, D.N[j].deg, n, D.N.length) })).sort((a, b) => a.p - b.p || b.k - a.k).slice(0, 8);
-  const sections = [["Functions", "f", D.functions], ["Body systems", "s", D.systems], ["Diseases", "d", D.diseases]]
+  const sections = [["Over-represented functions", "f", D.functions], ["Over-represented body systems", "s", D.systems], ["Over-represented diseases", "d", D.diseases]]
     .map(([t, f, names]) => [t, enrichSet(mem, f, names), names]);
   const domRows = enrichSet(mem, "pf", D.domains.map((d) => d[2]));
   const table = (rows, names) => rows.length
-    ? `<table class="domt"><thead><tr><th></th><th class="n">in list</th><th class="n">× vs all</th></tr></thead><tbody>${rows.map((r) =>
-      `<tr title="FDR q = ${r.q.toExponential(1)}"><td>${esc(names[r.x])}</td><td class="n">${r.k} <span class="id">(${Math.round(100 * r.k / n)}%)</span></td><td class="n">${r.fold >= 10 ? r.fold.toFixed(0) : r.fold.toFixed(1)}×</td></tr>`).join("")}</tbody></table>`
-    : '<p class="note">Nothing significantly over-represented.</p>';
+    ? `<table class="domt"><thead><tr><th></th><th class="n">${tr("in list")}</th><th class="n">${tr("× vs all")}</th></tr></thead><tbody>${rows.map((r) =>
+      `<tr title="FDR q = ${r.q.toExponential(1)}"><td>${esc(trc(names[r.x]))}</td><td class="n">${r.k} <span class="id">(${Math.round(100 * r.k / n)}%)</span></td><td class="n">${r.fold >= 10 ? r.fold.toFixed(0) : r.fold.toFixed(1)}×</td></tr>`).join("")}</tbody></table>`
+    : `<p class="note">${tr("Nothing significantly over-represented.")}</p>`;
   const ratio = inside / expected;
   const hubs = mem.slice().sort((a, b) => within.get(b) - within.get(a) || D.N[b].deg - D.N[a].deg).slice(0, 8);
   $("detail").innerHTML = `<div class="report">
-    <div class="big">Your gene list</div>
-    <p class="lead"><b>${n}</b> of ${L.tokens.length} names found on the map${L.notFound.length ? `. Not found (no high-confidence interaction, or unknown name): ${L.notFound.map(esc).join(", ")}` : ""}.</p>
-    <div class="actions"><button class="btn mini" id="listCsv">Download report (CSV)</button></div>
-    <h3>How connected are they?</h3>
-    <p class="lead"><b>${inside}</b> interactions among your proteins, against <b>${expected.toFixed(1)}</b> expected for random proteins with as many partners${inside ? ` (<b>${ratio >= 10 ? ratio.toFixed(0) : ratio.toFixed(1)}×</b>, p = ${fmtP(poissonTail(inside, expected))})` : ""}. The largest connected group holds <b>${largest}</b> of them.
-    ${ratio > 2 && inside >= 3 ? "Your proteins work together much more than chance would predict." : inside ? "They are only loosely connected." : "They do not interact directly with each other."}</p>
-    ${hubs.length && within.get(hubs[0]) ? `<h3>Most connected inside your list</h3><div class="kv">${hubs.filter((i) => within.get(i)).map((i) => `<span>${within.get(i)} links</span><span><a href="#" data-sel="${i}">${esc(D.N[i].name)}</a> · ${esc(D.N[i].desc)}</span>`).join("")}</div>` : ""}
-    ${sections.map(([t, rows, names]) => `<h3>Over-represented ${t.toLowerCase()}</h3>${table(rows, names)}`).join("")}
-    <h3>Over-represented domains</h3>${table(domRows, D.domains.map((d) => d[2]))}
-    <h3>Linker proteins</h3>
-    ${linkers.length ? `<p class="note">Not in your list, but interacting with several of your proteins, more than expected for their number of partners. Candidates you may have missed.</p>
-      <table class="domt"><thead><tr><th>Protein</th><th class="n">links to list</th><th class="n"></th></tr></thead><tbody>${linkers.map((x) =>
-        `<tr><td><a href="#" data-sel="${x.j}"><b>${esc(D.N[x.j].name)}</b></a> <span class="id">${esc(D.N[x.j].desc).slice(0, 40)}</span></td><td class="n">${x.k} <span class="id">p ${fmtP(x.p)}</span></td><td class="n"><button class="btn mini" data-add="${x.j}" title="Add to the list">+ add</button></td></tr>`).join("")}</tbody></table>`
-      : '<p class="note">No protein outside the list touches two or more of its members.</p>'}
-    <h3>Your proteins</h3>
+    <div class="big">${tr("Your gene list")}</div>
+    <p class="lead">${tr("<b>{n}</b> of {t} names found on the map", { n, t: L.tokens.length })}${L.notFound.length ? `${tr(". Not found (no high-confidence interaction, or unknown name): ")}${L.notFound.map(esc).join(", ")}` : ""}.</p>
+    <div class="actions"><button class="btn mini" id="listCsv">${tr("Download report (CSV)")}</button></div>
+    <h3>${tr("How connected are they?")}</h3>
+    <p class="lead">${tr("<b>{k}</b> interactions among your proteins, against <b>{e}</b> expected for random proteins with as many partners", { k: inside, e: expected.toFixed(1) })}${inside ? ` (<b>${ratio >= 10 ? ratio.toFixed(0) : ratio.toFixed(1)}×</b>, p = ${fmtP(poissonTail(inside, expected))})` : ""}${tr(". The largest connected group holds <b>{n}</b> of them.", { n: largest })}
+    ${tr(ratio > 2 && inside >= 3 ? "Your proteins work together much more than chance would predict." : inside ? "They are only loosely connected." : "They do not interact directly with each other.")}</p>
+    ${hubs.length && within.get(hubs[0]) ? `<h3>${tr("Most connected inside your list")}</h3><div class="kv">${hubs.filter((i) => within.get(i)).map((i) => `<span>${tr("{n} links", { n: within.get(i) })}</span><span><a href="#" data-sel="${i}">${esc(D.N[i].name)}</a> · ${esc(D.N[i].desc)}</span>`).join("")}</div>` : ""}
+    ${sections.map(([t, rows, names]) => `<h3>${tr(t)}</h3>${table(rows, names)}`).join("")}
+    <h3>${tr("Over-represented domains")}</h3>${table(domRows, D.domains.map((d) => d[2]))}
+    <h3>${tr("Linker proteins")}</h3>
+    ${linkers.length ? `<p class="note">${tr("Not in your list, but interacting with several of your proteins, more than expected for their number of partners. Candidates you may have missed.")}</p>
+      <table class="domt"><thead><tr><th>${tr("Protein")}</th><th class="n">${tr("links to list")}</th><th class="n"></th></tr></thead><tbody>${linkers.map((x) =>
+        `<tr><td><a href="#" data-sel="${x.j}"><b>${esc(D.N[x.j].name)}</b></a> <span class="id">${esc(D.N[x.j].desc).slice(0, 40)}</span></td><td class="n">${x.k} <span class="id">p ${fmtP(x.p)}</span></td><td class="n"><button class="btn mini" data-add="${x.j}" title="${tr("Add to the list")}">${tr("+ add")}</button></td></tr>`).join("")}</tbody></table>`
+      : `<p class="note">${tr("No protein outside the list touches two or more of its members.")}</p>`}
+    <h3>${tr("Your proteins")}</h3>
     <div class="chips">${mem.map((i) => `<button class="chip" data-sel="${i}">${esc(D.N[i].name)}</button>`).join("")}</div>
-    <p class="note" style="margin-top:12px">Enrichment: hypergeometric test against all ${D.N.length.toLocaleString()} proteins on the map, false discovery rate &lt; 5%.</p>
+    <p class="note" style="margin-top:12px">${tr("Enrichment: hypergeometric test against all {n} proteins on the map, false discovery rate &lt; 5%.", { n: num(D.N.length) })}</p>
   </div>`;
   $("detail").querySelectorAll("[data-sel]").forEach((el) => el.onclick = (e) => { e.preventDefault(); select(+el.dataset.sel, true); });
   $("detail").querySelectorAll("[data-add]").forEach((el) => el.onclick = () => {
@@ -1236,10 +1489,10 @@ function bfs(src) {
 function findPath() {
   const resolve = (id) => $(id).dataset.i != null ? +$(id).dataset.i : nameToIdx($(id).value);
   const a = resolve("pathFrom"), b = resolve("pathTo");
-  if (a < 0 || b < 0) { $("pathOut").innerHTML = '<p class="note">Pick both proteins from the suggestions.</p>'; return; }
-  if (a === b) { $("pathOut").innerHTML = '<p class="note">Pick two different proteins.</p>'; return; }
+  if (a < 0 || b < 0) { $("pathOut").innerHTML = `<p class="note">${tr("Pick both proteins from the suggestions.")}</p>`; return; }
+  if (a === b) { $("pathOut").innerHTML = `<p class="note">${tr("Pick two different proteins.")}</p>`; return; }
   const da = bfs(a), db = bfs(b), L = da[b];
-  if (L < 0) { state.path = null; refresh(); $("pathOut").innerHTML = `<p class="note">No path: ${esc(D.N[a].name)} and ${esc(D.N[b].name)} are in separate parts of the network.</p>`; return; }
+  if (L < 0) { state.path = null; refresh(); $("pathOut").innerHTML = `<p class="note">${tr("No path: {a} and {b} are in separate parts of the network.", { a: esc(D.N[a].name), b: esc(D.N[b].name) })}</p>`; return; }
   // nodes/edges on any shortest path; count paths and keep the most confident ones (sum of log scores)
   const on = (v) => da[v] >= 0 && db[v] >= 0 && da[v] + db[v] === L;
   const all = new Set(), allEdges = new Set();
@@ -1262,10 +1515,10 @@ function findPath() {
     state.path = { nodes: pth, edges: new Set(pth.slice(1).map((v, t) => Math.min(v, pth[t]) + "-" + Math.max(v, pth[t]))), all, allEdges,
       showAll: $("pathAll") ? $("pathAll").checked : false };
     const w = (u, v) => (D.adj[u].find(([j]) => j === v) || [0, 0])[1];
-    $("pathOut").innerHTML = `<p class="lead" style="margin:4px 0"><b>${L} step${L > 1 ? "s" : ""}</b> · ${count[b] > 1e6 ? count[b].toExponential(1) : count[b].toLocaleString()} shortest path${count[b] > 1 ? "s" : ""} (most confident shown)</p>`
-      + `<div class="pathline">${pth.map((v, t) => (t ? `<span class="arr" title="STRING confidence">→ ${(w(pth[t - 1], v) / 1000).toFixed(2)}</span>` : "") + `<button class="chip" data-sel="${v}" title="${esc(D.N[v].desc)}">${esc(D.N[v].name)}</button>`).join("")}</div>`
-      + (alts.length > 1 ? `<div class="note">Other paths:</div>${alts.map((x, j) => `<div class="alt ${j === k ? "on" : ""}" data-alt="${j}">${x.nodes.map((v) => esc(D.N[v].name)).join(" → ")}</div>`).join("")}` : "")
-      + `<div class="row"><label><input type="checkbox" id="pathAll" ${state.path.showAll ? "checked" : ""}> Show all ${all.size} proteins on shortest paths</label></div>`;
+    $("pathOut").innerHTML = `<p class="lead" style="margin:4px 0"><b>${tr(L > 1 ? "{n} steps" : "{n} step", { n: L })}</b> · ${tr(count[b] > 1 ? "{c} shortest paths (most confident shown)" : "{c} shortest path (most confident shown)", { c: count[b] > 1e6 ? count[b].toExponential(1) : num(count[b]) })}</p>`
+      + `<div class="pathline">${pth.map((v, t) => (t ? `<span class="arr" title="${tr("STRING confidence")}">→ ${(w(pth[t - 1], v) / 1000).toFixed(2)}</span>` : "") + `<button class="chip" data-sel="${v}" title="${esc(D.N[v].desc)}">${esc(D.N[v].name)}</button>`).join("")}</div>`
+      + (alts.length > 1 ? `<div class="note">${tr("Other paths:")}</div>${alts.map((x, j) => `<div class="alt ${j === k ? "on" : ""}" data-alt="${j}">${x.nodes.map((v) => esc(D.N[v].name)).join(" → ")}</div>`).join("")}` : "")
+      + `<div class="row"><label><input type="checkbox" id="pathAll" ${state.path.showAll ? "checked" : ""}> ${tr("Show all {n} proteins on shortest paths", { n: all.size })}</label></div>`;
     $("pathOut").querySelectorAll("[data-sel]").forEach((el) => el.onclick = () => select(+el.dataset.sel, true));
     $("pathOut").querySelectorAll("[data-alt]").forEach((el) => el.onclick = () => show(+el.dataset.alt));
     $("pathAll").onchange = (e) => { state.path.showAll = e.target.checked; refresh(); };
@@ -1358,9 +1611,9 @@ async function goTour(k) {
   if (TOUR[tourI] && TOUR[tourI].after) TOUR[tourI].after();
   tourI = k;
   const st = TOUR[k];
-  $("tourCard").innerHTML = `<div class="step">Step ${k + 1} of ${TOUR.length}</div><h3>${st.title}</h3><p>${st.text}</p>`
-    + `<div class="nav"><button class="btn skip" data-t="skip">Skip tour</button>${k ? '<button class="btn" data-t="back">Back</button>' : ""}`
-    + `<button class="btn primary" data-t="next">${k === TOUR.length - 1 ? "Finish" : k ? "Next" : "Start tour"}</button></div>`
+  $("tourCard").innerHTML = `<div class="step">${tr("Step {k} of {n}", { k: k + 1, n: TOUR.length })}</div><h3>${tr(st.title)}</h3><p>${tr(st.text)}</p>`
+    + `<div class="nav"><button class="btn skip" data-t="skip">${tr("Skip tour")}</button>${k ? `<button class="btn" data-t="back">${tr("Back")}</button>` : ""}`
+    + `<button class="btn primary" data-t="next">${tr(k === TOUR.length - 1 ? "Finish" : k ? "Next" : "Start tour")}</button></div>`
     + `<div class="dots">${TOUR.map((_, j) => `<i class="${j === k ? "on" : ""}"></i>`).join("")}</div>`;
   if (st.before) await st.before();
   if (tourI !== k) return;

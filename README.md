@@ -62,6 +62,12 @@ human proteome, Human Protein Atlas `proteinatlas.tsv`).
 - **Share & export**: the URL keeps the current view (`#p=TP53&d=Cancer`, `#genes=…`, `#path=INS,AKT1`,
   `#tour`); CSV downloads and PNG snapshot of the map.
 - **Beginner's guide** (`docs/learn.html`): interactive introduction to proteins, interactions and hubs.
+- **English / French**: chosen from the browser language, switchable with the FR/EN button (remembered),
+  or forced with `?lang=fr` / `?lang=en`. Protein descriptions stay in English (UniProt).
+- **Easy picking**: while a filter, gene list, path or protein is highlighted, grey proteins ignore the mouse
+  and the pointer snaps to the nearest coloured protein.
+
+Contact: leo.hammerli@epfl.ch
 
 ## Data sources and licences
 
