@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+message: "If you use this map or its processed data, please cite it as below, together with the underlying resources (STRING, UniProt, Human Protein Atlas, Reactome)."
+title: "Human Interactome Map"
+type: software
+authors:
+  - family-names: Haemmerli
+    given-names: Leo
+    affiliation: EPFL
+repository-code: "https://github.com/lhaemmerli/human-interactome-map"
+url: "https://lhaemmerli.github.io/human-interactome-map/"
+abstract: >-
+  Interactive map of 86,519 high-confidence physical protein-protein interactions
+  between 10,746 human proteins (STRING v12), with filters by function, body system,
+  disease and Reactome pathway, gene-list enrichment, path finding, 3D structures,
+  domain-domain interfaces, disease mutations and drugs.
+keywords:
+  - protein-protein interactions
+  - interactome
+  - network biology
+  - visualization
+date-released: "2026-11-18"

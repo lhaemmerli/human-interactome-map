@@ -10,4 +10,9 @@ curl -fSL -o uniprot_human.tsv.gz    "$UP&fields=accession,gene_primary,protein_
 curl -fSL -o uniprot_pfam.tsv.gz     "$UP&fields=accession,xref_pfam"
 curl -fSL -o pfam_clans.tsv.gz       https://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.clans.tsv.gz
 curl -fSL --retry 3 -o 3did/3did_flat.gz https://3did.irbbarcelona.org/download/current/3did_flat.gz
+mkdir -p reactome uniprot_variants
+for f in UniProt2Reactome_All_Levels.txt ReactomePathways.txt ReactomePathwaysRelation.txt; do
+  curl -fSL -o "reactome/$f" "https://reactome.org/download/current/$f"
+done
+curl -fSL -o uniprot_variants/humsavar.txt https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/variants/humsavar.txt
 echo "Done. Now run: python3 pipeline/build_data.py"

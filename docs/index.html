@@ -116,6 +116,20 @@ textarea { width: 100%; min-height: 64px; resize: vertical; padding: 7px 10px; b
 .amramp { display: inline-block; width: 120px; height: 8px; border-radius: 4px; vertical-align: middle;
   background: linear-gradient(90deg, #3987e5, #9a9a95, #e34948); margin: 0 6px; }
 #afColor { margin-top: 6px; }
+#varBox { margin-top: 6px; font-size: 12px; color: var(--ink-2); }
+#varBox label { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+#varList { margin-top: 4px; }
+#varList .chip { font-size: 11px; padding: 0 6px; }
+.vdot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: #e040fb; }
+.drug { display: grid; grid-template-columns: 1fr auto; gap: 0 8px; padding: 5px 0; border-bottom: 1px solid var(--grid); }
+.drug .nm { font-weight: 600; }
+.drug .mo, .drug .ind { grid-column: 1 / -1; color: var(--ink-2); font-size: 12px; }
+.drug .ind { color: var(--muted); }
+.stage { font-size: 11px; border-radius: 10px; padding: 0 7px; border: 1px solid var(--border); color: var(--ink-2); white-space: nowrap; height: fit-content; }
+.stage.ok { background: var(--s3); border-color: var(--s3); color: #fff; }
+.stage.wd { border-color: #d03b3b; color: #d03b3b; }
+#pwChips .chip { display: inline-flex; gap: 4px; align-items: center; }
+#pwChips .chip b { font-weight: 400; color: var(--muted); }
 .domt { width: 100%; border-collapse: collapse; margin-top: 4px; }
 .domt th { text-align: left; font-weight: 500; color: var(--muted); font-size: 11px; padding: 2px 4px; border-bottom: 1px solid var(--axis); }
 .domt td { padding: 4px; border-bottom: 1px solid var(--grid); vertical-align: top; cursor: pointer; }
@@ -191,6 +205,8 @@ a { color: var(--s1); }
   body, body.no-detail { grid-template-columns: 1fr; grid-template-rows: 45vh 1fr; overflow: auto; }
   #stage { grid-row: 1; } #left { grid-row: 2; }
   #right { position: fixed; inset: auto 0 0 0; max-height: 55vh; z-index: 5; border-top: 1px solid var(--border); }
+  #legend { font-size: 11px; padding: 4px 8px; max-width: 70%; }
+  #legend .ramp { width: 70px; }
 }
 </style>
 </head>
@@ -217,6 +233,7 @@ a { color: var(--s1); }
   <h2 data-t>Path between two proteins</h2>
   <div class="search-wrap"><input type="search" id="pathFrom" placeholder="From… (e.g. INS)" data-tp autocomplete="off"><ul class="suggest" id="sugFrom"></ul></div>
   <div class="search-wrap" style="margin-top:6px"><input type="search" id="pathTo" placeholder="To… (e.g. AKT1)" data-tp autocomplete="off"><ul class="suggest" id="sugTo"></ul></div>
+  <div class="row"><label><input type="checkbox" id="pathInPw"> <span data-t>Only through proteins of the selected pathway(s)</span></label></div>
   <div class="actions"><button class="btn primary" id="pathGo" data-t>Find path</button><button class="btn" id="pathClear" data-t>clear</button></div>
   <div id="pathOut"></div>
 
@@ -237,10 +254,14 @@ a { color: var(--s1); }
   <div class="checklist" id="disList"></div>
   <p class="note" data-t>Genes with disease-causing variants or cancer involvement (UniProt / Human Protein Atlas). Within a group any ticked item matches; across groups (function, system, disease) all must match.</p>
 
+  <h2><span data-t>Pathway (Reactome)</span> <button id="clearP" data-t>clear</button></h2>
+  <div class="search-wrap"><input type="search" id="pwSearch" placeholder="Search a pathway (e.g. insulin, apoptosis)…" data-tp autocomplete="off"><ul class="suggest" id="pwSug"></ul></div>
+  <div class="chips" id="pwChips" style="margin-top:6px"></div>
+
   <h2><span id="matchTitle">Most connected proteins</span> <button id="matchCsv" title="Download all matching proteins as CSV" data-tt>CSV</button></h2>
   <div id="matches"></div>
   <p class="note" data-t>Data: STRING v12 physical interactions (confidence ≥ <span id="minScore"></span>), UniProt keywords, Human Protein Atlas.</p>
-  <p class="note contact"><span data-t>Contact:</span> <a id="contactLink" href="#">…</a></p>
+  <p class="note contact"><a href="methods.html" data-t>Methods, data sources & how to cite</a> · <span data-t>Contact:</span> <a id="contactLink" href="#">…</a></p>
 </aside>
 
 <main id="stage">
@@ -259,6 +280,7 @@ a { color: var(--s1); }
     <div id="mol"><div id="structMsg"></div><div id="structHover"></div></div>
     <div id="afColor" class="tabs" hidden><button data-c="plddt" data-t>Colour: confidence</button><button data-c="am" data-t>Colour: mutation sensitivity</button></div>
     <div id="plddtLegend" hidden></div>
+    <div id="varBox" hidden><label><input type="checkbox" id="varToggle"> <span class="vdot"></span> <span id="varLabel"></span></label><div id="varList" class="chips"></div></div>
     <div id="structInfo" class="note"></div>
   </section>
 </aside>
@@ -392,6 +414,32 @@ const FR = {
   "{n} step": "{n} étape", "{n} steps": "{n} étapes", "{c} shortest path (most confident shown)": "{c} plus court chemin (le plus fiable est affiché)",
   "{c} shortest paths (most confident shown)": "{c} plus courts chemins (le plus fiable est affiché)", "STRING confidence": "Confiance STRING",
   "Other paths:": "Autres chemins :", "Show all {n} proteins on shortest paths": "Montrer les {n} protéines sur les plus courts chemins",
+  // v4: pathways, drugs, mutations, methods
+  "Pathway (Reactome)": "Voie biologique (Reactome)", "Search a pathway (e.g. insulin, apoptosis)…": "Chercher une voie (ex. insulin, apoptosis)…",
+  "Only through proteins of the selected pathway(s)": "Seulement via les protéines des voies sélectionnées",
+  "Methods, data sources & how to cite": "Méthodes, sources & citation", "click to remove": "cliquer pour retirer",
+  "{n} proteins": "{n} protéines", "No pathway matches “{q}”": "Aucune voie ne correspond à « {q} »",
+  "Pathways (Reactome)": "Voies biologiques (Reactome)", "Not in any Reactome pathway": "Dans aucune voie Reactome",
+  "Most specific pathways shown; part of {n} pathways in total (including broader ones). Click one to filter the map.":
+    "Voies les plus précises affichées ; fait partie de {n} voies au total (y compris plus générales). Cliquez sur l'une d'elles pour filtrer la carte.",
+  "Over-represented pathways": "Voies sur-représentées",
+  "Pick a pathway in the Pathway filter first.": "Choisissez d'abord une voie dans le filtre Voie biologique.",
+  "No path between {a} and {b} using only proteins of the selected pathway(s).": "Aucun chemin entre {a} et {b} en n'utilisant que des protéines des voies sélectionnées.",
+  "Drugs": "Médicaments", "No Ensembl gene ID for this protein.": "Pas d'identifiant Ensembl pour cette protéine.",
+  "Could not reach Open Targets.": "Impossible de joindre Open Targets.", "No drug or clinical candidate targets this protein yet.": "Aucun médicament ni candidat clinique ne cible encore cette protéine.",
+  "{a} approved · {c} in clinical development": "{a} approuvés · {c} en développement clinique", "For: ": "Pour : ", "Show all {n}": "Tout afficher ({n})",
+  "Approved": "Approuvé", "Phase 4": "Phase 4", "Phase 3": "Phase 3", "Phase 2/3": "Phase 2/3", "Phase 2": "Phase 2", "Phase 1/2": "Phase 1/2",
+  "Phase 1": "Phase 1", "Early phase 1": "Phase 1 précoce", "Withdrawn": "Retiré",
+  "Show known disease mutations ({n})": "Afficher les mutations connues causant des maladies ({n})",
+  "Magenta balls = positions where a mutation is known to cause disease (UniProt curated variants). Click one to zoom in.":
+    "Boules magenta = positions où une mutation est connue pour causer une maladie (variants vérifiés par UniProt). Cliquez sur l'une d'elles pour zoomer.",
+  " · disease mutation: {v}": " · mutation pathogène : {v}",
+  "Pathways": "Voies biologiques",
+  "Search a <b>Reactome pathway</b> (here: <i>Signaling by Insulin receptor</i>) to light up its proteins. The path finder can also be told to stay inside the selected pathway, so routes follow real signalling chains.":
+    "Cherchez une <b>voie Reactome</b> (ici : <i>Signaling by Insulin receptor</i>) pour allumer ses protéines. Le chercheur de chemin peut aussi rester à l'intérieur de la voie sélectionnée, pour suivre de vraies chaînes de signalisation.",
+  "Medicines and mutations": "Médicaments et mutations",
+  "<b>Drugs</b> lists approved medicines and clinical-trial candidates that act on the protein (Open Targets). On the AlphaFold structure you can also switch on <b>known disease mutations</b>, shown as magenta balls.":
+    "<b>Médicaments</b> liste les médicaments approuvés et les candidats en essais cliniques qui agissent sur la protéine (Open Targets). Sur la structure AlphaFold, vous pouvez aussi afficher les <b>mutations connues causant des maladies</b>, en boules magenta.",
   // tour chrome
   "Step {k} of {n}": "Étape {k} sur {n}", "Skip tour": "Passer", "Back": "Retour", "Finish": "Terminer", "Next": "Suivant", "Start tour": "Commencer",
   // tour steps
@@ -490,7 +538,7 @@ $("langBtn").onclick = () => {
 };
 
 let D, graph, renderer, P = {};         // data, graphology graph, sigma, palette
-const state = { funcs: [], sys: [], dis: [], last: null, hi: null, list: null, path: null, selected: null, hovered: null, minDeg: 1 };
+const state = { funcs: [], sys: [], dis: [], last: null, hi: null, list: null, path: null, pw: [], selected: null, hovered: null, minDeg: 1 };
 const GROUPS = [["funcs", "f", "funcList", "functions"], ["sys", "s", "sysList", "systems"], ["dis", "d", "disList", "diseases"]];
 let match = null;                        // Uint8Array: node matches filters
 
@@ -531,7 +579,10 @@ function init(data) {
   readPalette();
   const F = Object.fromEntries(D.fields.map((f, i) => [f, i]));
   D.N = D.nodes.map((r) => ({ name: r[F.name], desc: r[F.desc], acc: r[F.acc], deg: r[F.degree], x: r[F.x], y: r[F.y],
-    module: r[F.module], f: r[F.functions], s: r[F.systems], t: r[F.tissues], about: r[F.about], ensp: r[F.ensp], alias: r[F.aliases] || [], d: r[F.diseases] || [], dz: r[F.disease_terms] || [], pf: r[F.domains] || [] }));
+    module: r[F.module], f: r[F.functions], s: r[F.systems], t: r[F.tissues], about: r[F.about], ensp: r[F.ensp], alias: r[F.aliases] || [], d: r[F.diseases] || [], dz: r[F.disease_terms] || [], pf: r[F.domains] || [],
+    ensg: r[F.ensg] || "", pw: r[F.pathways] || [], pws: r[F.pathways_specific] || [], nv: r[F.n_variants] || 0 }));
+  D.pwNames = D.pathways.map((x) => x[1]);
+  D.pwSize = D.pathways.map(() => 0); D.N.forEach((q) => q.pw.forEach((x) => D.pwSize[x]++));
   const n = D.N.length;
   $("meta").textContent = tr("{p} proteins · {i} interactions. Most connected proteins sit at the centre.", { p: num(D.meta.proteins), i: num(D.meta.interactions) });
   $("minScore").textContent = D.meta.min_score;
@@ -615,7 +666,7 @@ $("minDeg").oninput = (e) => { state.minDeg = +e.target.value; $("minDegV").text
 // Colour rules: default = blue ramp by connectivity. When one filter group has
 // 1–3 ticked categories, each gets its own categorical colour (fixed by tick order).
 function colorKey() {
-  const active = GROUPS.filter(([k]) => state[k].length);
+  const active = [...GROUPS, ["pw", "pw", null, "pwNames"]].filter(([k]) => state[k].length);
   if (!active.length) return null;
   // colour by the group last touched, otherwise the first active one
   const g = active.find(([k]) => k === state.last) || active[0];
@@ -624,11 +675,11 @@ function colorKey() {
 function recompute() {
   const n = D.N.length;
   match = new Uint8Array(n);
-  const F = new Set(state.funcs), S = new Set(state.sys), Z = new Set(state.dis);
+  const F = new Set(state.funcs), S = new Set(state.sys), Z = new Set(state.dis), PW = new Set(state.pw);
   let count = 0;
   for (let i = 0; i < n; i++) {
     const p = D.N[i];
-    const ok = p.deg >= state.minDeg && (!F.size || p.f.some((x) => F.has(x))) && (!S.size || p.s.some((x) => S.has(x))) && (!Z.size || p.d.some((x) => Z.has(x))) && (!state.list || state.list.idx.has(i));
+    const ok = p.deg >= state.minDeg && (!F.size || p.f.some((x) => F.has(x))) && (!S.size || p.s.some((x) => S.has(x))) && (!Z.size || p.d.some((x) => Z.has(x))) && (!state.list || state.list.idx.has(i)) && (!PW.size || p.pw.some((x) => PW.has(x)));
     match[i] = ok; count += ok;
   }
   D.ck = colorKey();
@@ -641,7 +692,8 @@ function recompute() {
       lb.querySelector(".sw").style.background = ck || "transparent";
     });
   }
-  const filtered = state.funcs.length || state.sys.length || state.dis.length || state.minDeg > 1 || !!state.list;
+  const filtered = state.funcs.length || state.sys.length || state.dis.length || state.pw.length || state.minDeg > 1 || !!state.list;
+  renderPwChips();
   $("matchTitle").textContent = filtered ? tr("{n} matching proteins", { n: num(count) }) : tr("Most connected proteins");
   const rows = [];
   for (let i = 0; i < n && rows.length < 300; i++) if (match[i]) rows.push(i);
@@ -663,7 +715,7 @@ function buildLegend() {
   } else {
     if (state.list) h += `<div class="item"><span class="sw" style="background:${P.s2}"></span>${tr("Your gene list ({n})", { n: state.list.idx.size })}</div>`;
     else h += `<div>${tr("Colour & position = number of interaction partners")}</div><div class="item">${tr("few")} <span class="ramp"></span> ${tr("many")}</div>`;
-    if (state.funcs.length || state.sys.length || state.dis.length || state.list) h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>${tr("Not matching")}</div>`;
+    if (state.funcs.length || state.sys.length || state.dis.length || state.pw.length || state.list) h += `<div class="item"><span class="sw" style="background:${P.faded}"></span>${tr("Not matching")}</div>`;
   }
   $("legend").innerHTML = h;
 }
@@ -787,7 +839,8 @@ function drawOverlay() {
     ctx.strokeStyle = P.grid; ctx.setLineDash([3, 4]); ctx.lineWidth = 1; ctx.stroke(); ctx.setLineDash([]);
     ctx.fillStyle = P.muted; ctx.fillText(tr("≥ {d} partners", { d }), c.x + 4, c.y - rr - 4);
   }
-  // module labels around the outside
+  // module labels around the outside (skipped on narrow screens, where they would be cut off)
+  if (box.width < 600) return;
   ctx.fillStyle = P["ink-2"]; ctx.font = `500 11px system-ui, -apple-system, sans-serif`;
   D.modules.forEach((m) => {
     if (m.size < 250) return;
@@ -847,6 +900,11 @@ function select(i, fly) {
     <h2>${tr("Disease involvement")}</h2>
     <div class="chips">${p.d.map((x) => `<button class="chip" data-d="${x}">${esc(trc(D.diseases[x]))}</button>`).join("") || `<span class="note">${tr("No known disease association")}</span>`}</div>
     ${p.dz.length ? `<div class="note" style="margin-top:4px">${tr("Specific: ")}${p.dz.map(esc).join(", ")}</div>` : ""}
+    <h2>${tr("Drugs")} <span class="note">Open Targets</span></h2>
+    <div id="drugSection"><span class="note">${tr("Loading…")}</span></div>
+    <h2>${tr("Pathways (Reactome)")}</h2>
+    <div class="chips">${p.pws.map((x) => `<button class="chip" data-pw="${x}" title="${esc(D.pathways[x][0])}">${esc(D.pathways[x][1])}</button>`).join("") || `<span class="note">${tr("Not in any Reactome pathway")}</span>`}</div>
+    ${p.pw.length ? `<div class="note" style="margin-top:4px">${tr("Most specific pathways shown; part of {n} pathways in total (including broader ones). Click one to filter the map.", { n: p.pw.length })}</div>` : ""}
     <h2>${tr("About")}</h2>
     <div class="about">${esc(p.about)}</div>
     <div style="margin-top:6px">${p.acc ? `<a href="https://www.uniprot.org/uniprotkb/${esc(p.acc)}" target="_blank" rel="noopener">UniProt</a> · ` : ""}<a href="https://string-db.org/network/9606.${esc(p.ensp)}" target="_blank" rel="noopener">STRING</a> · <a href="https://www.proteinatlas.org/search/${esc(p.name)}" target="_blank" rel="noopener">Protein Atlas</a></div>
@@ -863,8 +921,10 @@ function select(i, fly) {
   $("structSlot").appendChild($("structBox"));
   $("structBox").hidden = false;
   if (structState.acc !== p.acc || !p.acc) loadStructure(p); else if (molViewer) { molViewer.resize(); molViewer.render(); }
-  $("detail").querySelectorAll(".chip[data-f], .chip[data-s], .chip[data-d]").forEach((b) => b.onclick = () => {
-    if (b.dataset.f) { state.funcs = [+b.dataset.f]; state.last = "funcs"; }
+  loadDrugs(i);
+  $("detail").querySelectorAll(".chip[data-f], .chip[data-s], .chip[data-d], .chip[data-pw]").forEach((b) => b.onclick = () => {
+    if (b.dataset.pw) { state.pw = [+b.dataset.pw]; state.last = "pw"; }
+    else if (b.dataset.f) { state.funcs = [+b.dataset.f]; state.last = "funcs"; }
     else if (b.dataset.s) { state.sys = [+b.dataset.s]; state.last = "sys"; }
     else { state.dis = [+b.dataset.d]; state.last = "dis"; }
     recompute();
@@ -1033,8 +1093,46 @@ $("afColor").onclick = async (e) => {
   afColorMode = b.dataset.c; renderAfColorTabs();
   if (structState.src === "af") showStructure("af");
 };
+// known disease-causing missense variants (UniProt humsavar, pathogenic / likely pathogenic), loaded on first use
+let VAR = null, varLoading = null;
+const VAR_COLOR = "#e040fb";
+function loadVariants() {
+  if (!varLoading) varLoading = fetch("variants.json").then((r) => r.json()).then((v) => (VAR = v)).catch(() => { varLoading = null; return null; });
+  return varLoading;
+}
+function renderVarBox() {
+  const p = state.selected != null ? D.N[state.selected] : null;
+  const show = structState.src === "af" && p && p.nv > 0;
+  $("varBox").hidden = !show; if (!show) return;
+  $("varLabel").textContent = tr("Show known disease mutations ({n})", { n: p.nv });
+  const list = structState.varMap ? [...structState.varMap].sort((x, y) => x[0] - y[0]) : [];
+  $("varList").innerHTML = $("varToggle").checked && list.length
+    ? list.slice(0, 40).map(([pos, vs]) => `<button class="chip" data-res="${pos}" title="${esc(vs.map((x) => `${x[1]}: ${VAR.diseases[x[2]]}`).join("\n"))}">${esc(vs.map((x) => x[1]).join("/"))}</button>`).join("")
+      + (list.length > 40 ? ` <span class="note">+${list.length - 40}</span>` : "")
+      + `<div class="note" style="width:100%">${tr("Magenta balls = positions where a mutation is known to cause disease (UniProt curated variants). Click one to zoom in.")}</div>`
+    : "";
+  $("varList").querySelectorAll("[data-res]").forEach((b) => b.onclick = () => { molViewer.zoomTo({ resi: +b.dataset.res }, 600); molViewer.render(); });
+}
+async function applyVariants(tok) {
+  const p = state.selected != null ? D.N[state.selected] : null;
+  if (!p || !p.nv || !$("varToggle").checked) { renderVarBox(); return; }
+  await loadVariants();
+  if (!VAR || tok !== structToken || structState.src !== "af") return;
+  const map = new Map();
+  (VAR.variants[p.acc] || []).forEach((v) => { if (!map.has(v[0])) map.set(v[0], []); map.get(v[0]).push(v); });
+  structState.varMap = map;
+  molViewer.addStyle({ resi: [...map.keys()], atom: "CA" }, { sphere: { color: VAR_COLOR, radius: 1.15 } });
+  renderVarBox();
+}
+$("varToggle").onchange = async () => {
+  if (structState.src !== "af" || !molViewer) return;
+  structState.varMap = null; styleModel("af");
+  await applyVariants(structToken);
+  renderVarBox(); molViewer.render();
+};
 function renderAfColorTabs() {
   $("afColor").hidden = structState.src !== "af";
+  renderVarBox();
   const hasAM = !!(structState.af && structState.af.amAnnotationsUrl);
   $("afColor").querySelectorAll("button").forEach((b) => {
     b.classList.toggle("on", b.dataset.c === afColorMode);
@@ -1069,7 +1167,7 @@ $("structBox").querySelector(".tabs").onclick = (e) => {
 async function loadStructure(p) {
   const tok = ++structToken;
   structState = { acc: p.acc, af: null, pdb: null, src: null };
-  renderStructTabs(); $("structInfo").textContent = ""; $("plddtLegend").hidden = true; $("afColor").hidden = true;
+  renderStructTabs(); $("structInfo").textContent = ""; $("plddtLegend").hidden = true; $("afColor").hidden = true; $("varBox").hidden = true;
   if (molViewer) { molViewer.clear(); molViewer.render(); }
   if (!p.acc) { setStructMsg(tr("No UniProt entry for this protein, so no structure is available.")); return; }
   setStructMsg(tr("Looking up structures…"));
@@ -1091,7 +1189,7 @@ function styleModel(src) {
   if (src === "pdb") molViewer.setStyle({ hetflag: true, not: { resn: ["HOH", "WAT", "DOD"] } }, { stick: { radius: 0.18 } });
 }
 async function showStructure(src, tok = structToken) {
-  structState.src = src; renderStructTabs(); $("afColor").hidden = src !== "af";
+  structState.src = src; renderStructTabs(); $("afColor").hidden = src !== "af"; $("varBox").hidden = true;
   setStructMsg(tr("Loading structure…")); $("structHover").textContent = "";
   let $3D;
   try { $3D = await load3Dmol(); } catch (e) { setStructMsg(e.message); return; }
@@ -1127,8 +1225,11 @@ async function showStructure(src, tok = structToken) {
   styleModel(src);
   molViewer.setHoverable({}, true,
     (a) => { const am = src === "af" && afColorMode === "am" && structState.amData ? structState.amData.get(a.resi) : null;
-      $("structHover").textContent = `${a.resn} ${a.resi}` + (am != null ? tr(" · mutation sensitivity {v} ({l})", { v: am.toFixed(2), l: amLabel(am) }) : src === "af" ? ` · pLDDT ${a.b.toFixed(0)}` : ""); },
+      const vm = src === "af" && structState.varMap ? structState.varMap.get(a.resi) : null;
+      $("structHover").textContent = `${a.resn} ${a.resi}` + (vm ? tr(" · disease mutation: {v}", { v: vm.map((x) => `${x[1]} (${VAR.diseases[x[2]]})`).join("; ") }) : "") + (am != null ? tr(" · mutation sensitivity {v} ({l})", { v: am.toFixed(2), l: amLabel(am) }) : src === "af" ? ` · pLDDT ${a.b.toFixed(0)}` : ""); },
     () => { $("structHover").textContent = ""; });
+  structState.varMap = null;
+  if (src === "af") await applyVariants(tok);
   molViewer.zoomTo(); molViewer.render();
   setStructMsg("");
   $("structInfo").innerHTML = info + (src === "af" && afColorMode === "am" ? tr(" Mutation colours: AlphaMissense (Cheng et al., 2023).") : "");
@@ -1160,7 +1261,7 @@ async function showComplex(i, j) {
   $("structBox").scrollIntoView({ behavior: "smooth", block: "start" });
   structState.cx = { label: `${p.name}–${q.name}`, parts: null };
   structState.src = "cx"; renderStructTabs();
-  $("structInfo").textContent = ""; $("plddtLegend").hidden = true; $("afColor").hidden = true; $("structHover").textContent = "";
+  $("structInfo").textContent = ""; $("plddtLegend").hidden = true; $("afColor").hidden = true; $("varBox").hidden = true; $("structHover").textContent = "";
   setStructMsg(tr("Looking for a structure of {a} with {b}…", { a: p.name, b: q.name }));
   const cx = structState.cx;
   if (p.acc && q.acc) {
@@ -1237,6 +1338,86 @@ async function renderComplex(tok) {
   getJSON(`https://data.rcsb.org/rest/v1/core/entry/${encodeURIComponent(cx.pdb)}`).then((e) => {
     if (e && e.struct && $("cxTitle") && structState.cx === cx) $("cxTitle").textContent = tr("Entry: “{t}”", { t: e.struct.title });
   });
+}
+
+// ---------- pathway filter (Reactome): search box + chips
+function renderPwChips() {
+  $("pwChips").innerHTML = state.pw.map((x) => {
+    const col = D.ck && D.ck.field === "pw" ? [P.s1, P.s2, P.s3][state.pw.indexOf(x)] : null;
+    return `<button class="chip" data-x="${x}" title="${esc(D.pathways[x][0])} · ${tr("click to remove")}">${col ? `<span class="sw" style="background:${col}"></span>` : ""}${esc(D.pathways[x][1])} <b>${D.pwSize[x]} ✕</b></button>`;
+  }).join("");
+}
+$("pwChips").onclick = (e) => { const b = e.target.closest("[data-x]"); if (!b) return; state.pw = state.pw.filter((x) => x !== +b.dataset.x); recompute(); };
+$("clearP").onclick = () => { state.pw = []; recompute(); };
+(function attachPathwaySearch() {
+  const input = $("pwSearch"), ul = $("pwSug"); let hits = [], act = -1;
+  const find = (q) => {
+    q = q.trim().toLowerCase(); if (q.length < 2) return [];
+    const out = [];
+    D.pathways.forEach((x, i) => { const n = x[1].toLowerCase(), k = n.indexOf(q); if (k >= 0) out.push({ i, score: (k === 0 ? 0 : /\W/.test(n[k - 1]) ? 1 : 2) }); });
+    return out.sort((a, b) => a.score - b.score || D.pwSize[b.i] - D.pwSize[a.i]).slice(0, 14);
+  };
+  const render = () => {
+    const q = input.value.trim().toLowerCase();
+    if (q.length < 2) { ul.innerHTML = ""; return; }
+    ul.innerHTML = hits.length ? hits.map((h, k) => { const x = D.pathways[h.i], root = x[2] >= 0 && x[2] !== h.i ? D.pathways[x[2]][1] : "";
+      return `<li data-i="${h.i}" class="${k === act ? "act" : ""}"><span class="g">${hl(x[1], q)}</span><span class="c">${tr("{n} proteins", { n: D.pwSize[h.i] })}</span>${root ? `<span class="p">${esc(root)}</span>` : ""}</li>`; }).join("")
+      : `<li class="none">${tr("No pathway matches “{q}”", { q: esc(q) })}</li>`;
+    const el = ul.querySelector(".act"); if (el) el.scrollIntoView({ block: "nearest" });
+  };
+  const pick = (i) => { if (!state.pw.includes(i)) state.pw.push(i); state.last = "pw"; input.value = ""; hits = []; ul.innerHTML = ""; recompute(); };
+  input.addEventListener("input", () => { if (!D) return; hits = find(input.value); act = hits.length ? 0 : -1; render(); });
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown" || e.key === "ArrowUp") { if (!hits.length) return; e.preventDefault(); act = (act + (e.key === "ArrowDown" ? 1 : -1) + hits.length) % hits.length; render(); }
+    else if (e.key === "Enter") { if (hits[act]) pick(hits[act].i); }
+    else if (e.key === "Escape") { hits = []; ul.innerHTML = ""; e.stopPropagation(); }
+  });
+  input.addEventListener("blur", () => setTimeout(() => { ul.innerHTML = ""; }, 150));
+  ul.addEventListener("mousedown", (e) => { const li = e.target.closest("li[data-i]"); if (li) { e.preventDefault(); pick(+li.dataset.i); } });
+})();
+
+// ---------- drugs (Open Targets Platform, loaded live per protein)
+const drugCache = new Map();
+const STAGE = { APPROVAL: [0, "Approved"], PHASE_4: [1, "Phase 4"], PHASE_3: [2, "Phase 3"], PHASE_2_3: [3, "Phase 2/3"], PHASE_2: [4, "Phase 2"],
+  PHASE_1_2: [5, "Phase 1/2"], PHASE_1: [6, "Phase 1"], EARLY_PHASE_1: [7, "Early phase 1"], WITHDRAWAL: [8, "Withdrawn"] };
+const titleCase = (t) => t.toLowerCase().replace(/(^|[\s-])([a-z])/g, (m, a, b) => a + b.toUpperCase());
+async function loadDrugs(i) {
+  const p = D.N[i], box = () => $("drugSection");
+  if (!p.ensg) { box().innerHTML = `<span class="note">${tr("No Ensembl gene ID for this protein.")}</span>`; return; }
+  let rows = drugCache.get(p.ensg);
+  if (!rows) {
+    const query = `{ target(ensemblId: "${p.ensg}") { drugAndClinicalCandidates { rows { maxClinicalStage drug { id name drugType mechanismsOfAction { rows { mechanismOfAction targets { approvedSymbol } } } } diseases { disease { name } } } } } }`;
+    try {
+      const r = await fetch("https://api.platform.opentargets.org/api/v4/graphql", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query }) });
+      const j = await r.json();
+      rows = (((j.data || {}).target || {}).drugAndClinicalCandidates || {}).rows || [];
+      drugCache.set(p.ensg, rows);
+    } catch (e) { if (state.selected === i && box()) box().innerHTML = `<span class="note">${tr("Could not reach Open Targets.")}</span>`; return; }
+  }
+  if (state.selected !== i || !box()) return;
+  const byDrug = new Map();
+  rows.forEach((r) => { const d = r.drug; if (!d) return; const cur = byDrug.get(d.id);
+    const st = (STAGE[r.maxClinicalStage] || [9, r.maxClinicalStage])[0];
+    if (!cur || st < cur.st) byDrug.set(d.id, { d, st, stage: r.maxClinicalStage, dis: [...new Set([...(cur ? cur.dis : []), ...(r.diseases || []).map((x) => x.disease && x.disease.name).filter(Boolean)])] });
+    else cur.dis = [...new Set([...cur.dis, ...(r.diseases || []).map((x) => x.disease && x.disease.name).filter(Boolean)])]; });
+  const drugs = [...byDrug.values()].sort((a, b) => a.st - b.st || a.d.name.localeCompare(b.d.name));
+  if (!drugs.length) { box().innerHTML = `<span class="note">${tr("No drug or clinical candidate targets this protein yet.")}</span>`; return; }
+  const nApp = drugs.filter((x) => x.stage === "APPROVAL").length;
+  const row = (x) => { const moa = ((x.d.mechanismsOfAction || {}).rows || []);
+    const mine = moa.find((m) => (m.targets || []).some((t) => t.approvedSymbol === p.name)) || moa[0];
+    const lab = (STAGE[x.stage] || [9, x.stage || "?"])[1];
+    return `<div class="drug"><a class="nm" href="https://platform.opentargets.org/drug/${esc(x.d.id)}" target="_blank" rel="noopener">${esc(titleCase(x.d.name))}</a>`
+      + `<span class="stage ${x.stage === "APPROVAL" ? "ok" : x.stage === "WITHDRAWAL" ? "wd" : ""}">${esc(tr(lab))}</span>`
+      + `<span class="mo">${esc(x.d.drugType || "")}${mine ? " · " + esc(mine.mechanismOfAction) : ""}</span>`
+      + (x.dis.length ? `<span class="ind">${tr("For: ")}${esc(x.dis.slice(0, 3).join(", "))}${x.dis.length > 3 ? " …" : ""}</span>` : "") + "</div>"; };
+  const render = (all) => {
+    box().innerHTML = `<p class="note">${tr("{a} approved · {c} in clinical development", { a: nApp, c: drugs.length - nApp })}</p>`
+      + drugs.slice(0, all ? drugs.length : 6).map(row).join("")
+      + `<div class="actions">${drugs.length > 6 && !all ? `<button class="btn mini" id="drugMore">${tr("Show all {n}", { n: drugs.length })}</button>` : ""}`
+      + `<a class="btn mini" href="https://platform.opentargets.org/target/${esc(p.ensg)}" target="_blank" rel="noopener">Open Targets →</a></div>`;
+    if ($("drugMore")) $("drugMore").onclick = () => render(true);
+  };
+  render(false);
 }
 
 // ---------- search: gene symbol, protein name, or synonym
@@ -1349,6 +1530,7 @@ function writeHash() {
   if (state.funcs.length) h.set("f", state.funcs.map((x) => D.functions[x]).join("|"));
   if (state.sys.length) h.set("s", state.sys.map((x) => D.systems[x]).join("|"));
   if (state.dis.length) h.set("d", state.dis.map((x) => D.diseases[x]).join("|"));
+  if (state.pw.length) h.set("pw", state.pw.map((x) => D.pathways[x][0]).join("|"));
   if (state.minDeg > 1) h.set("min", state.minDeg);
   if (state.list) h.set("genes", state.list.tokens.join(","));
   if (state.path) h.set("path", `${D.N[state.path.nodes[0]].name},${D.N[state.path.nodes[state.path.nodes.length - 1]].name}`);
@@ -1361,6 +1543,7 @@ function readHash() {
   hashLock = true;
   const pick = (key, names) => (h.get(key) || "").split("|").map((n) => names.indexOf(n)).filter((x) => x >= 0);
   state.funcs = pick("f", D.functions); state.sys = pick("s", D.systems); state.dis = pick("d", D.diseases);
+  state.pw = pick("pw", D.pathways.map((x) => x[0]));
   state.minDeg = Math.max(1, +h.get("min") || 1); $("minDeg").value = state.minDeg; $("minDegV").textContent = state.minDeg;
   state.list = null; state.path = null; state.selected = null;
   if (h.get("genes")) { $("geneInput").value = h.get("genes").split(",").join("\n"); runGeneList(); }
@@ -1434,7 +1617,7 @@ function showListReport() {
   mem.forEach((i) => D.adj[i].forEach(([j]) => { if (!L.idx.has(j)) touch.set(j, (touch.get(j) || 0) + 1); }));
   const linkers = [...touch].filter(([, k]) => k >= 2)
     .map(([j, k]) => ({ j, k, p: hyperTail(k, D.N[j].deg, n, D.N.length) })).sort((a, b) => a.p - b.p || b.k - a.k).slice(0, 8);
-  const sections = [["Over-represented functions", "f", D.functions], ["Over-represented body systems", "s", D.systems], ["Over-represented diseases", "d", D.diseases]]
+  const sections = [["Over-represented functions", "f", D.functions], ["Over-represented body systems", "s", D.systems], ["Over-represented diseases", "d", D.diseases], ["Over-represented pathways", "pw", D.pwNames]]
     .map(([t, f, names]) => [t, enrichSet(mem, f, names), names]);
   const domRows = enrichSet(mem, "pf", D.domains.map((d) => d[2]));
   const table = (rows, names) => rows.length
@@ -1481,18 +1664,24 @@ function showListReport() {
 // ---------- shortest path between two proteins
 $("pathGo").onclick = () => findPath();
 $("pathClear").onclick = () => { state.path = null; ["pathFrom", "pathTo"].forEach((id) => { $(id).value = ""; delete $(id).dataset.i; }); $("pathOut").innerHTML = ""; refresh(); writeHash(); };
-function bfs(src) {
+function bfs(src, allowed) {
   const d = new Int32Array(D.N.length).fill(-1); d[src] = 0; const q = [src];
-  for (let h = 0; h < q.length; h++) { const v = q[h]; for (const [j] of D.adj[v]) if (d[j] < 0) { d[j] = d[v] + 1; q.push(j); } }
+  for (let h = 0; h < q.length; h++) { const v = q[h]; for (const [j] of D.adj[v]) if (d[j] < 0 && (!allowed || allowed(j))) { d[j] = d[v] + 1; q.push(j); } }
   return d;
 }
+$("pathInPw").onchange = () => { if (state.path || ($("pathFrom").value && $("pathTo").value)) findPath(); };
 function findPath() {
   const resolve = (id) => $(id).dataset.i != null ? +$(id).dataset.i : nameToIdx($(id).value);
   const a = resolve("pathFrom"), b = resolve("pathTo");
   if (a < 0 || b < 0) { $("pathOut").innerHTML = `<p class="note">${tr("Pick both proteins from the suggestions.")}</p>`; return; }
   if (a === b) { $("pathOut").innerHTML = `<p class="note">${tr("Pick two different proteins.")}</p>`; return; }
-  const da = bfs(a), db = bfs(b), L = da[b];
-  if (L < 0) { state.path = null; refresh(); $("pathOut").innerHTML = `<p class="note">${tr("No path: {a} and {b} are in separate parts of the network.", { a: esc(D.N[a].name), b: esc(D.N[b].name) })}</p>`; return; }
+  const restrict = $("pathInPw").checked && state.pw.length ? new Set(state.pw) : null;
+  if ($("pathInPw").checked && !restrict) { $("pathOut").innerHTML = `<p class="note">${tr("Pick a pathway in the Pathway filter first.")}</p>`; return; }
+  const allowed = restrict ? (v) => v === a || v === b || D.N[v].pw.some((x) => restrict.has(x)) : null;
+  const da = bfs(a, allowed), db = bfs(b, allowed), L = da[b];
+  if (L < 0) { state.path = null; refresh(); $("pathOut").innerHTML = `<p class="note">${restrict
+    ? tr("No path between {a} and {b} using only proteins of the selected pathway(s).", { a: esc(D.N[a].name), b: esc(D.N[b].name) })
+    : tr("No path: {a} and {b} are in separate parts of the network.", { a: esc(D.N[a].name), b: esc(D.N[b].name) })}</p>`; return; }
   // nodes/edges on any shortest path; count paths and keep the most confident ones (sum of log scores)
   const on = (v) => da[v] >= 0 && db[v] >= 0 && da[v] + db[v] === L;
   const all = new Set(), allEdges = new Set();
@@ -1547,7 +1736,7 @@ async function demoProtein() {
   return i;
 }
 function resetFilters() {
-  state.funcs = []; state.sys = []; state.dis = []; state.minDeg = 1; state.hi = null; state.list = null; state.path = null;
+  state.funcs = []; state.sys = []; state.dis = []; state.pw = []; state.minDeg = 1; state.hi = null; state.list = null; state.path = null;
   $("geneInput").value = ""; $("geneMsg").textContent = ""; $("pathOut").innerHTML = "";
   $("minDeg").value = 1; $("minDegV").textContent = "1"; recompute();
 }
@@ -1582,6 +1771,9 @@ const TOUR = [
   { el: () => $("partnersBox"), title: "Interaction partners",
     text: "All partners, sorted by confidence. Click a name to jump to that protein. The <b>3D</b> button shows the two proteins together.",
     before: async () => { await demoProtein(); $("partnersBox").scrollIntoView({ block: "start" }); } },
+  { el: () => $("drugSection"), title: "Medicines and mutations",
+    text: "<b>Drugs</b> lists approved medicines and clinical-trial candidates that act on the protein (Open Targets). On the AlphaFold structure you can also switch on <b>known disease mutations</b>, shown as magenta balls.",
+    before: async () => { await demoProtein(); await wait(600); $("drugSection").scrollIntoView({ block: "center" }); } },
   { el: () => $("structBox"), title: "Two proteins together",
     text: "Here is p53 (<b>blue</b>) bound to MDM2 (<b>orange</b>) in a solved structure (PDB 1YCR). The sticks are the residues where the two proteins touch. When no such structure exists, an example with the same domain types is shown and clearly labelled.",
     before: async () => { const i = await demoProtein(); showComplex(i, idxOf("MDM2")); await wait(500); $("structBox").scrollIntoView({ block: "center" }); } },
@@ -1591,6 +1783,9 @@ const TOUR = [
   { el: () => $("disList"), title: "Body systems and diseases",
     text: "The <b>Body system</b> and <b>Disease</b> lists work the same way. Combining lists narrows the selection: here, proteins linked to <b>Cancer</b> that are also active in the <b>Immune & blood</b> system.",
     before: async () => { select(null); resetFilters(); state.dis = [D.diseases.indexOf("Cancer")]; state.sys = [D.systems.indexOf("Immune & blood")]; state.last = "dis"; recompute(); $("disList").scrollIntoView({ block: "center" }); } },
+  { el: () => $("pwSearch").closest(".search-wrap"), title: "Pathways",
+    text: "Search a <b>Reactome pathway</b> (here: <i>Signaling by Insulin receptor</i>) to light up its proteins. The path finder can also be told to stay inside the selected pathway, so routes follow real signalling chains.",
+    before: async () => { select(null); resetFilters(); state.pw = [D.pwNames.indexOf("Signaling by Insulin receptor")].filter((x) => x >= 0); state.last = "pw"; recompute(); $("pwSearch").scrollIntoView({ block: "center" }); } },
   { el: () => $("matches"), title: "The matching proteins",
     text: "The matching proteins are listed here, most connected first. Click one to open it. Each list has a <b>clear</b> button, and the display options above let you hide non-matching proteins or set a minimum number of partners.",
     before: async () => { $("matches").scrollIntoView({ block: "center" }); } },

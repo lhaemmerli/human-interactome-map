@@ -263,6 +263,7 @@ def main():
             "s": sorted(sys_names.index(x) for x in systems),
             "t": tissues,
             "about": annot[:400],
+            "ensg": hpa["Ensembl"] if hpa else "",
             "alias": aliases[:12],
             "d": diseases,
             "pf": pfam_of.get(acc, []),
@@ -361,26 +362,98 @@ def main():
                     cur[1:] = [f[1], f[3], f[2]] if swap else [f[1], f[2], f[3]]
     print(f"3did domain pairs among network domains: {len(ddi)}")
 
+    # --- Reactome pathways (all levels: a protein in "Insulin receptor signalling" is also in "Signal Transduction")
+    rdir = RAW / "reactome"
+    pw_name, parent = {}, defaultdict(set)
+    with open(rdir / "ReactomePathways.txt", encoding="utf-8") as fh:
+        for line in fh:
+            f = line.rstrip("\n").split("\t")
+            if len(f) >= 3 and f[2] == "Homo sapiens":
+                pw_name[f[0]] = f[1]
+    with open(rdir / "ReactomePathwaysRelation.txt", encoding="utf-8") as fh:
+        for line in fh:
+            a_, b_ = line.split()
+            if a_ in pw_name and b_ in pw_name:
+                parent[b_].add(a_)
+    acc_to_sid = {nodes[sid]["acc"]: sid for sid in order if nodes[sid]["acc"]}
+    members = defaultdict(set)
+    with open(rdir / "UniProt2Reactome_All_Levels.txt", encoding="utf-8") as fh:
+        for line in fh:
+            f = line.rstrip("\n").split("\t")
+            if len(f) >= 6 and f[5] == "Homo sapiens" and f[1] in pw_name:
+                acc = f[0].split("-")[0]
+                if acc in acc_to_sid:
+                    members[f[1]].add(acc_to_sid[acc])
+    pw_keep = sorted((p_ for p_, m in members.items() if len(m) >= 5), key=lambda p_: (-len(members[p_]), pw_name[p_]))
+    pw_index = {p_: i for i, p_ in enumerate(pw_keep)}
+
+    def root_of(p_, seen=()):
+        ps = [q for q in parent.get(p_, ()) if q not in seen]
+        return p_ if not ps else root_of(sorted(ps)[0], seen + (p_,))
+
+    node_pw = defaultdict(list)
+    for p_ in pw_keep:
+        for sid in members[p_]:
+            node_pw[sid].append(pw_index[p_])
+    # most specific pathways of a protein: none of its other pathways is a child of them
+    children = defaultdict(set)
+    for c_, ps in parent.items():
+        for q in ps:
+            children[q].add(c_)
+    node_pw_specific = {}
+    for sid, lst in node_pw.items():
+        mine = {pw_keep[i] for i in lst}
+        node_pw_specific[sid] = sorted((pw_index[p_] for p_ in mine if not (children.get(p_, set()) & mine)),
+                                       key=lambda i: len(members[pw_keep[i]]))
+    print(f"Reactome: {len(pw_keep)} pathways with >= 5 network proteins; "
+          f"{sum(1 for sid in order if node_pw.get(sid))} proteins in at least one")
+
+    # --- curated disease variants (UniProt humsavar, pathogenic / likely pathogenic), written to a lazy-loaded file
+    AA3 = {"Ala": "A", "Arg": "R", "Asn": "N", "Asp": "D", "Cys": "C", "Gln": "Q", "Glu": "E", "Gly": "G", "His": "H", "Ile": "I",
+           "Leu": "L", "Lys": "K", "Met": "M", "Phe": "F", "Pro": "P", "Ser": "S", "Thr": "T", "Trp": "W", "Tyr": "Y", "Val": "V"}
+    net_accs = set(acc_to_sid)
+    var_dis, var_dis_idx, variants = [], {}, defaultdict(list)
+    with open(RAW / "uniprot_variants" / "humsavar.txt", encoding="utf-8") as fh:
+        for line in fh:
+            f = line.split()
+            if len(f) < 6 or f[1] not in net_accs or f[4] != "LP/P":
+                continue
+            m = re.fullmatch(r"p\.([A-Z][a-z]{2})(\d+)([A-Z][a-z]{2})", f[3])
+            if not m or m.group(1) not in AA3 or m.group(3) not in AA3:
+                continue
+            dis = re.sub(r"\s*\[MIM:\d+\]", "", " ".join(f[6:])).strip() or "-"
+            if dis not in var_dis_idx:
+                var_dis_idx[dis] = len(var_dis); var_dis.append(dis)
+            variants[f[1]].append([int(m.group(2)), AA3[m.group(1)] + m.group(2) + AA3[m.group(3)], var_dis_idx[dis]])
+    var_out = ROOT / "docs" / "variants.json"
+    var_out.write_text(json.dumps({"diseases": var_dis, "variants": variants}, separators=(",", ":")))
+    print(f"variants: {sum(map(len, variants.values()))} pathogenic missense in {len(variants)} proteins -> {var_out.name} "
+          f"({var_out.stat().st_size / 1e6:.1f} MB)")
+
     ids = {sid: i for i, sid in enumerate(order)}
     out_nodes = []
     for sid in order:
         n = nodes[sid]
         out_nodes.append([n["name"], n["desc"], n["acc"], deg[sid], *pos[sid], comm_of[sid],
                           n["f"], n["s"], n["t"], n["about"], sid.split(".")[1], n["alias"], n["d"], n["dz"],
-                          [pf_index[x] for x in n["pf"]]])
+                          [pf_index[x] for x in n["pf"]], n["ensg"], sorted(node_pw.get(sid, [])),
+                          node_pw_specific.get(sid, [])[:12], len(variants.get(n["acc"], []))])
     edges = [[ids[a], ids[b], d["w"]] for a, b, d in G.edges(data=True)]
 
     data = {
         "meta": {"source": "STRING v12.0 physical interactions; UniProt; Human Protein Atlas",
                  "min_score": MIN_SCORE, "proteins": N, "interactions": len(edges)},
         "fields": ["name", "desc", "acc", "degree", "x", "y", "module", "functions", "systems",
-                   "tissues", "about", "ensp", "aliases", "diseases", "disease_terms", "domains"],
+                   "tissues", "about", "ensp", "aliases", "diseases", "disease_terms", "domains",
+                   "ensg", "pathways", "pathways_specific", "n_variants"],
         "functions": func_names,
         "systems": sys_names,
         "diseases": list(DISEASES),
         "domains": [[x, *pfam_info[x]] for x in pf_ids],  # [Pfam id, short name, description]
         # [dom a, dom b, #structures, example PDB, "chain:range" of dom a, "chain:range" of dom b]
         "ddi": [[a, b, n, pdb, ra, rb] for (a, b), (n, pdb, ra, rb) in sorted(ddi.items()) if n],
+        # [Reactome id, name, index of its top-level pathway]
+        "pathways": [[p_, pw_name[p_], pw_index.get(root_of(p_), -1)] for p_ in pw_keep],
         "modules": modules,
         "nodes": out_nodes,
         "edges": edges,

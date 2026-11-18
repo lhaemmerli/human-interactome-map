@@ -61,6 +61,12 @@ human proteome, Human Protein Atlas `proteinatlas.tsv`).
 - **Path finder**: shortest chain of interactions between two proteins (most confident path first).
 - **Share & export**: the URL keeps the current view (`#p=TP53&d=Cancer`, `#genes=…`, `#path=INS,AKT1`,
   `#tour`); CSV downloads and PNG snapshot of the map.
+- **Pathways**: Reactome pathway filter (search box), pathway list per protein, pathway enrichment for gene
+  lists, and a path finder that can stay inside the selected pathway(s).
+- **Drugs**: approved drugs and clinical candidates per protein, loaded live from Open Targets.
+- **Disease mutations**: UniProt curated pathogenic missense variants (`docs/variants.json`, loaded on demand)
+  shown on the AlphaFold structure.
+- **Methods & citation** (`docs/methods.html`): data versions, methods, statistics, limitations; `CITATION.cff`.
 - **Beginner's guide** (`docs/learn.html`): interactive introduction to proteins, interactions and hubs.
 - **English / French**: chosen from the browser language, switchable with the FR/EN button (remembered),
   or forced with `?lang=fr` / `?lang=en`. Protein descriptions stay in English (UniProt).
@@ -76,6 +82,8 @@ Contact: leo.hammerli@epfl.ch
 - [Human Protein Atlas](https://www.proteinatlas.org) — CC BY-SA 3.0
 - [Pfam / InterPro](https://www.ebi.ac.uk/interpro/) — CC0
 - [3did](https://3did.irbbarcelona.org) — domain–domain interactions from PDB structures
+- [Reactome](https://reactome.org) v98 — CC BY 4.0
+- [Open Targets Platform](https://platform.opentargets.org) 26.09 (live) — CC0
 - [AlphaMissense](https://alphamissense.hegelab.org) (Cheng et al., Science 2023), via AlphaFold DB — CC BY 4.0
 - Structures are loaded live from [AlphaFold DB](https://alphafold.ebi.ac.uk) (CC BY 4.0),
   [PDBe](https://www.ebi.ac.uk/pdbe/) and [RCSB PDB](https://www.rcsb.org)

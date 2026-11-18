@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Methods and Citation</title>
+<meta name="description" content="Data sources, versions, methods, statistics and limitations of the Human Interactome Map, and how to cite it.">
+<script>
+  (function () { var t = null; try { t = localStorage.getItem("theme"); } catch (e) {}
+    document.documentElement.dataset.theme = t === "light" ? "light" : "dark"; })();
+</script>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --panel: #ffffff; --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --border: rgba(11,11,11,0.10); --blue: #2a78d6; --wash: rgba(42,120,214,0.08);
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --panel: #141413; --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --border: rgba(255,255,255,0.10); --blue: #3987e5; --wash: rgba(57,135,229,0.12);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 16px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif; }
+a { color: var(--blue); }
+nav { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 10px; padding: 10px 16px;
+  background: color-mix(in srgb, var(--page) 88%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); }
+nav .brand { font-weight: 700; margin-right: auto; }
+.btn { display: inline-flex; align-items: center; border: 1px solid var(--border); background: var(--panel); color: var(--ink);
+  border-radius: 999px; padding: 7px 14px; font: inherit; font-size: 14px; cursor: pointer; text-decoration: none; }
+.btn:hover { background: var(--wash); }
+.btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 16px 80px; }
+h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.15; margin: 24px 0 8px; }
+h2 { font-size: 22px; margin: 40px 0 10px; padding-top: 16px; border-top: 1px solid var(--border); }
+h3 { font-size: 17px; margin: 22px 0 6px; }
+p, li { color: var(--ink-2); }
+.lead { font-size: 18px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--muted); font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+.wrap { overflow-x: auto; }
+code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+pre { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; overflow-x: auto; color: var(--ink); }
+.box { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin: 12px 0; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px; }
+.toc a { font-size: 13px; color: var(--ink-2); text-decoration: none; border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px; }
+footer { text-align: center; color: var(--muted); font-size: 13px; padding: 30px 16px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<nav>
+  <span class="brand" data-k="brand">Methods & citation</span>
+  <button class="btn" id="langBtn">FR</button>
+  <button class="btn" id="themeBtn" title="Light / dark">◐</button>
+  <a class="btn primary" href="index.html" data-k="openMap">Open the map →</a>
+</nav>
+<main>
+  <h1 data-k="title">Methods, data sources and how to cite</h1>
+  <p class="lead" data-k="intro">The Human Interactome Map is an interactive view of known physical protein–protein interactions in humans. This page documents where every number on the site comes from, how it was computed, and what it cannot tell you.</p>
+  <div class="toc"><a href="#data" data-k="tData">Data sources</a><a href="#network" data-k="tNet">Network & layout</a><a href="#annot" data-k="tAnnot">Annotations</a>
+    <a href="#stats" data-k="tStats">Statistics</a><a href="#struct" data-k="tStruct">Structures</a><a href="#limits" data-k="tLim">Limitations</a><a href="#cite" data-k="tCite">How to cite</a></div>
+
+  <h2 id="data" data-k="hData">1. Data sources and versions</h2>
+  <div class="wrap"><table>
+    <thead><tr><th data-k="thSrc">Source</th><th data-k="thUse">Used for</th><th data-k="thVer">Version</th><th data-k="thLic">Licence</th></tr></thead>
+    <tbody>
+      <tr><td><a href="https://string-db.org">STRING</a></td><td data-k="uString">Physical protein–protein interactions (human, combined score ≥ 700/1000)</td><td>v12.0</td><td>CC BY 4.0</td></tr>
+      <tr><td><a href="https://www.uniprot.org">UniProt</a></td><td data-k="uUniprot">Protein names, keywords (functions), Pfam cross-references, curated disease variants (humsavar)</td><td>2026_04</td><td>CC BY 4.0</td></tr>
+      <tr><td><a href="https://www.proteinatlas.org">Human Protein Atlas</a></td><td data-k="uHpa">Protein classes, tissue specificity (body systems), disease involvement, Ensembl gene IDs</td><td data-k="hpaVer">file of 10 Nov 2026</td><td>CC BY-SA 3.0</td></tr>
+      <tr><td><a href="https://www.ebi.ac.uk/interpro/">Pfam</a></td><td data-k="uPfam">Protein domain families</td><td>39.0</td><td>CC0</td></tr>
+      <tr><td><a href="https://3did.irbbarcelona.org">3did</a></td><td data-k="u3did">Domain–domain contacts observed in PDB structures</td><td data-k="did">March 2025</td><td>—</td></tr>
+      <tr><td><a href="https://reactome.org">Reactome</a></td><td data-k="uReact">Biological pathways (all levels of the hierarchy)</td><td>v98</td><td>CC BY 4.0</td></tr>
+      <tr><td><a href="https://platform.opentargets.org">Open Targets</a></td><td data-k="uOT">Approved drugs and clinical candidates (loaded live)</td><td>26.09</td><td>CC0</td></tr>
+      <tr><td><a href="https://alphafold.ebi.ac.uk">AlphaFold DB</a></td><td data-k="uAF">Predicted structures and AlphaMissense scores (loaded live)</td><td>v6</td><td>CC BY 4.0</td></tr>
+      <tr><td><a href="https://www.ebi.ac.uk/pdbe/">PDBe</a> / <a href="https://www.rcsb.org">RCSB PDB</a></td><td data-k="uPDB">Experimental structures and complexes (loaded live)</td><td data-k="live">live</td><td>CC0</td></tr>
+    </tbody>
+  </table></div>
+  <p data-k="dataNote">Static data were downloaded on 18 November 2026 and processed with <code>pipeline/build_data.py</code> (source code in the GitHub repository). Live sources are queried from your browser when you open a protein.</p>
+
+  <h2 id="network" data-k="hNet">2. Network and layout</h2>
+  <p data-k="net1">Interactions are taken from STRING's <i>physical</i> sub-network, which only contains evidence that the two proteins bind (directly or in the same complex), excluding co-expression or text-mining-only links. Only pairs with a combined score ≥ 700 ("high confidence") are kept: <b>10,746 proteins and 86,519 interactions</b>. Proteins without any such interaction are not shown.</p>
+  <p data-k="net2"><b>Distance from the centre</b> encodes connectivity: proteins are ranked by number of partners (degree) and placed at radius R·√(rank/N), so each ring holds the same area and the most connected proteins are central. <b>Angle</b> encodes modules: the network is split into communities with the Louvain algorithm (weighted by confidence), each community gets a sector proportional to its size, and positions inside a sector are ordered so that interacting proteins stay close. Sector labels show the most over-represented function and the largest hub of the module.</p>
+
+  <h2 id="annot" data-k="hAnnot">3. Annotations</h2>
+  <ul>
+    <li data-k="a1"><b>Function</b>: 22 classes built from UniProt keywords and Human Protein Atlas protein classes (e.g. "Kinase" = keyword <i>Kinase</i>). A protein can have several classes.</li>
+    <li data-k="a2"><b>Body system</b>: tissues in which the Human Protein Atlas reports the gene as <i>enriched</i>, <i>group enriched</i> or <i>enhanced</i> (RNA), mapped to 10 organ systems; genes with low tissue specificity are "Ubiquitous". Immune-cell-enriched genes also count as "Immune & blood".</li>
+    <li data-k="a3"><b>Disease</b>: Human Protein Atlas "disease involvement" terms (UniProt disease keywords and cancer-related genes), grouped into 25 categories. These are mostly genes with a disease-causing variant (Mendelian disease) or cancer genes; genes with small risk effects from population studies are largely absent.</li>
+    <li data-k="a4"><b>Pathways</b>: Reactome membership at all levels of the hierarchy (a protein in a specific pathway also belongs to its parents). 2,078 pathways with at least 5 proteins on the map are offered.</li>
+    <li data-k="a5"><b>Domains</b>: Pfam families from UniProt cross-references (99% of proteins on the map have at least one).</li>
+  </ul>
+
+  <h2 id="stats" data-k="hStats">4. Statistics</h2>
+  <ul>
+    <li data-k="s1"><b>Over-representation</b> (partners' common domains, gene-list functions / systems / diseases / pathways / domains): one-sided hypergeometric test against all proteins on the map (for domains: all proteins with at least one Pfam domain), corrected for multiple testing with Benjamini–Hochberg; results with FDR q &lt; 0.05 and at least 2 proteins are shown. "× vs all" is the fold enrichment (share in the set ÷ share in the background).</li>
+    <li data-k="s2"><b>Connectivity of a gene list</b>: the number of interactions inside the list is compared with the expectation for random proteins with the same numbers of partners (configuration model: E = (S² − Σdᵢ²) / 4m, with S the sum of the list's degrees and m the number of interactions). The p-value is the Poisson upper tail P(X ≥ observed).</li>
+    <li data-k="s3"><b>Linker proteins</b>: proteins outside the list linked to ≥ 2 list members, ranked by a hypergeometric p-value that accounts for how many partners they have overall.</li>
+    <li data-k="s4"><b>Paths</b>: all shortest paths (fewest interactions) are found by breadth-first search; among them, the one with the highest product of STRING confidences is shown first. Optionally, intermediate proteins can be restricted to selected Reactome pathways.</li>
+  </ul>
+
+  <h2 id="struct" data-k="hStruct">5. Structures, interfaces, mutations and drugs</h2>
+  <ul>
+    <li data-k="st1"><b>Single proteins</b>: the AlphaFold DB model (coloured by pLDDT confidence) or the best experimental PDB chain according to PDBe's ranking (coverage, then resolution).</li>
+    <li data-k="st2"><b>Binding interfaces</b>: a pair of interacting proteins is "explained" when one Pfam domain of each is listed in 3did as being in contact in at least one PDB structure, between different chains (intramolecular contacts are excluded). About 26% of interactions are explained this way. This is an inference: the two domain types are known to bind, not necessarily in this exact protein pair.</li>
+    <li data-k="st3"><b>Complexes</b>: a solved structure containing both proteins is searched by intersecting their PDBe structure lists; interface residues are those with a heavy atom within 4.5 Å of the other chain. If none exists, the 3did example for the domain pair is shown and labelled as such.</li>
+    <li data-k="st4"><b>Disease mutations</b>: UniProt humsavar missense variants classified as pathogenic or likely pathogenic (27,002 variants in 2,687 proteins on the map), drawn at their residue on the AlphaFold model (same numbering as the UniProt canonical sequence).</li>
+    <li data-k="st5"><b>Mutation sensitivity</b>: the mean AlphaMissense pathogenicity of the 19 possible substitutions at each residue (Cheng et al., <i>Science</i> 2023).</li>
+    <li data-k="st6"><b>Drugs</b>: Open Targets "drug and clinical candidates" for the protein's Ensembl gene, with the highest clinical stage reached and the mechanism of action on this target.</li>
+  </ul>
+
+  <h2 id="limits" data-k="hLim">6. Limitations</h2>
+  <ul>
+    <li data-k="l1"><b>Study bias</b>: well-studied proteins (e.g. TP53, ubiquitin, histones) have more recorded interactions; being a hub partly reflects research attention, not only biology.</li>
+    <li data-k="l2"><b>Context</b>: an interaction in the database means the two proteins <i>can</i> bind, not that they do so in every tissue, cell type or condition.</li>
+    <li data-k="l3"><b>Thresholds</b>: the 700 cut-off removes weaker evidence; some real interactions are missing and some false positives remain.</li>
+    <li data-k="l4"><b>Shortest ≠ biological</b>: the shortest path can skip the canonical signalling route; use the pathway restriction to follow known pathways.</li>
+    <li data-k="l5"><b>Annotations are incomplete</b>: about 2,100 proteins have no function class and some have no tissue data; protein descriptions are shown in English (UniProt).</li>
+    <li data-k="l6"><b>Not medical advice</b>: this is an educational and exploratory tool.</li>
+  </ul>
+
+  <h2 id="cite" data-k="hCite">7. How to cite</h2>
+  <p data-k="cite1">If you use this map or its processed data, please cite the website and the underlying resources (at least STRING, UniProt and the Human Protein Atlas):</p>
+  <div class="box" id="citeText">Haemmerli, L. (2026). <i>Human Interactome Map</i> [Interactive web resource]. https://lhaemmerli.github.io/human-interactome-map/</div>
+  <pre id="bib">@misc{haemmerli2026interactome,
+  author       = {Haemmerli, Leo},
+  title        = {Human Interactome Map},
+  year         = {2026},
+  howpublished = {\url{https://lhaemmerli.github.io/human-interactome-map/}},
+  note         = {Data: STRING v12.0, UniProt 2026\_04, Human Protein Atlas, Reactome v98}
+}</pre>
+  <p data-k="cite2">A machine-readable <code>CITATION.cff</code> is included in the <a href="https://github.com/lhaemmerli/human-interactome-map">GitHub repository</a> (GitHub's "Cite this repository" button).</p>
+  <p data-k="cite3">Key references: Szklarczyk et al., <i>Nucleic Acids Res.</i> 2023 (STRING v12); The UniProt Consortium, <i>Nucleic Acids Res.</i> 2025; Uhlén et al., <i>Science</i> 2015 (Human Protein Atlas); Milacic et al., <i>Nucleic Acids Res.</i> 2024 (Reactome); Mistry et al., <i>Nucleic Acids Res.</i> 2021 (Pfam); Mosca et al., <i>Nucleic Acids Res.</i> 2014 (3did); Varadi et al., <i>Nucleic Acids Res.</i> 2024 (AlphaFold DB); Cheng et al., <i>Science</i> 2023 (AlphaMissense); Ochoa et al., <i>Nucleic Acids Res.</i> 2023 (Open Targets); Blondel et al., <i>J. Stat. Mech.</i> 2008 (Louvain).</p>
+</main>
+<footer><span data-k="contact">Contact:</span> <a id="contactLink" href="#">…</a> · <a href="learn.html" data-k="beginner">Beginner's guide</a></footer>
+
+<script>
+"use strict";
+const $ = (id) => document.getElementById(id);
+const LANG = (() => {
+  const q = new URLSearchParams(location.search).get("lang");
+  if (q === "fr" || q === "en") { try { localStorage.setItem("lang", q); } catch (e) {} return q; }
+  let saved = null; try { saved = localStorage.getItem("lang"); } catch (e) {}
+  if (saved === "fr" || saved === "en") return saved;
+  return (navigator.language || "").toLowerCase().startsWith("fr") ? "fr" : "en";
+})();
+const FR = {
+  brand: "Méthodes & citation", openMap: "Ouvrir la carte →", title: "Méthodes, sources de données et citation",
+  intro: "La carte de l'interactome humain est une vue interactive des interactions physiques connues entre protéines humaines. Cette page documente d'où vient chaque chiffre du site, comment il a été calculé, et ce qu'il ne peut pas vous dire.",
+  tData: "Sources", tNet: "Réseau & disposition", tAnnot: "Annotations", tStats: "Statistiques", tStruct: "Structures", tLim: "Limites", tCite: "Citer",
+  hData: "1. Sources de données et versions", thSrc: "Source", thUse: "Utilisée pour", thVer: "Version", thLic: "Licence",
+  uString: "Interactions physiques protéine–protéine (humain, score combiné ≥ 700/1000)",
+  uUniprot: "Noms de protéines, mots-clés (fonctions), références Pfam, variants pathogènes vérifiés (humsavar)",
+  uHpa: "Classes de protéines, spécificité tissulaire (systèmes du corps), maladies associées, identifiants Ensembl", hpaVer: "fichier du 10 nov. 2026",
+  uPfam: "Familles de domaines protéiques", u3did: "Contacts domaine–domaine observés dans des structures PDB", did: "mars 2025",
+  uReact: "Voies biologiques (tous les niveaux de la hiérarchie)", uOT: "Médicaments approuvés et candidats cliniques (chargés en direct)",
+  uAF: "Structures prédites et scores AlphaMissense (chargés en direct)", uPDB: "Structures expérimentales et complexes (chargés en direct)", live: "en direct",
+  dataNote: "Les données statiques ont été téléchargées le 18 novembre 2026 et traitées avec <code>pipeline/build_data.py</code> (code source dans le dépôt GitHub). Les sources « en direct » sont interrogées depuis votre navigateur quand vous ouvrez une protéine.",
+  hNet: "2. Réseau et disposition",
+  net1: "Les interactions proviennent du sous-réseau <i>physique</i> de STRING, qui ne contient que des preuves que les deux protéines se lient (directement ou dans le même complexe), sans les liens basés uniquement sur la co-expression ou la fouille de textes. Seules les paires avec un score combiné ≥ 700 (« haute confiance ») sont gardées : <b>10 746 protéines et 86 519 interactions</b>. Les protéines sans aucune interaction de ce type ne sont pas affichées.",
+  net2: "La <b>distance au centre</b> code la connectivité : les protéines sont classées par nombre de partenaires (degré) et placées au rayon R·√(rang/N), de sorte que chaque anneau ait la même surface et que les protéines les plus connectées soient au centre. L'<b>angle</b> code les modules : le réseau est découpé en communautés avec l'algorithme de Louvain (pondéré par la confiance), chaque communauté reçoit un secteur proportionnel à sa taille, et les positions dans un secteur sont ordonnées pour que les protéines en interaction restent proches. Les étiquettes de secteur indiquent la fonction la plus sur-représentée et le plus grand pivot du module.",
+  hAnnot: "3. Annotations",
+  a1: "<b>Fonction</b> : 22 classes construites à partir des mots-clés UniProt et des classes de protéines du Human Protein Atlas (ex. « Kinase » = mot-clé <i>Kinase</i>). Une protéine peut avoir plusieurs classes.",
+  a2: "<b>Système du corps</b> : tissus où le Human Protein Atlas indique le gène comme <i>enrichi</i>, <i>enrichi en groupe</i> ou <i>renforcé</i> (ARN), regroupés en 10 systèmes d'organes ; les gènes peu spécifiques sont « Ubiquitaires ». Les gènes enrichis dans les cellules immunitaires comptent aussi pour « Immunitaire & sang ».",
+  a3: "<b>Maladie</b> : termes « disease involvement » du Human Protein Atlas (mots-clés maladie UniProt et gènes liés au cancer), regroupés en 25 catégories. Il s'agit surtout de gènes portant un variant causal (maladies mendéliennes) ou de gènes du cancer ; les gènes à faible effet de risque issus d'études de population sont en grande partie absents.",
+  a4: "<b>Voies biologiques</b> : appartenance Reactome à tous les niveaux de la hiérarchie (une protéine d'une voie précise appartient aussi aux voies parentes). 2 078 voies comptant au moins 5 protéines de la carte sont proposées.",
+  a5: "<b>Domaines</b> : familles Pfam issues des références croisées UniProt (99 % des protéines de la carte en ont au moins une).",
+  hStats: "4. Statistiques",
+  s1: "<b>Sur-représentation</b> (domaines communs des partenaires ; fonctions / systèmes / maladies / voies / domaines d'une liste de gènes) : test hypergéométrique unilatéral contre toutes les protéines de la carte (pour les domaines : toutes celles ayant au moins un domaine Pfam), corrigé pour les tests multiples par Benjamini–Hochberg ; les résultats avec FDR q &lt; 0,05 et au moins 2 protéines sont affichés. « × vs tous » est l'enrichissement (part dans l'ensemble ÷ part dans le fond).",
+  s2: "<b>Connectivité d'une liste de gènes</b> : le nombre d'interactions au sein de la liste est comparé à l'attendu pour des protéines au hasard ayant le même nombre de partenaires (modèle de configuration : E = (S² − Σdᵢ²) / 4m, avec S la somme des degrés de la liste et m le nombre d'interactions). La p-valeur est la queue supérieure de Poisson P(X ≥ observé).",
+  s3: "<b>Protéines de liaison</b> : protéines hors de la liste liées à ≥ 2 membres de la liste, classées par une p-valeur hypergéométrique qui tient compte de leur nombre total de partenaires.",
+  s4: "<b>Chemins</b> : tous les plus courts chemins (le moins d'interactions) sont trouvés par parcours en largeur ; parmi eux, celui avec le plus grand produit des confiances STRING est affiché d'abord. On peut restreindre les protéines intermédiaires aux voies Reactome sélectionnées.",
+  hStruct: "5. Structures, interfaces, mutations et médicaments",
+  st1: "<b>Protéines seules</b> : le modèle AlphaFold DB (coloré selon la confiance pLDDT) ou la meilleure chaîne PDB expérimentale selon le classement PDBe (couverture, puis résolution).",
+  st2: "<b>Interfaces de liaison</b> : une paire de protéines en interaction est « expliquée » quand un domaine Pfam de chacune figure dans 3did comme étant en contact dans au moins une structure PDB, entre chaînes différentes (contacts intramoléculaires exclus). Environ 26 % des interactions sont ainsi expliquées. C'est une déduction : ces deux types de domaines se lient, pas forcément dans cette paire précise.",
+  st3: "<b>Complexes</b> : une structure résolue contenant les deux protéines est cherchée en croisant leurs listes PDBe ; les résidus d'interface ont un atome lourd à moins de 4,5 Å de l'autre chaîne. Sinon, l'exemple 3did de la paire de domaines est affiché et signalé comme tel.",
+  st4: "<b>Mutations pathogènes</b> : variants faux-sens UniProt humsavar classés pathogènes ou probablement pathogènes (27 002 variants dans 2 687 protéines de la carte), placés sur leur résidu dans le modèle AlphaFold (même numérotation que la séquence canonique UniProt).",
+  st5: "<b>Sensibilité aux mutations</b> : moyenne des scores de pathogénicité AlphaMissense des 19 substitutions possibles à chaque résidu (Cheng et al., <i>Science</i> 2023).",
+  st6: "<b>Médicaments</b> : « drug and clinical candidates » d'Open Targets pour le gène Ensembl de la protéine, avec le stade clinique le plus avancé et le mécanisme d'action sur cette cible.",
+  hLim: "6. Limites",
+  l1: "<b>Biais d'étude</b> : les protéines très étudiées (ex. TP53, ubiquitine, histones) ont plus d'interactions enregistrées ; être un pivot reflète en partie l'attention des chercheurs, pas seulement la biologie.",
+  l2: "<b>Contexte</b> : une interaction dans la base signifie que les deux protéines <i>peuvent</i> se lier, pas qu'elles le font dans chaque tissu, type cellulaire ou condition.",
+  l3: "<b>Seuils</b> : le seuil de 700 retire les preuves faibles ; certaines vraies interactions manquent et quelques faux positifs restent.",
+  l4: "<b>Plus court ≠ biologique</b> : le plus court chemin peut sauter la voie de signalisation canonique ; utilisez la restriction par voie pour suivre les voies connues.",
+  l5: "<b>Annotations incomplètes</b> : environ 2 100 protéines n'ont pas de classe de fonction et certaines n'ont pas de données tissulaires ; les descriptions des protéines sont en anglais (UniProt).",
+  l6: "<b>Pas un avis médical</b> : c'est un outil éducatif et exploratoire.",
+  hCite: "7. Comment citer",
+  cite1: "Si vous utilisez cette carte ou ses données traitées, merci de citer le site et les ressources sous-jacentes (au minimum STRING, UniProt et le Human Protein Atlas) :",
+  cite2: "Un fichier <code>CITATION.cff</code> lisible par machine se trouve dans le <a href=\"https://github.com/lhaemmerli/human-interactome-map\">dépôt GitHub</a> (bouton « Cite this repository » de GitHub).",
+  cite3: "Références principales : Szklarczyk et al., <i>Nucleic Acids Res.</i> 2023 (STRING v12) ; The UniProt Consortium, <i>Nucleic Acids Res.</i> 2025 ; Uhlén et al., <i>Science</i> 2015 (Human Protein Atlas) ; Milacic et al., <i>Nucleic Acids Res.</i> 2024 (Reactome) ; Mistry et al., <i>Nucleic Acids Res.</i> 2021 (Pfam) ; Mosca et al., <i>Nucleic Acids Res.</i> 2014 (3did) ; Varadi et al., <i>Nucleic Acids Res.</i> 2024 (AlphaFold DB) ; Cheng et al., <i>Science</i> 2023 (AlphaMissense) ; Ochoa et al., <i>Nucleic Acids Res.</i> 2023 (Open Targets) ; Blondel et al., <i>J. Stat. Mech.</i> 2008 (Louvain).",
+  contact: "Contact :", beginner: "Guide pour débutants",
+};
+document.documentElement.lang = LANG;
+document.title = LANG === "fr" ? "Méthodes et citation" : "Methods and Citation";
+if (LANG === "fr") document.querySelectorAll("[data-k]").forEach((el) => { if (FR[el.dataset.k] != null) el.innerHTML = FR[el.dataset.k]; });
+$("langBtn").textContent = LANG === "fr" ? "EN" : "FR";
+$("langBtn").title = LANG === "fr" ? "Switch to English" : "Passer en français";
+$("langBtn").onclick = () => {
+  const next = LANG === "fr" ? "en" : "fr";
+  try { localStorage.setItem("lang", next); } catch (e) {}
+  const u = new URL(location.href); u.searchParams.set("lang", next); location.href = u.toString();
+};
+$("themeBtn").onclick = () => {
+  const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = t; try { localStorage.setItem("theme", t); } catch (e) {}
+};
+const em = ["leo.hammerli", "epfl.ch"].join("@");   // assembled at runtime to keep it away from simple scrapers
+$("contactLink").href = "mailto:" + em; $("contactLink").textContent = em;
+</script>
+</body>
+</html>
