@@ -392,7 +392,7 @@ let curMol = "4HHB", viewer = null, molLib = null;
 const molCache = {};
 function load3Dmol() {
   if (!molLib) molLib = new Promise((res, rej) => { const s = document.createElement("script");
-    s.src = "https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.0/3Dmol-min.js"; s.onload = () => res(window.$3Dmol); s.onerror = rej; document.head.appendChild(s); });
+    s.src = "vendor/3Dmol-2.4.0.min.js"; s.onload = () => res(window.$3Dmol); s.onerror = rej; document.head.appendChild(s); });
   return molLib;
 }
 async function loadMol(id) {

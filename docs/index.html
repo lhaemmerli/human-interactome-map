@@ -15,7 +15,7 @@
   --page: #f9f9f7; --surface: #fcfcfb; --panel: #ffffff;
   --ink: #0b0b0b; --ink-2: #52514e; --muted: #898781;
   --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
-  --faded: #e7e6e0; --edge: #c3c2b7; --edge-all: #ecebe6;
+  --faded: #e7e6e0; --edge: #c3c2b7; --edge-all: #d3d2cb;
   --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a;
   --ramp-lo: #86b6ef; --ramp-hi: #104281;
   --accent-wash: rgba(42,120,214,0.10);
@@ -26,7 +26,7 @@
     --page: #0d0d0d; --surface: #1a1a19; --panel: #141413;
     --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
     --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
-    --faded: #2a2a28; --edge: #57564f; --edge-all: #262624;
+    --faded: #2a2a28; --edge: #57564f; --edge-all: #3b3b37;
     --s1: #3987e5; --s2: #d95926; --s3: #199e70;
     --ramp-lo: #184f95; --ramp-hi: #9ec5f4;
     --accent-wash: rgba(57,135,229,0.16);
@@ -37,7 +37,7 @@
   --page: #0d0d0d; --surface: #1a1a19; --panel: #141413;
   --ink: #f0efec; --ink-2: #c3c2b7; --muted: #898781;
   --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
-  --faded: #2a2a28; --edge: #57564f; --edge-all: #262624;
+  --faded: #2a2a28; --edge: #57564f; --edge-all: #3b3b37;
   --s1: #3987e5; --s2: #d95926; --s3: #199e70;
   --ramp-lo: #184f95; --ramp-hi: #9ec5f4;
   --accent-wash: rgba(57,135,229,0.16);
@@ -300,8 +300,8 @@ a { color: var(--s1); }
 <div id="tourBlock" hidden></div><div id="tourSpot" hidden></div>
 <div id="tourCard" hidden role="dialog" aria-live="polite"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/graphology@0.25.4/dist/graphology.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sigma@3.0.2/dist/sigma.min.js"></script>
+<script src="vendor/graphology-0.25.4.umd.min.js"></script>
+<script src="vendor/sigma-3.0.2.min.js"></script>
 <script>
 "use strict";
 const $ = (id) => document.getElementById(id);
@@ -466,6 +466,7 @@ const FR = {
   "All partners, sorted by confidence. Where it is known, a badge says whether the protein <b>activates</b> or <b>inhibits</b> the partner (or is activated / inhibited by it); on the map these links get arrows (→ activation, ⊣ inhibition). Click a name to jump to that protein. The <b>3D</b> button shows the two proteins together.":
     "Tous les partenaires, triés par confiance. Quand c'est connu, une étiquette indique si la protéine <b>active</b> ou <b>inhibe</b> le partenaire (ou est activée / inhibée par lui) ; sur la carte ces liens ont des flèches (→ activation, ⊣ inhibition). Cliquez sur un nom pour aller à cette protéine. Le bouton <b>3D</b> montre les deux protéines ensemble.",
   "Show activation / inhibition links": "Afficher les liens d'activation / d'inhibition",
+  "Pick a filter first (function, body system, disease, pathway, gene list or minimum partners).": "Choisissez d'abord un filtre (fonction, système, maladie, voie, liste de gènes ou partenaires min.).",
   // tour chrome
   "Step {k} of {n}": "Étape {k} sur {n}", "Skip tour": "Passer", "Back": "Retour", "Finish": "Terminer", "Next": "Suivant", "Start tour": "Commencer",
   // tour steps
@@ -721,6 +722,9 @@ function recompute() {
     });
   }
   const filtered = state.funcs.length || state.sys.length || state.dis.length || state.pw.length || state.minDeg > 1 || !!state.list;
+  $("onlyMatch").disabled = !filtered;
+  $("onlyMatch").closest("label").style.opacity = filtered ? "" : "0.5";
+  $("onlyMatch").closest("label").title = filtered ? "" : tr("Pick a filter first (function, body system, disease, pathway, gene list or minimum partners).");
   renderPwChips();
   $("matchTitle").textContent = filtered ? tr("{n} matching proteins", { n: num(count) }) : tr("Most connected proteins");
   const rows = [];
@@ -910,7 +914,7 @@ function edgeReducer(id, a) {
   }
   if (!$("allEdges").checked) return { ...a, hidden: true };
   if (!match[s] || !match[t]) return { ...a, hidden: true };
-  return { ...a, color: P["edge-all"], size: 0.3 };
+  return { ...a, color: P["edge-all"], size: 0.5 };
 }
 function drawHover(ctx, data, settings) {
   // label pill for hovered node, theme-aware
@@ -933,11 +937,11 @@ function drawOverlay() {
   const ctx = cv.getContext("2d");
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, box.width, box.height);
   drawEffects(ctx);
-  if (!$("rings").checked) return;
   const c = renderer.graphToViewport({ x: 0, y: 0 });
   const px = (r) => Math.hypot(...(({ x, y }) => [x - c.x, y - c.y])(renderer.graphToViewport({ x: r, y: 0 })));
   ctx.font = `11px system-ui, -apple-system, sans-serif`;
   for (const d of [200, 100, 50, 20, 10, 5, 2]) {
+    if (!$("rings").checked) break;
     if (d > D.N[0].deg) continue;
     const rr = px(D.ringFor(d));
     if (rr < 14) continue;
@@ -1263,7 +1267,7 @@ function renderAfColorTabs() {
 function load3Dmol() {
   if (!molLib) molLib = new Promise((res, rej) => {
     const sc = document.createElement("script");
-    sc.src = "https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.4.0/3Dmol-min.js";
+    sc.src = "vendor/3Dmol-2.4.0.min.js";
     sc.onload = () => res(window.$3Dmol);
     sc.onerror = () => { molLib = null; rej(new Error(tr("Could not load the 3D viewer library."))); };
     document.head.appendChild(sc);
