@@ -519,15 +519,19 @@ def main():
                 continue
             o = omni.setdefault(k, [set(), set()])
             o[0].update(x.split("_")[0] for x in r["sources"].split(";") if x)
-            o[1].update(int(x.split(":")[1]) for x in r["references"].split(";") if ":" in x and x.split(":")[1].isdigit())
+            o[1].update(int(x.split(":")[1]) for x in r["references"].split(";")
+                        if ":" in x and x.split(":")[1].isdigit() and int(x.split(":")[1]) < 100_000_000)   # real PubMed IDs only
     ev = {}
     for k in range(len(edges)):
         rec = bg.get(k)
         entry = [str_scores.get(k, [0, 0, 0])]
         if rec:
-            low, high = sorted(rec["low"], reverse=True), sorted(rec["high"] - rec["low"], reverse=True)
+            # keep the 10 oldest and 15 newest focused studies plus the 5 newest large-scale screens;
+            # the page sorts them by real publication date (fetched from PubMed)
+            low, high = sorted(rec["low"]), sorted(rec["high"] - rec["low"])
+            keep = set(low[:10]) | set(low[-15:]) | set(high[-5:])
             entry.append([[mi, c] for mi, c in rec["m"].most_common()])
-            entry.append((low + high)[:25])
+            entry.append(sorted(keep, reverse=True))
             entry.append([len(rec["low"]), len(rec["high"] - rec["low"])])
         else:
             entry += [[], [], [0, 0]]

@@ -505,7 +505,7 @@ const FR = {
     "Aucune expérience pour cette paire dans BioGRID (le lien peut venir d'autres bases incluses dans STRING, ex. complexes vérifiés).",
   "Activation / inhibition documented by: {s}": "Activation / inhibition documentée par : {s}", "Loading papers…": "Chargement des articles…",
   "STRING evidence page": "Page des preuves STRING", "All {n} papers in PubMed": "Les {n} articles dans PubMed", "Search the literature": "Chercher dans la littérature",
-  "Papers reporting this interaction (most recent first):": "Articles rapportant cette interaction (les plus récents d'abord) :", "+{n} more (see PubMed link).": "+{n} autres (voir le lien PubMed).",
+  "Papers reporting this interaction:": "Articles rapportant cette interaction :", "Newest first": "Plus récents d'abord", "Oldest first": "Plus anciens d'abord", "+{n} more (see PubMed link).": "+{n} autres (voir le lien PubMed).",
   "Neighbourhood of {x}": "Voisinage de {x}", "Partners shown": "Partenaires affichés", "Partners of partners": "Partenaires des partenaires",
   "Hide text-mining-only links": "Masquer les liens issus de la fouille de textes", "Download SVG": "Télécharger SVG", "Close": "Fermer",
   "Thicker = more confident. Drag proteins to rearrange; click one to centre on it.": "Plus épais = plus fiable. Faites glisser les protéines pour réorganiser ; cliquez sur l'une pour la centrer.",
@@ -1647,6 +1647,7 @@ const METHOD_INFO = {
   "Surface Display": "Binding detected with proteins displayed on the surface of phages or yeast.",
 };
 const pmCache = new Map();
+let paperOrder = "new";   // "new" = most recent first, "old" = earliest (often the discovery papers) first
 async function paperTitles(pmids) {   // titles from PubMed (NCBI E-utilities esummary)
   const need = pmids.filter((x) => !pmCache.has(x));
   if (need.length) {
@@ -1654,7 +1655,8 @@ async function paperTitles(pmids) {   // titles from PubMed (NCBI E-utilities es
       const j = await (await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${need.join(",")}`)).json();
       const res = j.result || {};
       (res.uids || []).forEach((u) => { const r = res[u];
-        pmCache.set(+u, { pmid: +u, title: r.title, authorString: (r.authors || []).map((x) => x.name).join(", "), journalTitle: r.source, pubYear: (r.pubdate || "").slice(0, 4) }); });
+        pmCache.set(+u, { pmid: +u, title: r.title, authorString: (r.authors || []).map((x) => x.name).join(", "), journalTitle: r.source,
+          pubYear: (r.pubdate || "").slice(0, 4), date: r.sortpubdate || r.pubdate || "" }); });
     } catch (e) { /* titles are optional */ }
   }
   return pmids.map((x) => pmCache.get(x) || { pmid: x });
@@ -1688,12 +1690,20 @@ async function toggleEvidence(i, j, tr0) {
     + `<a class="btn mini" href="https://europepmc.org/search?query=${encodeURIComponent(`"${a.name}" AND "${b.name}"`)}" target="_blank" rel="noopener">${tr("Search the literature")} →</a></div>`;
   box.innerHTML = h;
   if (refs.length) {
-    const papers = await paperTitles(refs.slice(0, 6));
+    const papers = await paperTitles(refs.slice(0, 60));   // one PubMed request; sorted below by real publication date
     const el = box.querySelector("#evPapers"); if (!el) return;
-    el.innerHTML = `<div class="note">${tr("Papers reporting this interaction (most recent first):")}</div><ol>${papers.map((r) =>
-      `<li><a href="https://pubmed.ncbi.nlm.nih.gov/${r.pmid}/" target="_blank" rel="noopener">${esc(r.title || "PMID " + r.pmid)}</a>`
-      + (r.authorString ? ` <span class="yr">${esc(r.authorString.split(",")[0])}${r.authorString.includes(",") ? " et al." : ""}, ${esc(r.journalTitle || "")} ${esc(r.pubYear || "")}</span>` : "") + "</li>").join("")}</ol>`
-      + (refs.length > 6 ? `<div class="note">${tr("+{n} more (see PubMed link).", { n: refs.length - 6 })}</div>` : "");
+    const render = () => {
+      const sorted = papers.filter((r) => r.date).sort((x, y) => (paperOrder === "new" ? -1 : 1) * String(x.date).localeCompare(String(y.date)))
+        .concat(papers.filter((r) => !r.date));   // undated (title not found) always last
+      const shown = sorted.slice(0, 6);
+      el.innerHTML = `<div class="note" style="display:flex;justify-content:space-between;align-items:center;gap:6px">${tr("Papers reporting this interaction:")}`
+        + `<span class="seg"><button class="btn mini ${paperOrder === "new" ? "primary" : ""}" data-ord="new">${tr("Newest first")}</button> <button class="btn mini ${paperOrder === "old" ? "primary" : ""}" data-ord="old">${tr("Oldest first")}</button></span></div>`
+        + `<ol>${shown.map((r) => `<li><a href="https://pubmed.ncbi.nlm.nih.gov/${r.pmid}/" target="_blank" rel="noopener">${esc(r.title || "PMID " + r.pmid)}</a>`
+          + (r.authorString ? ` <span class="yr">${esc(r.authorString.split(",")[0])}${r.authorString.includes(",") ? " et al." : ""}, ${esc(r.journalTitle || "")} ${esc(r.pubYear || "")}</span>` : "") + "</li>").join("")}</ol>`
+        + (refs.length > 6 ? `<div class="note">${tr("+{n} more (see PubMed link).", { n: refs.length - 6 })}</div>` : "");
+      el.querySelectorAll("[data-ord]").forEach((btn) => btn.onclick = (ev) => { ev.stopPropagation(); paperOrder = btn.dataset.ord; render(); });
+    };
+    render();
   }
 }
 
