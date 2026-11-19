@@ -467,6 +467,81 @@ def main():
         edges.append([ia, ib, d["w"], m] if m else [ia, ib, d["w"]])
     print(f"OmniPath: {len(effect)} interactions with a documented activation/inhibition")
 
+    # --- evidence per interaction, written to a lazy-loaded file (docs/evidence.json), aligned with `edges`
+    edge_pos = {(e[0], e[1]): k for k, e in enumerate(edges)}
+    pair = lambda x, y: (min(x, y), max(x, y))
+    #  STRING channel scores for the physical network
+    str_scores = {}
+    with gzip.open(RAW / "string_physical_detailed.txt.gz", "rt") as fh:
+        next(fh)
+        for line in fh:
+            a_, b_, ex, db, tm, _ = line.split()
+            if a_ in ids and b_ in ids:
+                k = edge_pos.get(pair(ids[a_], ids[b_]))
+                if k is not None:
+                    str_scores[k] = [int(ex), int(db), int(tm)]
+    #  BioGRID physical experiments (method, paper, throughput)
+    acc_idx = {nodes[sid]["acc"]: ids[sid] for sid in order if nodes[sid]["acc"]}
+    methods, method_idx = [], {}
+    bg = defaultdict(lambda: {"m": Counter(), "low": set(), "high": set()})
+    bg_file = next((RAW / "biogrid").glob("BIOGRID-ORGANISM-Homo_sapiens-*.tab3.txt"))
+    with open(bg_file, encoding="utf-8") as fh:
+        head = next(fh).rstrip("\n").split("\t")
+        col = {h: i for i, h in enumerate(head)}
+        for line in fh:
+            f = line.rstrip("\n").split("\t")
+            if f[col["Experimental System Type"]] != "physical" or f[col["Organism ID Interactor A"]] != "9606" or f[col["Organism ID Interactor B"]] != "9606":
+                continue
+            ia = next((acc_idx[x] for x in f[col["SWISS-PROT Accessions Interactor A"]].split("|") if x in acc_idx), None)
+            ib = next((acc_idx[x] for x in f[col["SWISS-PROT Accessions Interactor B"]].split("|") if x in acc_idx), None)
+            if ia is None or ib is None or ia == ib:
+                continue
+            k = edge_pos.get(pair(ia, ib))
+            if k is None:
+                continue
+            m = f[col["Experimental System"]]
+            if m not in method_idx:
+                method_idx[m] = len(methods); methods.append(m)
+            rec = bg[k]
+            rec["m"][method_idx[m]] += 1
+            pub = f[col["Publication Source"]]
+            if pub.startswith("PUBMED:"):
+                (rec["low"] if f[col["Throughput"]].startswith("Low") else rec["high"]).add(int(pub[7:]))
+    #  OmniPath curated sources and references for signed links
+    omni = {}
+    with open(RAW / "omnipath" / "interactions.tsv", encoding="utf-8") as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            ia, ib = acc_idx.get(r["source"]), acc_idx.get(r["target"])
+            if ia is None or ib is None or ia == ib:
+                continue
+            k = edge_pos.get(pair(ia, ib))
+            if k is None or len(edges[k]) < 4:
+                continue
+            o = omni.setdefault(k, [set(), set()])
+            o[0].update(x.split("_")[0] for x in r["sources"].split(";") if x)
+            o[1].update(int(x.split(":")[1]) for x in r["references"].split(";") if ":" in x and x.split(":")[1].isdigit())
+    ev = {}
+    for k in range(len(edges)):
+        rec = bg.get(k)
+        entry = [str_scores.get(k, [0, 0, 0])]
+        if rec:
+            low, high = sorted(rec["low"], reverse=True), sorted(rec["high"] - rec["low"], reverse=True)
+            entry.append([[mi, c] for mi, c in rec["m"].most_common()])
+            entry.append((low + high)[:25])
+            entry.append([len(rec["low"]), len(rec["high"] - rec["low"])])
+        else:
+            entry += [[], [], [0, 0]]
+        if k in omni:
+            entry.append([sorted(omni[k][0]), sorted(omni[k][1], reverse=True)[:15]])
+        ev[k] = entry
+    # links with no experimental (STRING experiments < 0.15, no BioGRID) and no curated-database support
+    tm_only = [k for k in range(len(edges)) if ev[k][0][0] < 150 and ev[k][0][1] == 0 and not ev[k][1]]
+    print(f"text-mining-only links: {len(tm_only)}")
+    ev_out = ROOT / "docs" / "evidence.json"
+    ev_out.write_text(json.dumps({"methods": methods, "ev": [ev[k] for k in range(len(edges))]}, separators=(",", ":")))
+    print(f"evidence: STRING scores for {len(str_scores)} links, BioGRID for {len(bg)} links "
+          f"({len(methods)} methods), OmniPath sources for {len(omni)} -> {ev_out.name} ({ev_out.stat().st_size / 1e6:.1f} MB)")
+
     data = {
         "meta": {"source": "STRING v12.0 physical interactions; UniProt; Human Protein Atlas",
                  "min_score": MIN_SCORE, "proteins": N, "interactions": len(edges)},
@@ -481,6 +556,7 @@ def main():
         "ddi": [[a, b, n, pdb, ra, rb] for (a, b), (n, pdb, ra, rb) in sorted(ddi.items()) if n],
         # [Reactome id, name, index of its top-level pathway]
         "pathways": [[p_, pw_name[p_], pw_index.get(root_of(p_), -1)] for p_ in pw_keep],
+        "tm_only": tm_only,   # edge indices supported only by text mining
         "modules": modules,
         "nodes": out_nodes,
         "edges": edges,

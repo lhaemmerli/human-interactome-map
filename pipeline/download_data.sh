@@ -17,4 +17,7 @@ done
 curl -fSL -o uniprot_variants/humsavar.txt https://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/variants/humsavar.txt
 mkdir -p omnipath
 curl -fSL -o omnipath/interactions.tsv "https://omnipathdb.org/interactions?genesymbols=yes&fields=sources,references&license=academic"
+curl -fSL -o string_physical_detailed.txt.gz https://stringdb-downloads.org/download/protein.physical.links.detailed.v12.0/9606.protein.physical.links.detailed.v12.0.txt.gz
+mkdir -p biogrid && curl -fSL -o biogrid/all.zip https://downloads.thebiogrid.org/Download/BioGRID/Latest-Release/BIOGRID-ORGANISM-LATEST.tab3.zip \
+  && unzip -o -q biogrid/all.zip "*Homo_sapiens*" -d biogrid && rm biogrid/all.zip
 echo "Done. Now run: python3 pipeline/build_data.py"

@@ -66,6 +66,11 @@ human proteome, Human Protein Atlas `proteinatlas.tsv`).
 - **Activation / inhibition**: OmniPath directed, signed interactions (4,716 of 86,519) drawn as arrows
   (→ activation, ⊣ inhibition) on the map, as badges and filters in the partner list, with the net effect of
   paths and effect counts for gene lists.
+- **Evidence per interaction** (`docs/evidence.json`, loaded on demand): STRING channel scores, BioGRID
+  experiments (methods, throughput, papers with titles from PubMed), curated sources of activation/inhibition;
+  4,545 text-mining-only links are flagged and ignored by the path finder by default.
+- **Neighbourhood view**: force-directed diagram of a protein, its partners and the links among them, with
+  activation/inhibition arrows; drag, re-centre, SVG download.
 - **Drugs**: approved drugs and clinical candidates per protein, loaded live from Open Targets.
 - **Disease mutations**: UniProt curated pathogenic missense variants (`docs/variants.json`, loaded on demand)
   shown on the AlphaFold structure.
@@ -86,6 +91,7 @@ Contact: leo.hammerli@epfl.ch
 - [Pfam / InterPro](https://www.ebi.ac.uk/interpro/) — CC0
 - [3did](https://3did.irbbarcelona.org) — domain–domain interactions from PDB structures
 - [Reactome](https://reactome.org) v98 — CC BY 4.0
+- [BioGRID](https://thebiogrid.org) 5.0.263 — MIT
 - [OmniPath](https://omnipathdb.org) (Türei et al., Mol Syst Biol 2021) — academic-licence set, mixed licences
 - [Open Targets Platform](https://platform.opentargets.org) 26.09 (live) — CC0
 - [AlphaMissense](https://alphamissense.hegelab.org) (Cheng et al., Science 2023), via AlphaFold DB — CC BY 4.0

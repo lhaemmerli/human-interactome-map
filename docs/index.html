@@ -116,6 +116,26 @@ textarea { width: 100%; min-height: 64px; resize: vertical; padding: 7px 10px; b
 .amramp { display: inline-block; width: 120px; height: 8px; border-radius: 4px; vertical-align: middle;
   background: linear-gradient(90deg, #3987e5, #9a9a95, #e34948); margin: 0 6px; }
 #afColor { margin-top: 6px; }
+.evrow td { padding: 0 0 8px !important; cursor: default !important; }
+.evbox { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; font-size: 12px; color: var(--ink-2); }
+.evbox h4 { margin: 0 0 6px; font-size: 12.5px; color: var(--ink); }
+.evbox .sc { display: grid; grid-template-columns: 110px 1fr 36px; gap: 2px 6px; align-items: center; margin-bottom: 6px; }
+.evbox .sc i { display: block; height: 6px; border-radius: 3px; background: var(--s1); }
+.evbox .sc .bg { background: var(--grid); border-radius: 3px; }
+.evbox .warn { border-left: 3px solid #d03b3b; padding: 4px 8px; margin: 6px 0; background: rgba(208,59,59,.08); color: var(--ink); }
+.evbox .meth { display: inline-block; border: 1px solid var(--border); border-radius: 8px; padding: 0 6px; margin: 2px 3px 2px 0; cursor: help; }
+.evbox ol { margin: 4px 0 4px 18px; padding: 0; }
+.evbox li { margin: 2px 0; }
+.evbox .yr { color: var(--muted); }
+.tmb { display: inline-block; font-size: 10.5px; border: 1px dashed var(--muted); color: var(--muted); border-radius: 8px; padding: 0 6px; margin: 1px 3px 1px 0; }
+#nb { position: absolute; inset: 0; z-index: 6; background: var(--surface); display: flex; flex-direction: column; }
+#nb .bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--ink-2); }
+#nb .bar b { color: var(--ink); font-size: 14px; margin-right: auto; }
+#nb .bar label { display: flex; gap: 5px; align-items: center; cursor: pointer; }
+#nb svg { flex: 1; width: 100%; min-height: 0; touch-action: none; }
+#nb .foot { padding: 6px 12px; border-top: 1px solid var(--border); font-size: 12px; color: var(--ink-2); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+#nb .node { cursor: pointer; }
+#nb .node text { font: 600 11px system-ui, -apple-system, sans-serif; pointer-events: none; paint-order: stroke; stroke-width: 3px; }
 .eff { display: inline-block; font-size: 10.5px; line-height: 15px; border-radius: 8px; padding: 0 6px; border: 1px solid; margin: 1px 3px 1px 0; white-space: nowrap; }
 .eff.e1 { color: var(--s1); border-color: var(--s1); }
 .eff.e2 { color: var(--s2); border-color: var(--s2); }
@@ -244,6 +264,7 @@ a { color: var(--s1); }
   <div class="search-wrap"><input type="search" id="pathFrom" placeholder="From… (e.g. INS)" data-tp autocomplete="off"><ul class="suggest" id="sugFrom"></ul></div>
   <div class="search-wrap" style="margin-top:6px"><input type="search" id="pathTo" placeholder="To… (e.g. AKT1)" data-tp autocomplete="off"><ul class="suggest" id="sugTo"></ul></div>
   <div class="row"><label><input type="checkbox" id="pathInPw"> <span data-t>Only through proteins of the selected pathway(s)</span></label></div>
+  <div class="row"><label><input type="checkbox" id="pathNoTm" checked> <span data-t>Ignore links supported only by text mining</span></label></div>
   <div class="actions"><button class="btn primary" id="pathGo" data-t>Find path</button><button class="btn" id="pathClear" data-t>clear</button></div>
   <div id="pathOut"></div>
 
@@ -277,6 +298,7 @@ a { color: var(--s1); }
 
 <main id="stage">
   <div id="graph"></div>
+  <div id="nb" hidden></div>
   <canvas id="overlay"></canvas>
   <div id="status"></div>
   <div id="legend"></div>
@@ -467,6 +489,53 @@ const FR = {
     "Tous les partenaires, triés par confiance. Quand c'est connu, une étiquette indique si la protéine <b>active</b> ou <b>inhibe</b> le partenaire (ou est activée / inhibée par lui) ; sur la carte ces liens ont des flèches (→ activation, ⊣ inhibition). Cliquez sur un nom pour aller à cette protéine. Le bouton <b>3D</b> montre les deux protéines ensemble.",
   "Show activation / inhibition links": "Afficher les liens d'activation / d'inhibition",
   "Pick a filter first (function, body system, disease, pathway, gene list or minimum partners).": "Choisissez d'abord un filtre (fonction, système, maladie, voie, liste de gènes ou partenaires min.).",
+  // evidence + neighbourhood
+  "Ignore links supported only by text mining": "Ignorer les liens issus uniquement de la fouille de textes",
+  "Why are these two proteins linked?": "Pourquoi ces deux protéines sont-elles liées ?", "Evidence": "Preuves",
+  "No experiment or curated database records this link; it comes from text mining (the names often appear together in papers).":
+    "Aucune expérience ni base de données vérifiée ne recense ce lien ; il vient de la fouille de textes (les noms apparaissent souvent ensemble dans des articles).",
+  "text mining only": "fouille de textes seulement", "A readable diagram of this protein and its partners": "Un schéma lisible de cette protéine et de ses partenaires",
+  "Neighbourhood view": "Voisinage", "Could not load the evidence file.": "Impossible de charger le fichier des preuves.",
+  "Why are {a} and {b} linked?": "Pourquoi {a} et {b} sont-elles liées ?", "STRING scores by type of evidence (0–1):": "Scores STRING par type de preuve (0–1) :",
+  "Experiments": "Expériences", "Curated databases": "Bases vérifiées", "Text mining": "Fouille de textes", "Combined": "Combiné",
+  "Supported only by text mining: the two names often appear together in papers, but no experiment or curated database records this interaction. Treat it with caution.":
+    "Soutenu uniquement par la fouille de textes : les deux noms apparaissent souvent ensemble dans des articles, mais aucune expérience ni base vérifiée ne recense cette interaction. À prendre avec prudence.",
+  "Experiments in BioGRID: <b>{l}</b> focused studies, <b>{h}</b> large-scale screens. Methods used:": "Expériences dans BioGRID : <b>{l}</b> études ciblées, <b>{h}</b> criblages à grande échelle. Méthodes utilisées :",
+  "No experiment for this pair in BioGRID (the link may come from other databases included in STRING, e.g. curated complexes).":
+    "Aucune expérience pour cette paire dans BioGRID (le lien peut venir d'autres bases incluses dans STRING, ex. complexes vérifiés).",
+  "Activation / inhibition documented by: {s}": "Activation / inhibition documentée par : {s}", "Loading papers…": "Chargement des articles…",
+  "STRING evidence page": "Page des preuves STRING", "All {n} papers in PubMed": "Les {n} articles dans PubMed", "Search the literature": "Chercher dans la littérature",
+  "Papers reporting this interaction (most recent first):": "Articles rapportant cette interaction (les plus récents d'abord) :", "+{n} more (see PubMed link).": "+{n} autres (voir le lien PubMed).",
+  "Neighbourhood of {x}": "Voisinage de {x}", "Partners shown": "Partenaires affichés", "Partners of partners": "Partenaires des partenaires",
+  "Hide text-mining-only links": "Masquer les liens issus de la fouille de textes", "Download SVG": "Télécharger SVG", "Close": "Fermer",
+  "Thicker = more confident. Drag proteins to rearrange; click one to centre on it.": "Plus épais = plus fiable. Faites glisser les protéines pour réorganiser ; cliquez sur l'une pour la centrer.",
+  "Two-hybrid": "Double hybride", "Affinity Capture-Western": "Capture d'affinité – Western", "Affinity Capture-MS": "Capture d'affinité – SM",
+  "Affinity Capture-Luminescence": "Capture d'affinité – luminescence", "Affinity Capture-RNA": "Capture d'affinité – ARN", "Reconstituted Complex": "Complexe reconstitué",
+  "Co-purification": "Co-purification", "Co-fractionation": "Co-fractionnement", "Co-crystal Structure": "Structure co-cristallisée", "Protein-peptide": "Protéine–peptide",
+  "FRET": "FRET", "Far Western": "Far Western", "Co-localization": "Co-localisation", "Biochemical Activity": "Activité biochimique", "PCA": "Complémentation (PCA)",
+  "Protein-RNA": "Protéine–ARN", "Proximity Label-MS": "Marquage de proximité – SM", "Cross-Linking-MS (XL-MS)": "Pontage chimique – SM (XL-MS)", "Surface Display": "Présentation en surface",
+  "Tested in yeast or other cells: the two proteins switch on a reporter gene only when they bind.": "Testé dans la levure ou d'autres cellules : les deux protéines n'allument un gène rapporteur que si elles se lient.",
+  "One protein is pulled out of cells with an antibody; the partner is detected in what comes out (Western blot).": "Une protéine est extraite des cellules avec un anticorps ; le partenaire est détecté dans l'extrait (Western blot).",
+  "Same pull-down, but the partner is identified by mass spectrometry (often in large screens).": "Même extraction, mais le partenaire est identifié par spectrométrie de masse (souvent à grande échelle).",
+  "Pull-down where the partner carries a light-emitting tag.": "Extraction où le partenaire porte une étiquette lumineuse.",
+  "A protein is pulled down and RNA attached to it is detected (indirect link).": "Une protéine est extraite et l'ARN qui lui est attaché est détecté (lien indirect).",
+  "The purified proteins bind each other in a test tube.": "Les protéines purifiées se lient entre elles dans un tube à essai.",
+  "The proteins stay together through several purification steps.": "Les protéines restent ensemble à travers plusieurs étapes de purification.",
+  "The proteins move together when cell extracts are separated into fractions.": "Les protéines se déplacent ensemble quand les extraits cellulaires sont séparés en fractions.",
+  "A 3D structure shows the two proteins bound together.": "Une structure 3D montre les deux protéines liées.",
+  "A protein binds a short peptide taken from the partner.": "Une protéine se lie à un court peptide du partenaire.",
+  "Fluorescent tags show the two proteins are within a few nanometres of each other in cells.": "Des marqueurs fluorescents montrent que les deux protéines sont à quelques nanomètres l'une de l'autre dans les cellules.",
+  "The partner binds the protein after it has been fixed on a membrane.": "Le partenaire se lie à la protéine fixée sur une membrane.",
+  "The proteins are seen in the same place in the cell (weak evidence of binding).": "Les protéines sont vues au même endroit dans la cellule (preuve faible de liaison).",
+  "One protein chemically modifies the other (e.g. adds a phosphate or ubiquitin).": "Une protéine modifie chimiquement l'autre (ex. ajoute un phosphate ou une ubiquitine).",
+  "Two halves of a reporter protein come together when the two proteins bind.": "Deux moitiés d'une protéine rapporteur se rejoignent quand les deux protéines se lient.",
+  "Protein–RNA binding (indirect link).": "Liaison protéine–ARN (lien indirect).",
+  "An enzyme on one protein tags its close neighbours, which are identified by mass spectrometry.": "Une enzyme fixée sur une protéine marque ses voisines proches, identifiées par spectrométrie de masse.",
+  "Chemical links between touching proteins are identified by mass spectrometry.": "Des liaisons chimiques entre protéines en contact sont identifiées par spectrométrie de masse.",
+  "Binding detected with proteins displayed on the surface of phages or yeast.": "Liaison détectée avec des protéines présentées à la surface de phages ou de levures.",
+  "Neighbourhood and evidence": "Voisinage et preuves",
+  "<b>Neighbourhood view</b> draws the protein with its partners and the links between them, with activation and inhibition arrows. In the partner list, <b>Evidence</b> shows why a link exists: the kinds of evidence, the experiments and the papers. Links supported only by text mining are flagged.":
+    "<b>Voisinage</b> dessine la protéine avec ses partenaires et les liens entre eux, avec les flèches d'activation et d'inhibition. Dans la liste des partenaires, <b>Preuves</b> montre pourquoi un lien existe : les types de preuves, les expériences et les articles. Les liens issus uniquement de la fouille de textes sont signalés.",
   // tour chrome
   "Step {k} of {n}": "Étape {k} sur {n}", "Skip tour": "Passer", "Back": "Retour", "Finish": "Terminer", "Next": "Suivant", "Start tour": "Commencer",
   // tour steps
@@ -623,9 +692,12 @@ function init(data) {
   });
   D.adj = D.N.map(() => []);
   // effect bits (OmniPath), relative to the first node: 1 activates other, 2 inhibits other, 4 activated by other, 8 inhibited by other
+  D.tmOnly = new Set(D.tm_only || []);
+  let ek = 0;
   for (const [a, b, w, m = 0] of D.edges) {
+    const k = ek++;
     graph.addEdge(a, b, { w, m });
-    D.adj[a].push([b, w, m]); D.adj[b].push([a, w, ((m & 3) << 2) | ((m >> 2) & 3)]);
+    D.adj[a].push([b, w, m, k]); D.adj[b].push([a, w, ((m & 3) << 2) | ((m >> 2) & 3), k]);   // [partner, confidence, effect bits, edge index]
   }
   D.adj.forEach((l) => l.sort((p, q) => q[1] - p[1] || D.N[q[0]].deg - D.N[p[0]].deg));
 
@@ -985,6 +1057,7 @@ function select(i, fly) {
   setTimeout(() => renderer.resize(), 0);
   if (i == null) {
     if (state.list) showListReport(); else document.body.classList.add("no-detail");
+    closeNeighbourhood();
     refresh(); writeHash(); return;
   }
   const p = D.N[i];
@@ -996,6 +1069,7 @@ function select(i, fly) {
   $("detail").innerHTML = `
     ${state.list ? `<button class="btn mini" id="backToList">${tr("← gene list report")}</button>` : ""}
     <div class="big">${esc(p.name)}</div>
+    <div class="actions" style="float:right;margin-top:-34px;margin-right:36px"><button class="btn mini" id="nbBtn" title="${tr("A readable diagram of this protein and its partners")}">${tr("Neighbourhood view")}</button></div>
     <div>${esc(p.desc)}</div>
     <h2>${tr("3D structure")}</h2>
     <div id="structSlot"></div>
@@ -1049,6 +1123,8 @@ function select(i, fly) {
           q.f.map((x) => D.functions[x]).join("; "), q.d.map((x) => D.diseases[x]).join("; ")]; })]);
   };
   $("right").scrollTop = 0;
+  $("nbBtn").onclick = () => openNeighbourhood(i);
+  if (!$("nb").hidden) openNeighbourhood(i);
   refresh();
   writeHash();
   if (fly) setTimeout(() => {
@@ -1168,10 +1244,12 @@ function renderPartners(i) {
   $("partnersBox").innerHTML = (state.hi
       ? `<div id="domFilter"><span>${list.length} ${state.hi.label}</span><button class="btn" id="domClear">${tr("show all")}</button></div>` : "")
     + effSummary(i)
-    + `<table id="partners">${list.map(([j, w, e]) => `<tr data-i="${j}"><td><b>${esc(D.N[j].name)}</b><button class="cxbtn" data-cx="${j}" title="${tr("Show a 3D structure of {a} with {b}", { a: esc(D.N[i].name), b: esc(D.N[j].name) })}">3D</button></td><td>${e ? `<div>${effBadges(e)}</div>` : ""}${esc(D.N[j].desc).slice(0, 38)}${iface(j)}</td><td class="n">${(w / 1000).toFixed(2)}</td></tr>`).join("")}</table>`;
+    + `<table id="partners">${list.map(([j, w, e, k]) => `<tr data-i="${j}"><td><b>${esc(D.N[j].name)}</b><button class="cxbtn" data-ev="${j}" title="${tr("Why are these two proteins linked?")}">${tr("Evidence")}</button><button class="cxbtn" data-cx="${j}" title="${tr("Show a 3D structure of {a} with {b}", { a: esc(D.N[i].name), b: esc(D.N[j].name) })}">3D</button></td><td>${e || D.tmOnly.has(k) ? `<div>${effBadges(e)}${D.tmOnly.has(k) ? `<span class="tmb" title="${tr("No experiment or curated database records this link; it comes from text mining (the names often appear together in papers).")}">${tr("text mining only")}</span>` : ""}</div>` : ""}${esc(D.N[j].desc).slice(0, 38)}${iface(j)}</td><td class="n">${(w / 1000).toFixed(2)}</td></tr>`).join("")}</table>`;
   $("partners").onclick = (e) => {
     if (e.target.closest("a")) return;
     const cx = e.target.closest("[data-cx]"); if (cx) { showComplex(i, +cx.dataset.cx); return; }
+    const evb = e.target.closest("[data-ev]"); if (evb) { toggleEvidence(i, +evb.dataset.ev, evb.closest("tr")); return; }
+    if (e.target.closest(".evrow")) return;
     const tr = e.target.closest("tr"); if (tr) select(+tr.dataset.i, true);
   };
   if ($("domClear")) $("domClear").onclick = () => setHi(i, null);
@@ -1544,6 +1622,180 @@ async function loadDrugs(i) {
   render(false);
 }
 
+// ---------- evidence for one interaction (evidence.json loaded on first use; paper titles from Europe PMC)
+let EVD = null, evdLoading = null;
+const loadEvidence = () => evdLoading || (evdLoading = fetch("evidence.json").then((r) => r.json()).then((x) => (EVD = x)).catch(() => { evdLoading = null; return null; }));
+const METHOD_INFO = {
+  "Two-hybrid": "Tested in yeast or other cells: the two proteins switch on a reporter gene only when they bind.",
+  "Affinity Capture-Western": "One protein is pulled out of cells with an antibody; the partner is detected in what comes out (Western blot).",
+  "Affinity Capture-MS": "Same pull-down, but the partner is identified by mass spectrometry (often in large screens).",
+  "Affinity Capture-Luminescence": "Pull-down where the partner carries a light-emitting tag.",
+  "Affinity Capture-RNA": "A protein is pulled down and RNA attached to it is detected (indirect link).",
+  "Reconstituted Complex": "The purified proteins bind each other in a test tube.",
+  "Co-purification": "The proteins stay together through several purification steps.",
+  "Co-fractionation": "The proteins move together when cell extracts are separated into fractions.",
+  "Co-crystal Structure": "A 3D structure shows the two proteins bound together.",
+  "Protein-peptide": "A protein binds a short peptide taken from the partner.",
+  "FRET": "Fluorescent tags show the two proteins are within a few nanometres of each other in cells.",
+  "Far Western": "The partner binds the protein after it has been fixed on a membrane.",
+  "Co-localization": "The proteins are seen in the same place in the cell (weak evidence of binding).",
+  "Biochemical Activity": "One protein chemically modifies the other (e.g. adds a phosphate or ubiquitin).",
+  "PCA": "Two halves of a reporter protein come together when the two proteins bind.",
+  "Protein-RNA": "Protein–RNA binding (indirect link).",
+  "Proximity Label-MS": "An enzyme on one protein tags its close neighbours, which are identified by mass spectrometry.",
+  "Cross-Linking-MS (XL-MS)": "Chemical links between touching proteins are identified by mass spectrometry.",
+  "Surface Display": "Binding detected with proteins displayed on the surface of phages or yeast.",
+};
+const pmCache = new Map();
+async function paperTitles(pmids) {   // titles from PubMed (NCBI E-utilities esummary)
+  const need = pmids.filter((x) => !pmCache.has(x));
+  if (need.length) {
+    try {
+      const j = await (await fetch(`https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${need.join(",")}`)).json();
+      const res = j.result || {};
+      (res.uids || []).forEach((u) => { const r = res[u];
+        pmCache.set(+u, { pmid: +u, title: r.title, authorString: (r.authors || []).map((x) => x.name).join(", "), journalTitle: r.source, pubYear: (r.pubdate || "").slice(0, 4) }); });
+    } catch (e) { /* titles are optional */ }
+  }
+  return pmids.map((x) => pmCache.get(x) || { pmid: x });
+}
+async function toggleEvidence(i, j, tr0) {
+  const open = tr0.nextElementSibling && tr0.nextElementSibling.classList.contains("evrow");
+  document.querySelectorAll("#partners .evrow").forEach((r) => r.remove());
+  if (open) return;
+  const row = document.createElement("tr"); row.className = "evrow";
+  row.innerHTML = `<td colspan="3"><div class="evbox">${tr("Loading…")}</div></td>`;
+  tr0.after(row);
+  await loadEvidence();
+  const box = row.querySelector(".evbox"); if (!box.isConnected) return;
+  if (!EVD) { box.textContent = tr("Could not load the evidence file."); return; }
+  const a = D.N[i], b = D.N[j], adj = D.adj[i].find(([x]) => x === j), k = adj[3], w = adj[1];
+  const [sc, meth, pmids, [nLow, nHigh], omni] = EVD.ev[k];
+  const bar = (lab, v) => `<span>${lab}</span><span class="bg"><i style="width:${(v / 10).toFixed(0)}%"></i></span><span>${(v / 1000).toFixed(2)}</span>`;
+  let h = `<h4>${tr("Why are {a} and {b} linked?", { a: esc(a.name), b: esc(b.name) })}</h4>`
+    + `<div class="note">${tr("STRING scores by type of evidence (0–1):")}</div>`
+    + `<div class="sc">${bar(tr("Experiments"), sc[0])}${bar(tr("Curated databases"), sc[1])}${bar(tr("Text mining"), sc[2])}${bar(`<b>${tr("Combined")}</b>`, w)}</div>`;
+  if (D.tmOnly.has(k)) h += `<div class="warn">⚠ ${tr("Supported only by text mining: the two names often appear together in papers, but no experiment or curated database records this interaction. Treat it with caution.")}</div>`;
+  if (meth.length) {
+    h += `<div>${tr("Experiments in BioGRID: <b>{l}</b> focused studies, <b>{h}</b> large-scale screens. Methods used:", { l: nLow, h: nHigh })}</div><div>`
+      + meth.map(([m, c]) => { const name = EVD.methods[m]; return `<span class="meth" title="${esc(tr(METHOD_INFO[name] || name))}">${esc(tr(name))} × ${c}</span>`; }).join("") + "</div>";
+  } else h += `<div class="note">${tr("No experiment for this pair in BioGRID (the link may come from other databases included in STRING, e.g. curated complexes).")}</div>`;
+  if (omni) h += `<div style="margin-top:4px">${tr("Activation / inhibition documented by: {s}", { s: omni[0].map(esc).join(", ") })}</div>`;
+  const refs = [...new Set([...(pmids || []), ...(omni ? omni[1] : [])])];
+  h += `<div id="evPapers" style="margin-top:6px">${refs.length ? tr("Loading papers…") : ""}</div>`
+    + `<div class="actions"><a class="btn mini" href="https://string-db.org/cgi/network?identifiers=9606.${esc(a.ensp)}%0d9606.${esc(b.ensp)}&species=9606&network_flavor=evidence" target="_blank" rel="noopener">${tr("STRING evidence page")} →</a>`
+    + (refs.length ? `<a class="btn mini" href="https://pubmed.ncbi.nlm.nih.gov/?term=${refs.join("+OR+")}" target="_blank" rel="noopener">${tr("All {n} papers in PubMed", { n: refs.length })} →</a>` : "")
+    + `<a class="btn mini" href="https://europepmc.org/search?query=${encodeURIComponent(`"${a.name}" AND "${b.name}"`)}" target="_blank" rel="noopener">${tr("Search the literature")} →</a></div>`;
+  box.innerHTML = h;
+  if (refs.length) {
+    const papers = await paperTitles(refs.slice(0, 6));
+    const el = box.querySelector("#evPapers"); if (!el) return;
+    el.innerHTML = `<div class="note">${tr("Papers reporting this interaction (most recent first):")}</div><ol>${papers.map((r) =>
+      `<li><a href="https://pubmed.ncbi.nlm.nih.gov/${r.pmid}/" target="_blank" rel="noopener">${esc(r.title || "PMID " + r.pmid)}</a>`
+      + (r.authorString ? ` <span class="yr">${esc(r.authorString.split(",")[0])}${r.authorString.includes(",") ? " et al." : ""}, ${esc(r.journalTitle || "")} ${esc(r.pubYear || "")}</span>` : "") + "</li>").join("")}</ol>`
+      + (refs.length > 6 ? `<div class="note">${tr("+{n} more (see PubMed link).", { n: refs.length - 6 })}</div>` : "");
+  }
+}
+
+// ---------- neighbourhood view: a readable force-directed diagram of the selected protein and its partners
+const NB = { n: 25, second: false, noTm: false, center: null };
+function closeNeighbourhood() { $("nb").hidden = true; NB.center = null; }
+function openNeighbourhood(i) {
+  NB.center = i; const box = $("nb"); box.hidden = false;
+  box.innerHTML = `<div class="bar"><b>${tr("Neighbourhood of {x}", { x: esc(D.N[i].name) })}</b>
+    <label>${tr("Partners shown")} <input type="range" id="nbN" min="5" max="80" value="${NB.n}"> <span id="nbNv">${NB.n}</span></label>
+    <label><input type="checkbox" id="nbSecond" ${NB.second ? "checked" : ""}> ${tr("Partners of partners")}</label>
+    <label><input type="checkbox" id="nbNoTm" ${NB.noTm ? "checked" : ""}> ${tr("Hide text-mining-only links")}</label>
+    <button class="btn mini" id="nbSvg">${tr("Download SVG")}</button><button class="btn mini" id="nbClose">✕ ${tr("Close")}</button></div>
+    <svg id="nbSvgEl" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div class="foot"><span><span class="effk" style="color:${P.s1}">→</span>${tr("activates")}</span><span><span class="effk" style="color:${P.s2}">⊣</span>${tr("inhibits")}</span>
+      <span><span class="effk" style="color:${P.muted}">—</span>${tr("binds (effect unknown)")}</span><span><span class="effk" style="color:${P.muted}">┄</span>${tr("text mining only")}</span>
+      <span>${tr("Thicker = more confident. Drag proteins to rearrange; click one to centre on it.")}</span></div>`;
+  $("nbN").oninput = (e) => { NB.n = +e.target.value; $("nbNv").textContent = NB.n; drawNeighbourhood(); };
+  $("nbSecond").onchange = (e) => { NB.second = e.target.checked; drawNeighbourhood(); };
+  $("nbNoTm").onchange = (e) => { NB.noTm = e.target.checked; drawNeighbourhood(); };
+  $("nbClose").onclick = closeNeighbourhood;
+  $("nbSvg").onclick = () => {
+    const svg = $("nbSvgEl").cloneNode(true); svg.setAttribute("style", `background:${P.surface}`);
+    downloadBlob(`${D.N[i].name}_neighbourhood.svg`, new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" }));
+  };
+  drawNeighbourhood();
+}
+function drawNeighbourhood() {
+  const c = NB.center; if (c == null) return;
+  const svg = $("nbSvgEl"), W = svg.clientWidth || 800, H = svg.clientHeight || 600;
+  const okLink = (k) => !(NB.noTm && D.tmOnly.has(k));
+  // nodes: centre, its top partners by confidence, optionally the top partners of the 10 closest partners
+  const first = D.adj[c].filter(([, , , k]) => okLink(k)).slice(0, NB.n).map(([j]) => j);
+  const ids = [c, ...first], ring = new Map([[c, 0], ...first.map((j) => [j, 1])]);
+  if (NB.second) first.slice(0, 10).forEach((j) => D.adj[j].filter(([x, , , k]) => !ring.has(x) && okLink(k)).slice(0, 3).forEach(([x]) => { if (!ring.has(x) && ids.length < 130) { ring.set(x, 2); ids.push(x); } }));
+  const idx = new Map(ids.map((x, t) => [x, t]));
+  const links = [];
+  ids.forEach((u) => D.adj[u].forEach(([v, w, e, k]) => { if (u < v && idx.has(v) && okLink(k)) links.push({ s: idx.get(u), t: idx.get(v), w, e, k }); }));
+  // layout: small force simulation (springs on links, repulsion between all nodes, centre pinned)
+  const N = ids.length, X = new Float64Array(N), Y = new Float64Array(N);
+  ids.forEach((x, t) => { const r = ring.get(x) === 0 ? 0 : ring.get(x) === 1 ? 220 : 380, a = (t / N) * Math.PI * 2 * 7.3; X[t] = Math.cos(a) * r; Y[t] = Math.sin(a) * r; });
+  const R = ids.map((x) => (x === c ? 16 : 5 + Math.min(9, Math.sqrt(D.N[x].deg) * 0.7)));
+  for (let it = 0; it < 400; it++) {
+    const cool = 1 - it / 400, FX = new Float64Array(N), FY = new Float64Array(N);
+    for (let a = 0; a < N; a++) for (let b = a + 1; b < N; b++) {
+      let dx = X[b] - X[a], dy = Y[b] - Y[a], d2 = dx * dx + dy * dy + 0.01; const d = Math.sqrt(d2);
+      const f = 2200 / d2 + (d < R[a] + R[b] + 24 ? (R[a] + R[b] + 24 - d) * 0.5 : 0);
+      FX[a] -= dx / d * f; FY[a] -= dy / d * f; FX[b] += dx / d * f; FY[b] += dy / d * f;
+    }
+    for (const L of links) {
+      const len = L.s === 0 || L.t === 0 ? 170 : 110;
+      const dx = X[L.t] - X[L.s], dy = Y[L.t] - Y[L.s], d = Math.hypot(dx, dy) || 0.01, f = (d - len) * 0.04;
+      FX[L.s] += dx / d * f; FY[L.s] += dy / d * f; FX[L.t] -= dx / d * f; FY[L.t] -= dy / d * f;
+    }
+    for (let a = 1; a < N; a++) { FX[a] -= X[a] * 0.004; FY[a] -= Y[a] * 0.004;
+      const m = Math.hypot(FX[a], FY[a]), cap = 30 * cool + 1; if (m > cap) { FX[a] *= cap / m; FY[a] *= cap / m; }
+      X[a] += FX[a]; Y[a] += FY[a]; }
+    X[0] = 0; Y[0] = 0;
+  }
+  // fit into the view
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (let a = 0; a < N; a++) { minX = Math.min(minX, X[a] - 60); maxX = Math.max(maxX, X[a] + 60); minY = Math.min(minY, Y[a] - 30); maxY = Math.max(maxY, Y[a] + 30); }
+  svg.setAttribute("viewBox", `${minX} ${minY} ${maxX - minX} ${maxY - minY}`);
+  const colOf = (L) => { const k = effKind(L.e); return k ? effColor(k) : P.muted; };
+  const marker = (id, col, kind) => kind === "arrow"
+    ? `<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="${col}"/></marker>`
+    : `<marker id="${id}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M8,0 L8,10" stroke="${col}" stroke-width="3"/></marker>`;
+  const defs = `<defs>${marker("mA1", P.s1, "arrow")}${marker("mI2", P.s2, "bar")}${marker("mA3", P["ink-2"], "arrow")}${marker("mI1", P.s1, "bar")}${marker("mA2", P.s2, "arrow")}</defs>`;
+  const seg = (L) => {   // shorten the line so arrowheads sit at the node border
+    const x1 = X[L.s], y1 = Y[L.s], x2 = X[L.t], y2 = Y[L.t], d = Math.hypot(x2 - x1, y2 - y1) || 1;
+    return [x1 + (x2 - x1) / d * (R[L.s] + 2), y1 + (y2 - y1) / d * (R[L.s] + 2), x2 - (x2 - x1) / d * (R[L.t] + 2), y2 - (y2 - y1) / d * (R[L.t] + 2)];
+  };
+  const mk = (bits) => bits === 1 ? "mA1" : bits === 2 ? "mI2" : bits === 3 ? "mA3" : null;
+  const linkSvg = links.map((L, li) => {
+    const [x1, y1, x2, y2] = seg(L), f = L.e & 3, b = (L.e >> 2) & 3;   // f: s acts on t, b: t acts on s
+    const me = mk(f), ms = mk(b);
+    return `<line data-l="${li}" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="${colOf(L)}" stroke-width="${(0.6 + (L.w - 700) / 120).toFixed(2)}"`
+      + `${D.tmOnly.has(L.k) ? ' stroke-dasharray="4 4"' : ""}${me ? ` marker-end="url(#${me})"` : ""}${ms ? ` marker-start="url(#${ms})"` : ""} opacity="${L.s === 0 || L.t === 0 ? 0.9 : 0.45}"/>`;
+  }).join("");
+  const nodeSvg = ids.map((x, t) => {
+    const k = t === 0 ? 0 : effKind(D.adj[c].find(([y]) => y === x)?.[2] || 0);
+    const fill = t === 0 ? P.ink : ring.get(x) === 2 ? P.faded : mix(P["ramp-lo"], P["ramp-hi"], 1 - x / (D.N.length - 1));
+    return `<g class="node" data-n="${t}" transform="translate(${X[t].toFixed(1)},${Y[t].toFixed(1)})"><title>${esc(D.N[x].name)} · ${esc(D.N[x].desc)}</title>`
+      + `<circle r="${R[t]}" fill="${fill}" stroke="${k ? effColor(k) : P.surface}" stroke-width="${k ? 3 : 1.5}"/>`
+      + `<text y="${R[t] + 12}" text-anchor="middle" fill="${P.ink}" stroke="${P.surface}">${esc(D.N[x].name)}</text></g>`;
+  }).join("");
+  svg.innerHTML = defs + `<g id="nbLinks">${linkSvg}</g>` + nodeSvg;
+  // dragging and clicking
+  let drag = null, moved = false;
+  svg.onpointerdown = (e) => { const g = e.target.closest(".node"); if (!g) return; drag = +g.dataset.n; moved = false; svg.setPointerCapture(e.pointerId); };
+  svg.onpointermove = (e) => {
+    if (drag == null) return;
+    const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; const p2 = pt.matrixTransform(svg.getScreenCTM().inverse());
+    X[drag] = p2.x; Y[drag] = p2.y; moved = true;
+    svg.querySelector(`.node[data-n="${drag}"]`).setAttribute("transform", `translate(${p2.x.toFixed(1)},${p2.y.toFixed(1)})`);
+    links.forEach((L, li) => { if (L.s !== drag && L.t !== drag) return; const [x1, y1, x2, y2] = seg(L), el = svg.querySelector(`line[data-l="${li}"]`);
+      el.setAttribute("x1", x1); el.setAttribute("y1", y1); el.setAttribute("x2", x2); el.setAttribute("y2", y2); });
+  };
+  svg.onpointerup = () => { const d = drag; drag = null; if (d != null && !moved && ids[d] !== c) select(ids[d], true); };
+}
+addEventListener("resize", () => { if (!$("nb").hidden) drawNeighbourhood(); });
+
 // ---------- search: gene symbol, protein name, or synonym
 const wordStart = (text, q) => { const k = text.indexOf(q); if (k < 0) return -1; if (k === 0) return 0;
   const re = new RegExp("(^|[^a-z0-9])" + q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")); return re.test(text) ? 1 : 2; };
@@ -1791,11 +2043,13 @@ function showListReport() {
 // ---------- shortest path between two proteins
 $("pathGo").onclick = () => findPath();
 $("pathClear").onclick = () => { state.path = null; ["pathFrom", "pathTo"].forEach((id) => { $(id).value = ""; delete $(id).dataset.i; }); $("pathOut").innerHTML = ""; refresh(); writeHash(); };
+const linkOk = (k) => !($("pathNoTm").checked && D.tmOnly.has(k));
 function bfs(src, allowed) {
   const d = new Int32Array(D.N.length).fill(-1); d[src] = 0; const q = [src];
-  for (let h = 0; h < q.length; h++) { const v = q[h]; for (const [j] of D.adj[v]) if (d[j] < 0 && (!allowed || allowed(j))) { d[j] = d[v] + 1; q.push(j); } }
+  for (let h = 0; h < q.length; h++) { const v = q[h]; for (const [j, , , k] of D.adj[v]) if (d[j] < 0 && linkOk(k) && (!allowed || allowed(j))) { d[j] = d[v] + 1; q.push(j); } }
   return d;
 }
+$("pathNoTm").onchange = () => { if (state.path || ($("pathFrom").value && $("pathTo").value)) findPath(); };
 $("pathInPw").onchange = () => { if (state.path || ($("pathFrom").value && $("pathTo").value)) findPath(); };
 function stepArrow(u, v, w) {
   const e = effBetween(u, v), f = e & 3, b = (e >> 2) & 3, conf = (w / 1000).toFixed(2);
@@ -1832,13 +2086,13 @@ function findPath() {
   const layers = Array.from({ length: L + 1 }, () => []);
   D.N.forEach((_, v) => { if (on(v)) { all.add(v); layers[da[v]].push(v); } });
   const count = new Float64Array(D.N.length); count[a] = 1;
-  for (let k = 1; k <= L; k++) for (const v of layers[k]) for (const [u] of D.adj[v]) if (da[u] === k - 1 && on(u)) {
+  for (let k = 1; k <= L; k++) for (const v of layers[k]) for (const [u, , , ek] of D.adj[v]) if (da[u] === k - 1 && on(u) && linkOk(ek)) {
     count[v] += count[u]; allEdges.add(Math.min(u, v) + "-" + Math.max(u, v)); }
   const paths = [];
   (function walk(v, acc, score) {   // depth-first over the shortest-path DAG, capped
     if (paths.length >= 400) return;
     if (v === b) { paths.push({ nodes: acc.slice(), score }); return; }
-    for (const [j, w] of D.adj[v]) if (da[j] === da[v] + 1 && on(j)) { acc.push(j); walk(j, acc, score + Math.log(w / 1000)); acc.pop(); }
+    for (const [j, w, , ek] of D.adj[v]) if (da[j] === da[v] + 1 && on(j) && linkOk(ek)) { acc.push(j); walk(j, acc, score + Math.log(w / 1000)); acc.pop(); }
   })(a, [a], 0);
   const fwdSigned = (nodes) => nodes.slice(1).filter((v, t) => effBetween(nodes[t], v) & 3).length;
   paths.forEach((x) => (x.signed = fwdSigned(x.nodes)));
@@ -1921,6 +2175,9 @@ const TOUR = [
   { el: () => $("drugSection"), title: "Medicines and mutations",
     text: "<b>Drugs</b> lists approved medicines and clinical-trial candidates that act on the protein (Open Targets). On the AlphaFold structure you can also switch on <b>known disease mutations</b>, shown as magenta balls.",
     before: async () => { await demoProtein(); await wait(600); $("drugSection").scrollIntoView({ block: "center" }); } },
+  { el: () => $("nbBtn"), title: "Neighbourhood and evidence",
+    text: "<b>Neighbourhood view</b> draws the protein with its partners and the links between them, with activation and inhibition arrows. In the partner list, <b>Evidence</b> shows why a link exists: the kinds of evidence, the experiments and the papers. Links supported only by text mining are flagged.",
+    before: async () => { await demoProtein(); $("right").scrollTop = 0; } },
   { el: () => $("structBox"), title: "Two proteins together",
     text: "Here is p53 (<b>blue</b>) bound to MDM2 (<b>orange</b>) in a solved structure (PDB 1YCR). The sticks are the residues where the two proteins touch. When no such structure exists, an example with the same domain types is shown and clearly labelled.",
     before: async () => { const i = await demoProtein(); showComplex(i, idxOf("MDM2")); await wait(500); $("structBox").scrollIntoView({ block: "center" }); } },
