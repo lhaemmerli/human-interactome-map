@@ -128,6 +128,30 @@ textarea { width: 100%; min-height: 64px; resize: vertical; padding: 7px 10px; b
 .evbox li { margin: 2px 0; }
 .evbox .yr { color: var(--muted); }
 .tmb { display: inline-block; font-size: 10.5px; border: 1px dashed var(--muted); color: var(--muted); border-radius: 8px; padding: 0 6px; margin: 1px 3px 1px 0; }
+#cov { position: fixed; inset: 0; z-index: 40; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; padding: 16px; }
+#cov .card { position: relative; background: var(--panel); color: var(--ink); border: 1px solid var(--border); border-radius: 10px; width: 100%; max-width: 660px;
+  max-height: calc(100vh - 32px); overflow: auto; padding: 18px 20px 14px; box-shadow: 0 12px 40px rgba(0,0,0,.3); font-size: 13.5px; line-height: 1.5; }
+#cov h2 { margin: 0 28px 4px 0; font-size: 18px; text-transform: none; letter-spacing: 0; color: var(--ink); font-weight: 650; }
+#cov h3 { margin: 18px 0 6px; font-size: 14px; color: var(--ink); }
+.cvgroup .cvtrack { background: var(--grid); border-radius: 0 4px 4px 0; }
+#cov .lead { font-size: 15px; margin: 4px 0 10px; }
+#cov .x { position: absolute; top: 10px; right: 10px; }
+#cov p { margin: 6px 0; color: var(--ink-2); }
+#cov p b, #cov .lead b { color: var(--ink); }
+#cov .src { font-size: 11.5px; color: var(--muted); }
+.cvrow { display: grid; grid-template-columns: minmax(0, 15em) minmax(60px, 1fr) 7.5em; gap: 2px 10px; align-items: center; padding: 3px 0; }
+.cvrow .lbl { color: var(--ink-2); }
+.cvrow.hl .lbl { color: var(--ink); font-weight: 600; }
+.cvrow .val { text-align: right; font-variant-numeric: tabular-nums; color: var(--ink); white-space: nowrap; }
+.cvrow .val small { color: var(--muted); }
+.cvtrack { position: relative; height: 10px; }
+.cvfill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--axis); border-radius: 0 4px 4px 0; min-width: 2px; }
+.cvrow.hl .cvfill, .cvgroup .cvfill { background: var(--s1); }
+.cvref { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--ink-2); }
+.cvband { position: absolute; top: 0; bottom: 0; background: var(--accent-wash); border: 1px dashed var(--s1); border-radius: 3px; }
+.cvaxis { position: relative; height: 16px; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cvaxis span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+@media (max-width: 560px) { .cvrow { grid-template-columns: minmax(0, 1fr) auto; } .cvrow .cvtrack, .cvrow .cvaxis { grid-column: 1 / -1; grid-row: 2; } }
 #nb { position: absolute; inset: 0; z-index: 6; background: var(--surface); display: flex; flex-direction: column; }
 #nb .bar { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--border); font-size: 12.5px; color: var(--ink-2); }
 #nb .bar b { color: var(--ink); font-size: 14px; margin-right: auto; }
@@ -248,7 +272,7 @@ a { color: var(--s1); }
   <button class="btn" id="langBtn" title="Français / English" style="float:right;margin-left:4px">FR</button>
   <h1 data-t>Human Interactome Map</h1>
   <p class="sub" id="meta" data-t>Loading…</p>
-  <p class="sub" style="margin-top:-6px"><a href="learn.html" data-t>New to proteins? Start here →</a></p>
+  <p class="sub" style="margin-top:-6px"><a href="learn.html" data-t>New to proteins? Start here →</a><br><a href="#" id="covLink" data-t>How much of the human proteome is this? →</a></p>
   <div class="search-wrap">
     <input type="search" id="search" placeholder="Gene or protein name (e.g. ACTB, insulin, p53)…" data-tp autocomplete="off"
       role="combobox" aria-controls="suggest" aria-expanded="false">
@@ -299,6 +323,7 @@ a { color: var(--s1); }
 <main id="stage">
   <div id="graph"></div>
   <div id="nb" hidden></div>
+  <div id="cov" hidden role="dialog" aria-modal="true" aria-labelledby="covTitle"></div>
   <canvas id="overlay"></canvas>
   <div id="status"></div>
   <div id="legend"></div>
@@ -344,6 +369,33 @@ const FR = {
   "Copy a link to exactly this view": "Copier un lien vers exactement cette vue", "Share": "Partager",
   "Human Interactome Map": "Carte de l'interactome humain", "Loading…": "Chargement…",
   "New to proteins? Start here →": "Débutant ? Commencez ici →",
+  "How much of the human proteome is this? →": "Quelle part des protéines humaines ? →",
+  "How complete is this map?": "Cette carte est-elle complète ?",
+  "The map shows <b>{m}</b> of the <b>{r}</b> human proteins, about <b>{pct}%</b>.": "La carte montre <b>{m}</b> des <b>{r}</b> protéines humaines, soit environ <b>{pct} %</b>.",
+  "Proteins": "Protéines",
+  "Human proteins (one per protein-coding gene)": "Protéines humaines (une par gène codant)",
+  "Known to the STRING database": "Connues de la base STRING",
+  "With at least one reported contact (any confidence)": "Avec au moins un contact signalé (toute confiance)",
+  "In this map (confident contacts only)": "Dans cette carte (contacts fiables uniquement)",
+  "Counting every version, the numbers grow: alternative splicing gives {iso} known protein isoforms, and chemical modifications raise this to an estimated <b>over a million</b> distinct “proteoforms”. Like most interaction studies, this map counts one protein per gene.":
+    "Si l'on compte toutes les versions, les chiffres augmentent : l'épissage alternatif donne {iso} isoformes connues, et les modifications chimiques portent le total à <b>plus d'un million</b> de « protéoformes » distinctes selon les estimations. Comme la plupart des études d'interactions, cette carte compte une protéine par gène.",
+  "Interactions": "Interactions",
+  "{r} proteins could form <b>{pairs} million</b> different pairs, but only a small share really bind. Estimates of the true number of human protein interactions range from about <b>130,000 to 650,000</b>. This map holds <b>{i}</b> confident ones.":
+    "{r} protéines pourraient former <b>{pairs} millions</b> de paires différentes, mais seule une petite partie se lie vraiment. Selon les estimations, le vrai nombre d'interactions entre protéines humaines se situe entre <b>130 000 et 650 000</b>. Cette carte en contient <b>{i}</b> fiables.",
+  "In this map": "Dans cette carte",
+  "Estimated total": "Total estimé",
+  "Who is missing?": "Qui manque ?",
+  "Share of each kind of protein that appears in the map. The vertical line marks the average ({avg}%).": "Part de chaque type de protéine présente dans la carte. Le trait vertical marque la moyenne ({avg} %).",
+  "The map shows what scientists have studied. Well-known cell machinery (ribosome, DNA repair, cell cycle) is almost fully covered. Proteins with no known function, keratins (the tough fibres of hair and skin) and the ~400 smell receptors of the nose are almost absent: they are rarely studied or hard to test in the lab. A missing link usually means “not tested yet”, not “does not happen”.":
+    "La carte reflète ce que les scientifiques ont étudié. La machinerie bien connue de la cellule (ribosome, réparation de l'ADN, cycle cellulaire) est presque entièrement couverte. Les protéines sans fonction connue, les kératines (les fibres résistantes des cheveux et de la peau) et les quelque 400 récepteurs olfactifs du nez sont presque absents : ils sont peu étudiés ou difficiles à tester en laboratoire. Un lien manquant signifie le plus souvent « pas encore testé », pas « n'existe pas ».",
+  "Group percentages use the {acc} map proteins that have a reviewed UniProt entry. Sources: UniProt 2026_04, STRING v12. Isoforms: UniProt. Proteoforms: Aebersold et al., Nat. Chem. Biol. 2018. Interactome size: Venkatesan et al., Nat. Methods 2009 (~130,000); Stumpf et al., PNAS 2008 (~650,000).":
+    "Les pourcentages par groupe utilisent les {acc} protéines de la carte qui ont une fiche UniProt vérifiée. Sources : UniProt 2026_04, STRING v12. Isoformes : UniProt. Protéoformes : Aebersold et al., Nat. Chem. Biol. 2018. Taille de l'interactome : Venkatesan et al., Nat. Methods 2009 (~130 000) ; Stumpf et al., PNAS 2008 (~650 000).",
+  "Close": "Fermer",
+  "Ribosomal proteins": "Protéines ribosomiques", "DNA repair": "Réparation de l'ADN", "Cytokines": "Cytokines", "mRNA splicing": "Épissage de l'ARNm",
+  "Cell cycle": "Cycle cellulaire", "Ion channels": "Canaux ioniques", "Kinases": "Kinases", "Secreted proteins": "Protéines sécrétées",
+  "Transcription regulators": "Régulateurs de la transcription", "Membrane-spanning proteins": "Protéines transmembranaires",
+  "G protein-coupled receptors": "Récepteurs couplés aux protéines G", "Zinc-finger proteins": "Protéines à doigts de zinc", "Keratins": "Kératines",
+  "No known function": "Fonction inconnue", "Olfactory receptors": "Récepteurs olfactifs",
   "Gene or protein name (e.g. ACTB, insulin, p53)…": "Nom de gène ou de protéine (ex. ACTB, insulin, p53)…",
   "Your gene list": "Votre liste de gènes", "Load an example: the p53 pathway": "Charger un exemple : la voie p53", "example": "exemple",
   "Paste gene or protein names: one per line, or separated by spaces or commas": "Collez des noms de gènes ou de protéines : un par ligne, ou séparés par des espaces ou des virgules",
@@ -2265,6 +2317,53 @@ addEventListener("keydown", (e) => {
   else if (e.key === "ArrowLeft" && tourI > 0) goTour(tourI - 1);
 }, true);
 addEventListener("keydown", (e) => { if (e.key === "Escape") select(null); });
+
+// ---------- coverage: the map versus the whole human proteome
+function openCoverage() {
+  const C = D.meta.coverage, R = C.reviewed, M = D.meta.proteins;
+  const accs = new Set(D.N.map((q) => q.acc).filter(Boolean)).size;
+  const pct = (a, b) => Math.round(100 * a / b);
+  const avg = 100 * accs / R;
+  const row = (label, v, max, cls, extra = "") =>
+    `<div class="cvrow ${cls}" title="${esc(label)}: ${num(v)}"><span class="lbl">${label}</span>` +
+    `<span class="cvtrack"><span class="cvfill" style="width:${(100 * v / max).toFixed(2)}%"></span>${extra}</span>` +
+    `<span class="val">${num(v)}</span></div>`;
+  const XMAX = 700000, at = (v) => (100 * v / XMAX).toFixed(2) + "%";
+  const groups = C.groups.slice().sort((a, b) => b[2] / b[1] - a[2] / a[1]).map(([label, n, k]) =>
+    `<div class="cvrow cvgroup" title="${esc(tr(label))}: ${num(k)} / ${num(n)}"><span class="lbl">${tr(label)}</span>` +
+    `<span class="cvtrack"><span class="cvfill" style="width:${(100 * k / n).toFixed(2)}%"></span><span class="cvref" style="left:${avg.toFixed(2)}%"></span></span>` +
+    `<span class="val">${pct(k, n)}% <small>${num(k)}/${num(n)}</small></span></div>`).join("");
+  $("cov").innerHTML = `<div class="card">
+    <button class="btn x" id="covClose" title="${tr("Close")}" aria-label="${tr("Close")}">✕</button>
+    <h2 id="covTitle">${tr("How complete is this map?")}</h2>
+    <p class="lead">${tr("The map shows <b>{m}</b> of the <b>{r}</b> human proteins, about <b>{pct}%</b>.", { m: num(M), r: num(R), pct: pct(M, R) })}</p>
+    <h3>${tr("Proteins")}</h3>
+    ${row(tr("Human proteins (one per protein-coding gene)"), R, R, "")}
+    ${row(tr("Known to the STRING database"), C.in_string, R, "")}
+    ${row(tr("With at least one reported contact (any confidence)"), C.any_physical, R, "")}
+    ${row(tr("In this map (confident contacts only)"), M, R, "hl")}
+    <p>${tr("Counting every version, the numbers grow: alternative splicing gives {iso} known protein isoforms, and chemical modifications raise this to an estimated <b>over a million</b> distinct “proteoforms”. Like most interaction studies, this map counts one protein per gene.", { iso: num(C.isoforms) })}</p>
+    <h3>${tr("Interactions")}</h3>
+    <p>${tr("{r} proteins could form <b>{pairs} million</b> different pairs, but only a small share really bind. Estimates of the true number of human protein interactions range from about <b>130,000 to 650,000</b>. This map holds <b>{i}</b> confident ones.", { r: num(R), pairs: num(Math.round(R * (R - 1) / 2 / 1e6)), i: num(D.meta.interactions) })}</p>
+    <div class="cvrow" title="${tr("Estimated total")}: 130,000 – 650,000"><span class="lbl">${tr("Estimated total")}</span>
+      <span class="cvtrack"><span class="cvband" style="left:${at(130000)};width:${at(520000)}"></span></span><span class="val">130k–650k</span></div>
+    <div class="cvrow hl" title="${tr("In this map")}: ${num(D.meta.interactions)}"><span class="lbl">${tr("In this map")}</span>
+      <span class="cvtrack"><span class="cvfill" style="width:${at(D.meta.interactions)}"></span></span><span class="val">${num(D.meta.interactions)}</span></div>
+    <div class="cvrow"><span></span><span class="cvaxis">${[0, 200000, 400000, 600000].map((v) => `<span style="left:${at(v)}">${v ? num(v / 1000) + "k" : 0}</span>`).join("")}</span><span></span></div>
+    <h3>${tr("Who is missing?")}</h3>
+    <p>${tr("Share of each kind of protein that appears in the map. The vertical line marks the average ({avg}%).", { avg: Math.round(avg) })}</p>
+    ${groups}
+    <p>${tr("The map shows what scientists have studied. Well-known cell machinery (ribosome, DNA repair, cell cycle) is almost fully covered. Proteins with no known function, keratins (the tough fibres of hair and skin) and the ~400 smell receptors of the nose are almost absent: they are rarely studied or hard to test in the lab. A missing link usually means “not tested yet”, not “does not happen”.")}</p>
+    <p class="src">${tr("Group percentages use the {acc} map proteins that have a reviewed UniProt entry. Sources: UniProt 2026_04, STRING v12. Isoforms: UniProt. Proteoforms: Aebersold et al., Nat. Chem. Biol. 2018. Interactome size: Venkatesan et al., Nat. Methods 2009 (~130,000); Stumpf et al., PNAS 2008 (~650,000).", { acc: num(accs) })}</p>
+  </div>`;
+  $("cov").hidden = false;
+  $("covClose").onclick = closeCoverage;
+  $("covClose").focus();
+}
+function closeCoverage() { $("cov").hidden = true; }
+$("covLink").onclick = (e) => { e.preventDefault(); if (D) openCoverage(); };
+$("cov").addEventListener("click", (e) => { if (e.target.id === "cov") closeCoverage(); });
+addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("cov").hidden) { e.stopImmediatePropagation(); closeCoverage(); } }, true);
 </script>
 </body>
 </html>

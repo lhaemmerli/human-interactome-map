@@ -120,6 +120,7 @@ footer { text-align: center; color: var(--muted); font-size: 13px; padding: 30px
   <ul>
     <li data-k="l1"><b>Study bias</b>: well-studied proteins (e.g. TP53, ubiquitin, histones) have more recorded interactions; being a hub partly reflects research attention, not only biology.</li>
     <li data-k="l2"><b>Context</b>: an interaction in the database means the two proteins <i>can</i> bind, not that they do so in every tissue, cell type or condition.</li>
+    <li data-k="l9"><b>Coverage</b>: the map holds 10,746 of the 20,429 reviewed human proteins (about 53%) and 86,519 of an estimated 130,000–650,000 real interactions. Coverage follows research attention: over 85% of ribosomal, DNA-repair and splicing proteins are in the map, against about 11% of proteins with no known function and 1% of olfactory receptors (details: “How much of the human proteome is this?” on the map).</li>
     <li data-k="l3"><b>Thresholds</b>: the 700 cut-off removes weaker evidence; some real interactions are missing and some false positives remain.</li>
     <li data-k="l7"><b>Effects are partial and contextual</b>: about 95% of interactions have no documented effect (they are shown as plain "binds" links), and a documented activation or inhibition may only hold in some cells or conditions.</li>
     <li data-k="l8"><b>Text-mining links</b>: STRING's physical network also contains links supported only by co-mention in papers. They are flagged rather than removed, because some reflect real but not-yet-curated interactions.</li>
@@ -192,6 +193,7 @@ const FR = {
   hLim: "6. Limites",
   l1: "<b>Biais d'étude</b> : les protéines très étudiées (ex. TP53, ubiquitine, histones) ont plus d'interactions enregistrées ; être un pivot reflète en partie l'attention des chercheurs, pas seulement la biologie.",
   l2: "<b>Contexte</b> : une interaction dans la base signifie que les deux protéines <i>peuvent</i> se lier, pas qu'elles le font dans chaque tissu, type cellulaire ou condition.",
+  l9: "<b>Couverture</b> : la carte contient 10 746 des 20 429 protéines humaines vérifiées (environ 53 %) et 86 519 des 130 000 à 650 000 interactions réelles estimées. La couverture suit l'attention des chercheurs : plus de 85 % des protéines du ribosome, de la réparation de l'ADN et de l'épissage sont présentes, contre environ 11 % des protéines sans fonction connue et 1 % des récepteurs olfactifs (détails : « Quelle part des protéines humaines ? » sur la carte).",
   l3: "<b>Seuils</b> : le seuil de 700 retire les preuves faibles ; certaines vraies interactions manquent et quelques faux positifs restent.",
   l4: "<b>Plus court ≠ biologique</b> : le plus court chemin peut sauter la voie de signalisation canonique ; utilisez la restriction par voie pour suivre les voies connues.",
   l5: "<b>Annotations incomplètes</b> : environ 2 100 protéines n'ont pas de classe de fonction et certaines n'ont pas de données tissulaires ; les descriptions des protéines sont en anglais (UniProt).",

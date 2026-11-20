@@ -214,8 +214,10 @@ def main():
     G = nx.Graph()
     with gzip.open(RAW / "string_physical.txt.gz", "rt") as fh:
         next(fh)  # header: protein1 protein2 combined_score (space-separated)
+        any_phys = set()
         for line in fh:
             a, b, s = line.split()
+            any_phys.update((a, b))
             if int(s) >= MIN_SCORE:
                 G.add_edge(a, b, w=int(s))
     print(f"graph: {G.number_of_nodes()} proteins, {G.number_of_edges()} interactions (score >= {MIN_SCORE})")
@@ -283,6 +285,38 @@ def main():
     deg = dict(G.degree())
     order = sorted(G.nodes, key=lambda n: -deg[n])
     N = len(order)
+
+    # --- Coverage: how much of the reviewed human proteome is in the map, by kind of protein
+    up_rows = list(read_tsv(RAW / "uniprot_human.tsv.gz", gzip.open))
+    in_map = {n["acc"] for n in nodes.values() if n["acc"]}
+    def cov(test):
+        s = [r for r in up_rows if test(r)]
+        return [len(s), sum(r["Entry"] in in_map for r in s)]
+    kw = lambda w: (lambda r: w in r["Keywords"].split(";"))
+    coverage = {
+        "reviewed": len(up_rows),
+        "isoforms": 42560,  # UniProt reviewed human incl. isoforms, release 2026_04 (REST x-total-results)
+        "in_string": len(info),
+        "any_physical": len(any_phys),
+        "groups": [[label, *cov(test)] for label, test in [
+            ("Ribosomal proteins", kw("Ribosomal protein")),
+            ("DNA repair", kw("DNA repair")),
+            ("Cytokines", kw("Cytokine")),
+            ("mRNA splicing", kw("mRNA splicing")),
+            ("Cell cycle", kw("Cell cycle")),
+            ("Ion channels", kw("Ion channel")),
+            ("Kinases", kw("Kinase")),
+            ("Secreted proteins", kw("Secreted")),
+            ("Transcription regulators", kw("Transcription regulation")),
+            ("Membrane-spanning proteins", kw("Transmembrane")),
+            ("G protein-coupled receptors", kw("G protein-coupled receptor")),
+            ("Zinc-finger proteins", kw("Zinc-finger")),
+            ("Keratins", kw("Keratin")),
+            ("No known function", lambda r: not r["Function [CC]"].strip()),
+            ("Olfactory receptors", kw("Olfaction")),
+        ]],
+    }
+    print("coverage:", {k: v for k, v in coverage.items() if k != "groups"})
     rank = {n: i for i, n in enumerate(order)}
     total = sum(len(c) for c in comms)
     rnd = random.Random(7)
@@ -548,7 +582,8 @@ def main():
 
     data = {
         "meta": {"source": "STRING v12.0 physical interactions; UniProt; Human Protein Atlas",
-                 "min_score": MIN_SCORE, "proteins": N, "interactions": len(edges)},
+                 "min_score": MIN_SCORE, "proteins": N, "interactions": len(edges),
+                 "coverage": coverage},
         "fields": ["name", "desc", "acc", "degree", "x", "y", "module", "functions", "systems",
                    "tissues", "about", "ensp", "aliases", "diseases", "disease_terms", "domains",
                    "ensg", "pathways", "pathways_specific", "n_variants"],
